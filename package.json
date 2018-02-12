@@ -1,0 +1,21 @@
+{
+  "name": "botometer-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Valentin GUILLOT",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^2.6.0",
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "get-twitter-bearer-token": "^1.0.0",
+    "node-botometer": "^0.1.7",
+    "request": "^2.83.0",
+    "twitter": "^1.7.1"
+  }
+}
