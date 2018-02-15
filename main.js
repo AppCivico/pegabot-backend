@@ -27,7 +27,6 @@ let client = new Twitter({
       access_token_secret: twitter_access_token_secret
 });
 
-
 const B = new botometer({
   consumer_key: twitter_consumer_key,
   consumer_secret: twitter_consumer_secret,
@@ -43,13 +42,13 @@ const B = new botometer({
 });
 
 app.get("/botometer", function(request, response) {
-    console.log(request.params); /* This prints the  JSON document received (if it is a JSON document) */
     let target = request.query.search_for;
     let profile = request.query.profile;
     let names = new Array();
+    let cursor = -1;
+    let list = new Array();
 
-    console.log(target);
-    console.log(profile);
+    console.log('Request ' + target + ' for ' + profile);
     if (typeof target === 'undefined' || typeof profile === 'undefined') {
       response.status(400).send('One parameter is missing')
     }
@@ -92,130 +91,90 @@ app.get("/botometer", function(request, response) {
       });
     }
     else if (target === 'followers') {
-      let params = {
-        screen_name: profile
-      };
-      client.get('followers/list', params, function(error, tweets, response_twitter) {
-        if (error) {
-          console.log(error);
-          throw error;
+      async.whilst(
+        function() { return cursor != 0; },
+        function(next) {
+          let params = {
+            screen_name: profile,
+            count: 200,
+            cursor: cursor
+          };
+          client.get('followers/list', params, function(error, tweets, response_twitter) {
+            if (error) {
+              console.log(error);
+              response.status(500).send(error)
+              return error;
+            }
+            let data = JSON.parse(response_twitter.body)
+            data.users.forEach(function(current) {
+              list.push(current)
+            })
+            cursor = data.next_cursor;
+            next();
+          })
+        },
+        function (err) {
+          let object = {
+            metadata: {
+              count: list.length
+            },
+            profiles: new Array()
+          };
+          list.forEach(function(value) {
+            object.profiles.push({
+                username: value.screen_name,
+                url: value.url,
+                avatar: value.profile_image_url,
+                user_profile_language: value.lang
+            })
+          })
+          response.send(JSON.stringify(object))
+          console.log(object);
         }
-        let data = JSON.parse(response_twitter.body)
-        let count = data.users.length;
-        async.eachOf(data.users, function(value, key, callback) {
-          let current_follower = value.screen_name;
-          names.push(current_follower);
-          callback();
-        }, function (err) {
-            if (err) console.error(err.message);
-            B.getBatchBotScores(names,data_user => {
-              let object = {
-                metadata: {
-                  count: count
-                },
-                profiles: new Array()
-              };
-              async.eachOf(data_user, function(value_current, key, callback) {
-                object.profiles.push(
-                  {
-                    username: value_current.user.screen_name,
-                    url: value_current.user.url,
-                    avatar: value_current.user.profile_image_url,
-                    language_dependent: {
-                      content: {
-                        value: value_current.botometer.categories.content
-                      },
-                      sentiment: {
-                        value: value_current.botometer.categories.sentiment
-                      }
-                    },
-                    language_independent: {
-                      friend: value_current.botometer.categories.friend,
-                      temporal: value_current.botometer.categories.temporal,
-                      network: value_current.botometer.categories.network,
-                      user: value_current.botometer.categories.user
-                    },
-                    bot_probability: {
-                      all: value_current.botometer.scores.universal,
-                      language_independent: value_current.botometer.scores.english
-                    },
-                    share_link_on_social_network: ".",
-              			user_profile_language: value_current.user.lang,
-              			feedback_report_link: "."
-                  }
-                )
-                callback();
-              }, function(err) {
-                if (err) console.error(err.message);
-                response.send(JSON.stringify(object))
-                console.log(object);
-            });
-          });
-        });
-      });
+      )
     }
     else if (target === 'friends') {
-       let params = {
-        screen_name: profile
-      };
-      client.get('friends/list', params, function(error, tweets, response_twitter) {
-        if (error) {
-          console.log(error);
-          throw error;
+      async.whilst(
+        function() { return cursor != 0; },
+        function(next) {
+          let params = {
+            screen_name: profile,
+            count: 200,
+            cursor: cursor
+          };
+          client.get('friends/list', params, function(error, tweets, response_twitter) {
+            if (error) {
+              console.log(error);
+              response.status(500).send(error)
+              return error;
+            }
+            let data = JSON.parse(response_twitter.body)
+            data.users.forEach(function(current) {
+              list.push(current)
+            })
+            cursor = data.next_cursor;
+            next();
+          })
+        },
+        function (err) {
+          let object = {
+            metadata: {
+              count: list.length
+            },
+            profiles: new Array()
+          };
+          list.forEach(function(value) {
+            object.profiles.push({
+                username: value.screen_name,
+                url: value.url,
+                avatar: value.profile_image_url,
+                user_profile_language: value.lang
+            })
+          })
+          response.send(JSON.stringify(object))
+          console.log(object);
         }
-        let data = JSON.parse(response_twitter.body)
-        let count = data.users.length;
-        async.eachOf(data.users, function(value, key, callback) {
-          let current_follower = value.screen_name;
-          names.push(current_follower);
-          callback();
-        }, function (err) {
-            if (err) console.error(err.message);
-            B.getBatchBotScores(names,data_user => {
-              let object = {
-                metadata: {
-                  count: count
-                },
-                profiles: new Array()
-              };
-              async.eachOf(data_user, function(value_current, key, callback) {
-                object.profiles.push(
-                  {
-                    username: value_current.user.screen_name,
-                    url: value_current.user.url,
-                    avatar: value_current.user.profile_image_url,
-                    language_dependent: {
-                      content: {
-                        value: value_current.botometer.categories.content
-                      },
-                      sentiment: {
-                        value: value_current.botometer.categories.sentiment
-                      }
-                    },
-                    language_independent: {
-                      friend: value_current.botometer.categories.friend,
-                      temporal: value_current.botometer.categories.temporal,
-                      network: value_current.botometer.categories.network,
-                      user: value_current.botometer.categories.user
-                    },
-                    bot_probability: {
-                      all: value_current.botometer.scores.universal,
-                      language_independent: value_current.botometer.scores.english
-                    },
-                    share_link_on_social_network: ".",
-              			user_profile_language: value_current.user.lang,
-              			feedback_report_link: "."
-                  }
-                )
-                callback();
-              }, function(err) {
-                if (err) console.error(err.message);
-                response.send(JSON.stringify(object))
-                console.log(object);
-            });
-          });
-        });
-      });
+      )
     }
     else {
       response.status(400).send('search_for is wrong')
