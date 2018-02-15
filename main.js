@@ -9,6 +9,7 @@ const
   botometer = require('node-botometer'),
   Twitter = require('twitter'),
   getBearerToken = require('get-twitter-bearer-token'),
+  mcache = require('memory-cache'),
   app = express().use(bodyParser.json()); // creates express http server
 
 // Sets server port and logs message on success
@@ -19,6 +20,8 @@ const twitter_consumer_key = '7FCkRJ5B5pA5WdVc8taFqSkMH'
 const twitter_consumer_secret = 'bgK8NV9oCj7CPuczKHySvk177DBzYFflP4BuW4DgItTvgRvdD5'
 const twitter_access_token_key = '950378405337350144-8cKAr0MnDlxQgLPeOYDY9r7CTbmjijW'
 const twitter_access_token_secret = 'K9xGx6AhKB7o3NpnIvGe5PxKBwLP9DUORvDmQwgmy99Ys'
+
+const cache_duration = 2592000;
 
 let client = new Twitter({
       consumer_key: twitter_consumer_key,
@@ -47,10 +50,15 @@ app.get("/botometer", function(request, response) {
     let names = new Array();
     let cursor = -1;
     let list = new Array();
+    let key = target + ':' + profile
+    let cachedKey = mcache.get(key)
 
     console.log('Request ' + target + ' for ' + profile);
     if (typeof target === 'undefined' || typeof profile === 'undefined') {
       response.status(400).send('One parameter is missing')
+    }
+    else if (cachedKey) {
+      response.send(cachedKey)
     }
     else if (target === 'profile') {
       names.push(profile)
@@ -61,7 +69,7 @@ app.get("/botometer", function(request, response) {
           },
           profiles: {
             username: data[0].user.screen_name,
-            url: data[0].user.url,
+            url: 'https://twitter.com/' + data[0].user.screen_name,
             avatar: data[0].user.profile_image_url,
             language_dependent: {
               content: {
@@ -87,6 +95,7 @@ app.get("/botometer", function(request, response) {
           }
         };
         response.send(JSON.stringify(object))
+        mcache.put(key, JSON.stringify(object), cache_duration * 1000)
         console.log(object);
       });
     }
@@ -123,12 +132,13 @@ app.get("/botometer", function(request, response) {
           list.forEach(function(value) {
             object.profiles.push({
                 username: value.screen_name,
-                url: value.url,
+                url: 'https://twitter.com/' + value.screen_name,
                 avatar: value.profile_image_url,
                 user_profile_language: value.lang
             })
           })
           response.send(JSON.stringify(object))
+          mcache.put(key, JSON.stringify(object), cache_duration * 1000)
           console.log(object);
         }
       )
@@ -166,12 +176,13 @@ app.get("/botometer", function(request, response) {
           list.forEach(function(value) {
             object.profiles.push({
                 username: value.screen_name,
-                url: value.url,
+                url: 'https://twitter.com/' + value.screen_name,
                 avatar: value.profile_image_url,
                 user_profile_language: value.lang
             })
           })
           response.send(JSON.stringify(object))
+          mcache.put(key, JSON.stringify(object), cache_duration * 1000)
           console.log(object);
         }
       )

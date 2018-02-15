@@ -14,6 +14,7 @@
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
     "get-twitter-bearer-token": "^1.0.0",
+    "memory-cache": "^0.2.0",
     "node-botometer": "^0.1.7",
     "request": "^2.83.0",
     "twitter": "^1.7.1"
