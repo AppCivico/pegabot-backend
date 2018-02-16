@@ -48,8 +48,6 @@ app.get("/botometer", function(request, response) {
     let target = request.query.search_for;
     let profile = request.query.profile;
     let names = new Array();
-    let cursor = -1;
-    let list = new Array();
     let key = target + ':' + profile
     let cachedKey = mcache.get(key)
 
@@ -99,95 +97,76 @@ app.get("/botometer", function(request, response) {
         console.log(object);
       });
     }
-    else if (target === 'followers') {
-      async.whilst(
-        function() { return cursor != 0; },
-        function(next) {
-          let params = {
-            screen_name: profile,
-            count: 200,
-            cursor: cursor
-          };
-          client.get('followers/list', params, function(error, tweets, response_twitter) {
-            if (error) {
-              console.log(error);
-              response.status(500).send(error)
-              return error;
-            }
-            let data = JSON.parse(response_twitter.body)
-            data.users.forEach(function(current) {
-              list.push(current)
-            })
-            cursor = data.next_cursor;
-            next();
-          })
-        },
-        function (err) {
-          let object = {
-            metadata: {
-              count: list.length
-            },
-            profiles: new Array()
-          };
-          list.forEach(function(value) {
-            object.profiles.push({
-                username: value.screen_name,
-                url: 'https://twitter.com/' + value.screen_name,
-                avatar: value.profile_image_url,
-                user_profile_language: value.lang
-            })
-          })
-          response.send(JSON.stringify(object))
+    else if (target === 'followers' || target === 'friends') {
+      requestTwitterList(target, profile, function(object) {
+        if (typeof object.metadata.error === 'undefined') {
           mcache.put(key, JSON.stringify(object), cache_duration * 1000)
-          console.log(object);
         }
-      )
-    }
-    else if (target === 'friends') {
-      async.whilst(
-        function() { return cursor != 0; },
-        function(next) {
-          let params = {
-            screen_name: profile,
-            count: 200,
-            cursor: cursor
-          };
-          client.get('friends/list', params, function(error, tweets, response_twitter) {
-            if (error) {
-              console.log(error);
-              response.status(500).send(error)
-              return error;
-            }
-            let data = JSON.parse(response_twitter.body)
-            data.users.forEach(function(current) {
-              list.push(current)
-            })
-            cursor = data.next_cursor;
-            next();
-          })
-        },
-        function (err) {
-          let object = {
-            metadata: {
-              count: list.length
-            },
-            profiles: new Array()
-          };
-          list.forEach(function(value) {
-            object.profiles.push({
-                username: value.screen_name,
-                url: 'https://twitter.com/' + value.screen_name,
-                avatar: value.profile_image_url,
-                user_profile_language: value.lang
-            })
-          })
-          response.send(JSON.stringify(object))
-          mcache.put(key, JSON.stringify(object), cache_duration * 1000)
-          console.log(object);
-        }
-      )
+        response.send(JSON.stringify(object))
+        console.log(object);
+      })
     }
     else {
       response.status(400).send('search_for is wrong')
     }
 });
+
+function requestTwitterList(search_for, profile, callback) {
+  let cursor = -1;
+  let list = new Array();
+  let total = 0;
+  let param = {
+    screen_name: profile
+  };
+  client.get('users/show', param, function(error, tweets, response_twitter_user) {
+    if (error) {
+      console.log(error);
+    }
+    total = JSON.parse(response_twitter_user.body)[search_for + '_count']
+    async.whilst(
+      function() { return cursor != 0; },
+      function(next) {
+        let params = {
+          screen_name: profile,
+          count: 200,
+          cursor: cursor
+        };
+        client.get(search_for + '/list', params, function(error, tweets, response_twitter) {
+          if (error) {
+            console.log(error);
+            next(error);
+          }
+          else {
+            let data = JSON.parse(response_twitter.body)
+            data.users.forEach(function(current) {
+              list.push(current)
+            })
+            cursor = data.next_cursor;
+            next();
+          }
+        })
+      },
+      function (err) {
+        let object = {
+          metadata: {
+            count: list.length,
+            total: total
+          },
+          profiles: new Array()
+        };
+        list.forEach(function(value) {
+          object.profiles.push({
+              username: value.screen_name,
+              url: 'https://twitter.com/' + value.screen_name,
+              avatar: value.profile_image_url,
+              user_profile_language: value.lang
+          })
+        })
+        if (err) {
+          object.metadata.error = err
+        }
+        callback(object)
+      }
+    )
+  })
+}
