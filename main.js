@@ -10,6 +10,7 @@ const
   Twitter = require('twitter'),
   getBearerToken = require('get-twitter-bearer-token'),
   mcache = require('memory-cache'),
+  qs = require('querystring'),
   app = express().use(bodyParser.json()); // creates express http server
 
 // Sets server port and logs message on success
@@ -22,13 +23,6 @@ const twitter_access_token_key = '950378405337350144-8cKAr0MnDlxQgLPeOYDY9r7CTbm
 const twitter_access_token_secret = 'K9xGx6AhKB7o3NpnIvGe5PxKBwLP9DUORvDmQwgmy99Ys'
 
 const cache_duration = 2592000;
-
-let client = new Twitter({
-      consumer_key: twitter_consumer_key,
-      consumer_secret: twitter_consumer_secret,
-      access_token_key: twitter_access_token_key,
-      access_token_secret: twitter_access_token_secret
-});
 
 const B = new botometer({
   consumer_key: twitter_consumer_key,
@@ -43,10 +37,29 @@ const B = new botometer({
   include_timeline: false,
   include_mentions: false
 });
+/*
+const options = {
+  url: 'https://api.twitter.com/oauth/request_token',
+  method: 'POST',
+  headers: {
+    'oauth_nonce':generateString(),
+    'oauth_callback':"http%3A%2F%2Fmyapp.com%3A3005%2Ftwitter%2Fprocess_callback",
+    'oauth_signature_method':"HMAC-SHA1",
+    'oauth_timestamp': Date.now(),
+    'oauth_consumer_key':"7FCkRJ5B5pA5WdVc8taFqSkMH",
+    'oauth_signature':"Pc%2BMLdv028fxCErFyi8KXFM%2BddU%3D",
+    'oauth_version':"1.0"
+  }
+}
+request(options, (err, res, body) => {
+  if (err) { return console.log(err); }
+  console.log(body);
+});*/
 
 app.get("/botometer", function(request, response) {
     let target = request.query.search_for;
     let profile = request.query.profile;
+    let authenticated = request.query.authenticated;
     let names = new Array();
     let key = target + ':' + profile
     let cachedKey = mcache.get(key)
@@ -98,20 +111,50 @@ app.get("/botometer", function(request, response) {
       });
     }
     else if (target === 'followers' || target === 'friends') {
-      requestTwitterList(target, profile, function(object) {
-        if (typeof object.metadata.error === 'undefined') {
-          mcache.put(key, JSON.stringify(object), cache_duration * 1000)
-        }
-        response.send(JSON.stringify(object))
-        console.log(object);
-      })
+      if (authenticated === true) {
+        let token = request.query.oauth_token
+        let token_secret = request.query.oauth_token_secret
+        let client = new Twitter({
+              consumer_key: twitter_consumer_key,
+              consumer_secret: twitter_consumer_secret,
+              access_token_key: token,
+              access_token_secret: token_secret
+        });
+        requestTwitterList(client, target, profile, function(object) {
+          if (typeof object.metadata.error === 'undefined') {
+            mcache.put(key, JSON.stringify(object), cache_duration * 1000)
+          }
+          response.send(JSON.stringify(object))
+          console.log(object);
+        })
+      }
+      else {
+        getTokenUrl(target, profile, function(uri) {
+          response.set('Content-Type', 'text/plain');
+          response.send(uri)
+        })
+      }
     }
     else {
       response.status(400).send('search_for is wrong')
     }
 });
 
-function requestTwitterList(search_for, profile, callback) {
+function getTokenUrl(search_for, profile, callback) {
+  let oauth = {
+        callback: 'https://dev.pegabots.com.br/botometer?authenticated=true&profile=' + profile + '&search_for=' + search_for,
+        consumer_key: twitter_consumer_key,
+        consumer_secret: twitter_consumer_secret
+      },
+      url = 'https://api.twitter.com/oauth/request_token';
+  request.post({url:url, oauth:oauth}, function (err, r, body) {
+    var req_data = qs.parse(body)
+    var uri = 'https://api.twitter.com/oauth/authenticate' + '?' + qs.stringify({oauth_token: req_data.oauth_token})
+    callback(uri);
+  })
+}
+
+function requestTwitterList(client, search_for, profile, callback) {
   let cursor = -1;
   let list = new Array();
   let total = 0;
