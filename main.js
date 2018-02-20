@@ -37,24 +37,6 @@ const B = new botometer({
   include_timeline: false,
   include_mentions: false
 });
-/*
-const options = {
-  url: 'https://api.twitter.com/oauth/request_token',
-  method: 'POST',
-  headers: {
-    'oauth_nonce':generateString(),
-    'oauth_callback':"http%3A%2F%2Fmyapp.com%3A3005%2Ftwitter%2Fprocess_callback",
-    'oauth_signature_method':"HMAC-SHA1",
-    'oauth_timestamp': Date.now(),
-    'oauth_consumer_key':"7FCkRJ5B5pA5WdVc8taFqSkMH",
-    'oauth_signature':"Pc%2BMLdv028fxCErFyi8KXFM%2BddU%3D",
-    'oauth_version':"1.0"
-  }
-}
-request(options, (err, res, body) => {
-  if (err) { return console.log(err); }
-  console.log(body);
-});*/
 
 app.get("/botometer", function(request, response) {
     let target = request.query.search_for;
@@ -130,8 +112,10 @@ app.get("/botometer", function(request, response) {
       }
       else {
         getTokenUrl(target, profile, function(uri) {
-          response.set('Content-Type', 'text/plain');
-          response.send(uri)
+          let object = {
+            request_url: uri
+          }
+          response.send(object)
         })
       }
     }
