@@ -126,7 +126,7 @@ app.get("/botometer", function(request, response) {
 
 function getTokenUrl(search_for, profile, callback) {
   let oauth = {
-        callback: 'https://dev.pegabots.com.br/botometer?authenticated=true&profile=' + profile + '&search_for=' + search_for,
+        callback: 'https://dev.pegabots.com.br/resultados?authenticated=true&profile=' + profile + '&search_for=' + search_for,
         consumer_key: twitter_consumer_key,
         consumer_secret: twitter_consumer_secret
       },
