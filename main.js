@@ -60,7 +60,7 @@ app.get("/botometer", function(request, response) {
           metadata: {
             count: 1
           },
-          profiles: {
+          profiles: new Array({
             username: data[0].user.screen_name,
             url: 'https://twitter.com/' + data[0].user.screen_name,
             avatar: data[0].user.profile_image_url,
@@ -85,7 +85,7 @@ app.get("/botometer", function(request, response) {
             share_link_on_social_network: ".",
             user_profile_language: data[0].user.lang,
             feedback_report_link: "."
-          }
+          })
         };
         response.send(JSON.stringify(object))
         mcache.put(key, JSON.stringify(object), cache_duration * 1000)
