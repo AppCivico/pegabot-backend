@@ -93,21 +93,36 @@ app.get("/botometer", function(request, response) {
       });
     }
     else if (target === 'followers' || target === 'friends') {
-      if (authenticated === true) {
-        let token = request.query.oauth_token
-        let token_secret = request.query.oauth_token_secret
-        let client = new Twitter({
-              consumer_key: twitter_consumer_key,
-              consumer_secret: twitter_consumer_secret,
-              access_token_key: token,
-              access_token_secret: token_secret
-        });
-        requestTwitterList(client, target, profile, function(object) {
-          if (typeof object.metadata.error === 'undefined') {
-            mcache.put(key, JSON.stringify(object), cache_duration * 1000)
-          }
-          response.send(JSON.stringify(object))
-          console.log(object);
+      if (authenticated === 'true') {
+        let token = request.query.oauth_token;
+        let token_secret = mcache.get(token);
+        let verifier = request.query.oauth_verifier;
+        let oauth = {
+          consumer_key: twitter_consumer_key,
+          consumer_secret: twitter_consumer_secret,
+          token: token,
+          token_secret: token_secret,
+          verifier: verifier
+        };
+        let url = 'https://api.twitter.com/oauth/access_token';
+        let request2 = require('request');
+        request2.post({url:url, oauth:oauth}, function (e, r, body) {
+          var perm_data = qs.parse(body)
+          token = perm_data.oauth_token
+          token_secret = perm_data.oauth_token_secret
+          let client = new Twitter({
+                consumer_key: twitter_consumer_key,
+                consumer_secret: twitter_consumer_secret,
+                access_token_key: token,
+                access_token_secret: token_secret
+          });
+          requestTwitterList(client, target, profile, function(object) {
+            if (typeof object.metadata.error === 'undefined') {
+              mcache.put(key, JSON.stringify(object), cache_duration * 1000)
+            }
+            response.send(JSON.stringify(object))
+            console.log(object);
+          })
         })
       }
       else {
@@ -133,7 +148,8 @@ function getTokenUrl(search_for, profile, callback) {
       url = 'https://api.twitter.com/oauth/request_token';
   request.post({url:url, oauth:oauth}, function (err, r, body) {
     var req_data = qs.parse(body)
-    var uri = 'https://api.twitter.com/oauth/authenticate' + '?' + qs.stringify({oauth_token: req_data.oauth_token})
+    mcache.put(req_data.oauth_token, req_data.oauth_token_secret, 3600 * 1000)
+    let uri = 'https://api.twitter.com/oauth/authenticate' + '?' + qs.stringify({oauth_token: req_data.oauth_token})
     callback(uri);
   })
 }
