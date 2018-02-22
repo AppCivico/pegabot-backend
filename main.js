@@ -126,7 +126,7 @@ app.get("/botometer", function(request, response) {
         })
       }
       else {
-        getTokenUrl(target, profile, function(uri) {
+        getTokenUrl(request, target, profile, function(uri) {
           let object = {
             request_url: uri
           }
@@ -139,9 +139,13 @@ app.get("/botometer", function(request, response) {
     }
 });
 
-function getTokenUrl(search_for, profile, callback) {
+function getTokenUrl(req, search_for, profile, callback) {
+  let ssl = 'http://'
+  if (req.connection.encrypted) {
+    ssl = 'https://'
+  }
   let oauth = {
-        callback: 'https://dev.pegabots.com.br/resultados?authenticated=true&profile=' + profile + '&search_for=' + search_for,
+        callback: ssl + req.headers.host + '/resultados?authenticated=true&profile=' + profile + '&search_for=' + search_for,
         consumer_key: twitter_consumer_key,
         consumer_secret: twitter_consumer_secret
       },
