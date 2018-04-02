@@ -56,6 +56,15 @@ app.get("/botometer", function(request, response) {
     else if (target === 'profile') {
       names.push(profile)
       B.getBatchBotScores(names,data => {
+        if (data.length === 0) {
+          let err = {
+            metadata: {
+              error: names + " não encontrado"
+            }
+          }
+          response.send(JSON.stringify(err))
+          return;
+        }
         let object = {
           metadata: {
             count: 1
