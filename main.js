@@ -184,7 +184,7 @@ function requestTwitterList(client, search_for, profile, limit, callback) {
     }
     total = JSON.parse(response_twitter_user.body)[search_for + '_count']
     async.whilst(
-      function() { return cursor != 0; },
+      function() { return cursor == -1; },
       function(next) {
         let params = {
           screen_name: profile,
