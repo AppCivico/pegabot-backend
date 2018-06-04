@@ -41,10 +41,14 @@ const B = new botometer({
 app.get("/botometer", function(request, response) {
     let target = request.query.search_for;
     let profile = request.query.profile;
+    let limit = request.query.limit;
     let authenticated = request.query.authenticated;
     let names = new Array();
     let key = target + ':' + profile
     let cachedKey = mcache.get(key)
+    if (!limit) {
+      limit = 200;
+    }
 
     console.log('Request ' + target + ' for ' + profile);
     if (typeof target === 'undefined' || typeof profile === 'undefined') {
@@ -184,7 +188,7 @@ function requestTwitterList(client, search_for, profile, callback) {
       function(next) {
         let params = {
           screen_name: profile,
-          count: 200,
+          count: limit,
           cursor: cursor
         };
         client.get(search_for + '/list', params, function(error, tweets, response_twitter) {
