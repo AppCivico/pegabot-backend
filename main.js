@@ -158,7 +158,7 @@ function getTokenUrl(req, search_for, profile, callback) {
     ssl = 'https://'
   }
   let oauth = {
-        callback: ssl + req.headers.host + '/resultados?socialnetwork=twitter&authenticated=true&profile=' + profile + '&search_for=' + search_for + '#conteudo',
+        callback: ssl + req.headers.host + '/resultados?socialnetwork=twitter&authenticated=true&profile=' + profile + '&search_for=' + search_for + '&limit=' + limit + '#conteudo',
         consumer_key: twitter_consumer_key,
         consumer_secret: twitter_consumer_secret
       },
