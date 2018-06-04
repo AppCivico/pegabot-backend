@@ -139,7 +139,7 @@ app.get("/botometer", function(request, response) {
         })
       }
       else {
-        getTokenUrl(request, target, profile, function(uri) {
+        getTokenUrl(request, target, profile, limit, function(uri) {
           let object = {
             request_url: uri
           }
@@ -152,7 +152,7 @@ app.get("/botometer", function(request, response) {
     }
 });
 
-function getTokenUrl(req, search_for, profile, callback) {
+function getTokenUrl(req, search_for, profile, limit, callback) {
   let ssl = 'http://'
   if (req.connection.encrypted) {
     ssl = 'https://'
