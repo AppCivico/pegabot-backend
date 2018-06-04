@@ -46,7 +46,7 @@ app.get("/botometer", function(request, response) {
     let names = new Array();
     let key = target + ':' + profile
     let cachedKey = mcache.get(key)
-    if (!limit) {
+    if (!limit || limit > 200) {
       limit = 200;
     }
 
@@ -184,7 +184,7 @@ function requestTwitterList(client, search_for, profile, callback) {
     }
     total = JSON.parse(response_twitter_user.body)[search_for + '_count']
     async.whilst(
-      function() { return cursor != 0; },
+      function() { return (cursor != 15 || cursor != 0); },
       function(next) {
         let params = {
           screen_name: profile,
