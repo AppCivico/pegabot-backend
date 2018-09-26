@@ -56,12 +56,11 @@ app.get("/botometer", function(request, response) {
           response.json(err)
           return;
         }
-        response.json(object)
+        response.json(result)
       })
     }
     else if (target === 'followers' || target === 'friends') {
       if (authenticated === 'true') {
-        ga('send', 'event', 'Analyze', target);
         let token = request.query.oauth_token;
         let token_secret = mcache.get(token);
         let verifier = request.query.oauth_verifier;
