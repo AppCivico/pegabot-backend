@@ -56,6 +56,12 @@ app.get("/botometer", function(request, response) {
           response.json(err)
           return;
         }
+        result.profiles[0].language_independent.friend /= 100
+        result.profiles[0].language_independent.temporal /= 100
+        result.profiles[0].language_independent.network /= 100
+        result.profiles[0].language_independent.user /= 100
+        result.profiles[0].bot_probability.all /= 100
+        result.profiles[0].bot_probability.language_independent /= 100
         response.json(result)
       })
     }
