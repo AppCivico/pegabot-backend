@@ -6,7 +6,7 @@ const
   request = require('request'),
   bodyParser = require('body-parser'),
   async = require('async'),
-  spottingbot = require('spottingbot')
+  spottingbot = require('spottingbot'),
   Twitter = require('twitter'),
   getBearerToken = require('get-twitter-bearer-token'),
   mcache = require('memory-cache'),
