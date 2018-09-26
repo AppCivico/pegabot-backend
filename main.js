@@ -6,7 +6,7 @@ const
   request = require('request'),
   bodyParser = require('body-parser'),
   async = require('async'),
-  botometer = require('node-botometer'),
+  spottingbot = require('spottingbot')
   Twitter = require('twitter'),
   getBearerToken = require('get-twitter-bearer-token'),
   mcache = require('memory-cache'),
@@ -17,26 +17,14 @@ const
 const server = app.listen(process.env.PORT || 1337, () => console.log('server is launched'));
 server.timeout = 0;
 
-const twitter_consumer_key = '7FCkRJ5B5pA5WdVc8taFqSkMH'
-const twitter_consumer_secret = 'bgK8NV9oCj7CPuczKHySvk177DBzYFflP4BuW4DgItTvgRvdD5'
-const twitter_access_token_key = '950378405337350144-8cKAr0MnDlxQgLPeOYDY9r7CTbmjijW'
-const twitter_access_token_secret = 'K9xGx6AhKB7o3NpnIvGe5PxKBwLP9DUORvDmQwgmy99Ys'
+const config = {
+  twitter_consumer_key: "7FCkRJ5B5pA5WdVc8taFqSkMH",
+  twitter_consumer_secret: "bgK8NV9oCj7CPuczKHySvk177DBzYFflP4BuW4DgItTvgRvdD5",
+  twitter_access_token_key: "950378405337350144-8cKAr0MnDlxQgLPeOYDY9r7CTbmjijW",
+  twitter_access_token_secret: "K9xGx6AhKB7o3NpnIvGe5PxKBwLP9DUORvDmQwgmy99Ys"
+}
 
 const cache_duration = 2592000;
-
-const B = new botometer({
-  consumer_key: twitter_consumer_key,
-  consumer_secret: twitter_consumer_secret,
-  access_token: null,
-  access_token_secret: null,
-  app_only_auth: true,
-  mashape_key: 'GhALQRqDbHmshcQXZhatEYKsScyBp1STVehjsno98Aa0hsXUqI',
-  rate_limit: 0,
-  log_progress: true,
-  include_user: true,
-  include_timeline: false,
-  include_mentions: false
-});
 
 app.get("/botometer", function(request, response) {
     let target = request.query.search_for;
@@ -58,55 +46,22 @@ app.get("/botometer", function(request, response) {
       response.send(cachedKey)
     }
     else if (target === 'profile') {
-      names.push(profile)
-      B.getBatchBotScores(names,data => {
-        if (data.length === 0) {
+      spottingbot(profile, config, function(err, result) {
+        if (err) {
           let err = {
             metadata: {
-              error: names + " não encontrado"
+              error: profile + " não encontrado"
             }
           }
-          response.send(JSON.stringify(err))
+          response.json(err)
           return;
         }
-        let object = {
-          metadata: {
-            count: 1
-          },
-          profiles: new Array({
-            username: data[0].user.screen_name,
-            url: 'https://twitter.com/' + data[0].user.screen_name,
-            avatar: data[0].user.profile_image_url,
-            language_dependent: {
-              content: {
-                value: data[0].botometer.categories.content
-              },
-              sentiment: {
-                value: data[0].botometer.categories.sentiment
-              }
-            },
-            language_independent: {
-              friend: data[0].botometer.categories.friend,
-              temporal: data[0].botometer.categories.temporal,
-              network: data[0].botometer.categories.network,
-              user: data[0].botometer.categories.user
-            },
-            bot_probability: {
-              all: data[0].botometer.scores.universal,
-              language_independent: data[0].botometer.scores.english
-            },
-            share_link_on_social_network: ".",
-            user_profile_language: data[0].user.lang,
-            feedback_report_link: "."
-          })
-        };
-        response.send(JSON.stringify(object))
-        mcache.put(key, JSON.stringify(object), cache_duration * 1000)
-        console.log(object);
-      });
+        response.json(object)
+      })
     }
     else if (target === 'followers' || target === 'friends') {
       if (authenticated === 'true') {
+        ga('send', 'event', 'Analyze', target);
         let token = request.query.oauth_token;
         let token_secret = mcache.get(token);
         let verifier = request.query.oauth_verifier;
