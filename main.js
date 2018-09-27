@@ -56,7 +56,6 @@ app.get("/botometer", function(request, response) {
           response.json(err)
           return;
         }
-        result.profiles[0].bot_probability.language_independent = null
         response.json(result)
       })
     }
