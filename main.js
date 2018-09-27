@@ -56,6 +56,7 @@ app.get("/botometer", function(request, response) {
           response.json(err)
           return;
         }
+        result.profiles[0].bot_probability.language_independent = null
         response.json(result)
       })
     }
@@ -166,7 +167,7 @@ function requestTwitterList(client, search_for, profile, limit, callback) {
             count: list.length,
             total: total
           },
-          profiles: new Array()
+          profiles: []
         };
         list.forEach(function(value) {
           object.profiles.push({
