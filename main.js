@@ -89,7 +89,11 @@ app.get("/botometer", function(request, response) {
         })
       }
       else {
-        getTokenUrl(request, target, profile, limit, function(uri) {
+        getTokenUrl(request, target, profile, limit, function(err, uri) {
+          if (err) {
+            response.status(500).send(err);
+            return;
+          }
           let object = {
             request_url: uri
           }
@@ -114,10 +118,16 @@ function getTokenUrl(req, search_for, profile, limit, callback) {
       },
       url = 'https://api.twitter.com/oauth/request_token';
   request.post({url:url, oauth:oauth}, function (err, r, body) {
+    if (err) {
+      callback(err, null)
+    }
     var req_data = qs.parse(body)
+    if (!req_data.oauth_token || !req_data.oauth_token_secret) {
+      callback("No Token", null)
+    }
     mcache.put(req_data.oauth_token, req_data.oauth_token_secret, 3600 * 1000)
     let uri = 'https://api.twitter.com/oauth/authenticate' + '?' + qs.stringify({oauth_token: req_data.oauth_token})
-    callback(uri);
+    callback(null, uri);
   })
 }
 
