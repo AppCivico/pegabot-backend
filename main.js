@@ -18,10 +18,8 @@ const server = app.listen(process.env.PORT || 1337, () => console.log('server is
 server.timeout = 0;
 
 const config = {
-  twitter_consumer_key: "7FCkRJ5B5pA5WdVc8taFqSkMH",
-  twitter_consumer_secret: "bgK8NV9oCj7CPuczKHySvk177DBzYFflP4BuW4DgItTvgRvdD5",
-  twitter_access_token_key: "950378405337350144-8cKAr0MnDlxQgLPeOYDY9r7CTbmjijW",
-  twitter_access_token_secret: "K9xGx6AhKB7o3NpnIvGe5PxKBwLP9DUORvDmQwgmy99Ys"
+  consumer_key: "7FCkRJ5B5pA5WdVc8taFqSkMH",
+  consumer_secret: "bgK8NV9oCj7CPuczKHySvk177DBzYFflP4BuW4DgItTvgRvdD5",
 }
 
 const cache_duration = 2592000;
@@ -31,7 +29,6 @@ app.get("/botometer", function(request, response) {
     let profile = request.query.profile;
     let limit = request.query.limit;
     let authenticated = request.query.authenticated;
-    let names = new Array();
     let key = target + ':' + profile
     let cachedKey = mcache.get(key)
     if (!limit || limit > 200) {
@@ -65,8 +62,8 @@ app.get("/botometer", function(request, response) {
         let token_secret = mcache.get(token);
         let verifier = request.query.oauth_verifier;
         let oauth = {
-          consumer_key: config.twitter_consumer_key,
-          consumer_secret: config.twitter_consumer_secret,
+          consumer_key: config.consumer_key,
+          consumer_secret: config.consumer_secret,
           token: token,
           token_secret: token_secret,
           verifier: verifier
@@ -78,8 +75,8 @@ app.get("/botometer", function(request, response) {
           token = perm_data.oauth_token
           token_secret = perm_data.oauth_token_secret
           let client = new Twitter({
-                consumer_key: config.twitter_consumer_key,
-                consumer_secret: config.twitter_consumer_secret,
+                consumer_key: config.consumer_key,
+                consumer_secret: config.consumer_secret,
                 access_token_key: token,
                 access_token_secret: token_secret
           });
@@ -113,8 +110,8 @@ function getTokenUrl(req, search_for, profile, limit, callback) {
   }
   let oauth = {
         callback: ssl + req.headers.host + '/resultados?socialnetwork=twitter&authenticated=true&profile=' + profile + '&search_for=' + search_for + '&limit=' + limit + '#conteudo',
-        consumer_key: config.twitter_consumer_key,
-        consumer_secret: config.twitter_consumer_secret
+        consumer_key: config.consumer_key,
+        consumer_secret: config.consumer_secret
       },
       url = 'https://api.twitter.com/oauth/request_token';
   request.post({url:url, oauth:oauth}, function (err, r, body) {
