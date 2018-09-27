@@ -123,7 +123,7 @@ function getTokenUrl(req, search_for, profile, limit, callback) {
     }
     var req_data = qs.parse(body)
     if (!req_data.oauth_token || !req_data.oauth_token_secret) {
-      callback(body, null)
+      callback(oauth.callback, null)
     }
     mcache.put(req_data.oauth_token, req_data.oauth_token_secret, 3600 * 1000)
     let uri = 'https://api.twitter.com/oauth/authenticate' + '?' + qs.stringify({oauth_token: req_data.oauth_token})
