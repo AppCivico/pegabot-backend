@@ -65,8 +65,8 @@ app.get("/botometer", function(request, response) {
         let token_secret = mcache.get(token);
         let verifier = request.query.oauth_verifier;
         let oauth = {
-          consumer_key: twitter_consumer_key,
-          consumer_secret: twitter_consumer_secret,
+          consumer_key: config.twitter_consumer_key,
+          consumer_secret: config.twitter_consumer_secret,
           token: token,
           token_secret: token_secret,
           verifier: verifier
@@ -78,8 +78,8 @@ app.get("/botometer", function(request, response) {
           token = perm_data.oauth_token
           token_secret = perm_data.oauth_token_secret
           let client = new Twitter({
-                consumer_key: twitter_consumer_key,
-                consumer_secret: twitter_consumer_secret,
+                consumer_key: config.twitter_consumer_key,
+                consumer_secret: config.twitter_consumer_secret,
                 access_token_key: token,
                 access_token_secret: token_secret
           });
@@ -113,8 +113,8 @@ function getTokenUrl(req, search_for, profile, limit, callback) {
   }
   let oauth = {
         callback: ssl + req.headers.host + '/resultados?socialnetwork=twitter&authenticated=true&profile=' + profile + '&search_for=' + search_for + '&limit=' + limit + '#conteudo',
-        consumer_key: twitter_consumer_key,
-        consumer_secret: twitter_consumer_secret
+        consumer_key: config.twitter_consumer_key,
+        consumer_secret: config.twitter_consumer_secret
       },
       url = 'https://api.twitter.com/oauth/request_token';
   request.post({url:url, oauth:oauth}, function (err, r, body) {
