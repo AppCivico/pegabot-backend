@@ -84,8 +84,7 @@ app.get("/botometer", function(request, response) {
             if (typeof object.metadata.error === 'undefined') {
               mcache.put(key, JSON.stringify(object), cache_duration * 1000)
             }
-            response.send(JSON.stringify(object))
-            console.log(object);
+            response.json(object)
           })
         })
       }
@@ -94,7 +93,7 @@ app.get("/botometer", function(request, response) {
           let object = {
             request_url: uri
           }
-          response.send(object)
+          response.json(object)
         })
       }
     }
