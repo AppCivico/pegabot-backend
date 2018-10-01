@@ -43,7 +43,7 @@ app.get("/botometer", function(request, response) {
       response.send(cachedKey)
     }
     else if (target === 'profile') {
-      spottingbot(profile, config, function(err, result) {
+      spottingbot(profile, config, {friend: false}, function(err, result) {
         if (err) {
           let err = {
             metadata: {
