@@ -1,0 +1,4 @@
+#!/bin/bash
+export USER=node
+
+su - node -c 'cd /src; npm start'
