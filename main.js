@@ -11,6 +11,7 @@ const
   getBearerToken = require('get-twitter-bearer-token'),
   mcache = require('memory-cache'),
   qs = require('querystring'),
+  fs = require('fs'),
   app = express().use(bodyParser.json()); // creates express http server
 
 // Sets server port and logs message on success
@@ -190,3 +191,52 @@ function requestTwitterList(client, search_for, profile, limit, callback) {
     )
   })
 }
+
+app.post("/feedback", function(request, response) {
+  let opinion = request.body.opinion;
+  let profile = request.body.profile;
+  if (!opinion || !profile) {
+    response.status(400).send('JSON Parameters opinion and profile required.');
+    return;
+  }
+  if (opinion !== "approve" && opinion !== "disapprove") {
+    response.status(400).send('opinion is not correct, should be approve or disapprove.');
+    return;
+  }
+  if (typeof profile !== "object" || typeof profile.username === "undefined" || typeof profile.bot_probability === "undefined") {
+    response.status(400).send('profile should be a JSON object and need to contains at least an username and a bot_probability.');
+    return;
+  }
+  let screen_name = profile.username;
+  if (fs.existsSync('opinion.json') === false) {
+    let object = {
+      approve: {
+        profiles: []
+      },
+      disapprove: {
+        profiles: []
+      }
+    }
+    fs.writeFileSync('opinion.json', JSON.stringify(object))
+  }
+  let content = fs.readFileSync('opinion.json')
+  let data = JSON.parse(content);
+  let index = data[opinion].profiles.findIndex(function(element) {
+     return element.username === screen_name;
+  })
+  if (index !== -1) {
+    if (data[opinion].profiles[index].bot_probability.all <= (profile.bot_probability.all + 0.10) && data[opinion].profiles[index].bot_probability.all >= (profile.bot_probability.all - 0.10)) {
+      data[opinion].profiles[index].count++;
+    }
+    else {
+      profile.count = 1;
+      data[opinion].profiles[index] = profile;
+    }
+  }
+  else {
+    profile.count = 1;
+    data[opinion].profiles.push(profile)
+  }
+  fs.writeFileSync('opinion.json', JSON.stringify(data))
+  response.send('OK')
+})

@@ -17,7 +17,7 @@
     "memory-cache": "^0.2.0",
     "node-botometer": "^0.1.7",
     "request": "^2.88.0",
-    "spottingbot": "^1.0.6",
+    "spottingbot": "^1.0.8",
     "twitter": "^1.7.1"
   }
 }
