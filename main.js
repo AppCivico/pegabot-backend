@@ -241,3 +241,13 @@ app.post("/feedback", function(request, response) {
   fs.writeFileSync('opinion.json', JSON.stringify(data))
   response.send('OK')
 })
+
+app.get("/feedback", function(request, response) {
+  if (fs.existsSync('opinion.json') === false) {
+    response.send('No feedback yet')
+    return;
+  }
+  let content = fs.readFileSync('opinion.json')
+  let data = JSON.parse(content);
+  response.json(data)
+})
