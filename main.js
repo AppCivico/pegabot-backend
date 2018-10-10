@@ -44,7 +44,7 @@ app.get("/botometer", function(request, response) {
       response.send(cachedKey)
     }
     else if (target === 'profile') {
-      spottingbot(profile, config, {friend: false}, function(err, result) {
+      spottingbot(profile, config, {friend: false, sentiment: false}, function(err, result) {
         if (err) {
           let err = {
             metadata: {
@@ -54,6 +54,7 @@ app.get("/botometer", function(request, response) {
           response.json(err)
           return;
         }
+        result.language_dependent = null;
         response.json(result)
       })
     }
