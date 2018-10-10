@@ -54,7 +54,7 @@ app.get("/botometer", function(request, response) {
           response.json(err)
           return;
         }
-        result.language_dependent = null;
+        result.profiles[0].language_dependent = null;
         response.json(result)
       })
     }
