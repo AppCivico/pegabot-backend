@@ -35,7 +35,6 @@ app.get("/botometer", function(request, response) {
     if (!limit || limit > 200) {
       limit = 200;
     }
-
     console.log('Request ' + target + ' for ' + profile);
     if (typeof target === 'undefined' || typeof profile === 'undefined') {
       response.status(400).send('One parameter is missing')
