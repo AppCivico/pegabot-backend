@@ -1,27 +1,26 @@
 #!/usr/bin/env node
 require('dotenv').config();
 
-// Import our module
-const analyze = require('./analyze');
+const analyze = require('./analyze'); // Import our module
+const config = require('../twitter'); // import config keys
 
-// import config keys
-const config = require('../twitter');
-
-const screen_name = process.argv[2];
-if (!screen_name) {
-  console.error('Please specific in argument a screen name to analyze');
+const screenName = process.argv[2];
+if (!screenName) {
+  console.error('Please specify a screen name to analyze as an argument. Example: npm run cli <screen_name>');
   return;
 }
-console.log('Start analyzing the user', screen_name);
+console.log(`Starting user ${screenName} analysis...`);
 
-analyze(screen_name, config).then(function (info) {
-  let userScore = Math.round(info.profiles[0].language_independent.user * 100);
-  let friendsScore = Math.round(info.profiles[0].language_independent.friend * 100);
-  let temporalScore = Math.round(info.profiles[0].language_independent.temporal * 100);
-  let networkScore = Math.round(info.profiles[0].language_independent.network * 100);
-  let sentimentScore = Math.round(info.profiles[0].language_dependent.sentiment.value * 100);
-  let total = Math.round(info.profiles[0].bot_probability.all * 100);
-  console.log('User score:', userScore + '%\nFriends score:', friendsScore + '%\nTemporal score:', temporalScore + '%\nNetwork score:', networkScore + '%\nSentiment score:', sentimentScore + '%\nFinal score:', total + '%');
-}).catch(function (err) {
+analyze(screenName, config).then((info) => {
+  const userScore = Math.round(info.profiles[0].language_independent.user * 100);
+  const friendsScore = Math.round(info.profiles[0].language_independent.friend * 100);
+  const temporalScore = Math.round(info.profiles[0].language_independent.temporal * 100);
+  const networkScore = Math.round(info.profiles[0].language_independent.network * 100);
+  const sentimentScore = Math.round(info.profiles[0].language_dependent.sentiment.value * 100);
+  const finalScore = Math.round(info.profiles[0].bot_probability.all * 100);
+
+  const msg = `User score: ${userScore}%\nFriends score: ${friendsScore}%\nTemporal score: ${temporalScore}%\nNetwork score ${networkScore}%\nSentiment score: ${sentimentScore}%\nFinal score: ${finalScore}%`;
+  console.log(msg);
+}).catch((err) => {
   console.error(err);
 });
