@@ -19,6 +19,7 @@ module.exports = (data) => new Promise((resolve) => {
     // The shorter this array is, the more tweets are posted in a suspiciously regular frequency
   }
 
+  // Calculate tweets-by-day ratio
   const age = library.convertTwitterDateToDaysAge(data[0].user.created_at);
   const numberOfTweets = data[0].user.statuses_count;
   const ratioTweetsDay = numberOfTweets / age;
