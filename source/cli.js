@@ -1,21 +1,11 @@
 #!/usr/bin/env node
-
-// Import external module
-const
-  path = require('path');
-
-const fs = require('fs');
+require('dotenv').config();
 
 // Import our module
 const analyze = require('./analyze');
 
-// Get Twitter Configuration
-const twitterConfigFile = path.join(__dirname, '../.twitter.json');
-if (!fs.existsSync(twitterConfigFile)) {
-  console.error("No configuration file, please create '.twitter.json'.");
-  return;
-}
-const config = JSON.parse(fs.readFileSync(twitterConfigFile));
+// import config keys
+const config = require('../twitter');
 
 const screen_name = process.argv[2];
 if (!screen_name) {

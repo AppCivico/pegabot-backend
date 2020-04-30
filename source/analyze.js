@@ -27,7 +27,7 @@ module.exports = function (screen_name, config, index = {user: true, friend: tru
       return error;
     }
     if (!config.consumer_key || !config.consumer_secret) {
-      let error = '.twitter.json config file should have the following parameters:\nconsumer_key\nconsumer_secret';
+      let error = 'twitter.js config file should have the following parameters:\nconsumer_key\nconsumer_secret';
       if (cb) cb(error, null);
       reject(error);
       return error;
