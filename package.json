@@ -3,15 +3,15 @@
   "version": "1.0.12",
   "description": "Analyzing profile on Twitter for detect behavior of spamming bot",
   "homepage": "https://github.com/AppCivico/spottingbot#readme",
-  "main": "source/analyze.js",
   "scripts": {
-    "start": "node source/cli.js",
+    "start": "node app/main.js",
+    "cli": "node source/cli.js",
     "pretest": "eslint --ignore-path .gitignore .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Valentin GUILLOT",
   "email": "valentin@eokoe.com",
-  "url": "https://github.com/AppCivico/spottingbo/issues",
+  "url": "https://github.com/AppCivico/spottingbot/issues",
   "license": "GPL-3.0",
   "bin": {
     "spottingbot": "source/cli.js"
@@ -37,12 +37,19 @@
     "async": "^2.6.1",
     "multilang-sentiment": "^1.1.6",
     "request": "^2.88.0",
-    "twitter": "^1.7.1"
+    "twitter": "^1.7.1",
+    "body-parser": "^1.18.2",
+    "express": "^4.16.3",
+    "get-twitter-bearer-token": "^1.0.0",
+    "memory-cache": "^0.2.0",
+    "node-botometer": "^0.1.7",
+    "spottingbot": "^1.0.11"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.0",
     "eslint": "^5.6.0",
     "eslint-config-strongloop": "^2.1.0",
-    "eslint-plugin-promise": "^4.0.1"
+    "eslint-plugin-promise": "^4.0.1",
+    "nodemon": "^2.0.3"
   }
 }
