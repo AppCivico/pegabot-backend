@@ -54,7 +54,10 @@ app.get("/botometer", function(request, response) {
           return;
         }
         result.profiles[0].language_dependent = null;
-        response.json(result)
+        result.profiles.forEach( (profile) => {
+            profile.bot_probability.all = Math.min(profile.bot_probability.all, 0.99);
+        });
+        response.json(result);
       })
     }
     else if (target === 'followers' || target === 'friends') {
