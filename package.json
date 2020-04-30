@@ -4,7 +4,7 @@
   "description": "Analyzing profile on Twitter for detect behavior of spamming bot",
   "homepage": "https://github.com/AppCivico/spottingbot#readme",
   "scripts": {
-    "start": "node app/main.js",
+    "start": "node src/index.js",
     "cli": "node source/cli.js",
     "pretest": "eslint --ignore-path .gitignore .",
     "test": "echo \"Error: no test specified\" && exit 1"
