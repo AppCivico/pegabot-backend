@@ -15,5 +15,15 @@
         "ecmaVersion": 2018
     },
     "rules": {
+        "max-len": [
+            "error",
+            150,
+            {
+                "code": 120,
+                "ignoreUrls": true,
+                "ignoreStrings": true,
+                "ignoreTemplateLiterals": true
+            }
+        ]
     }
 }
