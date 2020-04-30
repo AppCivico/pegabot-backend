@@ -1,10 +1,10 @@
 {
-  "name": "botometer-server",
+  "name": "pegabot-server",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "app/main.js",
   "scripts": {
-    "start": "node main.js",
+    "start": "node app/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Valentin GUILLOT",
@@ -17,7 +17,7 @@
     "memory-cache": "^0.2.0",
     "node-botometer": "^0.1.7",
     "request": "^2.88.0",
-    "spottingbot": "^1.0.12",
+    "spottingbot": "^1.0.11",
     "twitter": "^1.7.1"
   }
 }
