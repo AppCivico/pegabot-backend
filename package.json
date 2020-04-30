@@ -5,6 +5,7 @@
   "homepage": "https://github.com/AppCivico/spottingbot#readme",
   "scripts": {
     "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
     "cli": "node source/cli.js",
     "pretest": "eslint --ignore-path .gitignore .",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -43,7 +44,6 @@
     "multilang-sentiment": "^1.1.6",
     "node-botometer": "^0.1.7",
     "request": "^2.88.0",
-    "spottingbot": "^1.0.11",
     "twitter": "^1.7.1"
   },
   "devDependencies": {

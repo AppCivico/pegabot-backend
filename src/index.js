@@ -5,13 +5,15 @@ const express = require('express');
 const request = require('request');
 const bodyParser = require('body-parser');
 const async = require('async');
-const spottingbot = require('spottingbot');
 const Twitter = require('twitter');
 const getBearerToken = require('get-twitter-bearer-token');
 const mcache = require('memory-cache');
 const qs = require('querystring');
 const fs = require('fs');
-const app = express().use(bodyParser.json()); // creates express http server
+const spottingbot = require('./../source/analyze');
+
+// creates express http server
+const app = express().use(bodyParser.json());
 
 // Sets server port and logs message on success
 const port = process.env.PORT || 1337;
