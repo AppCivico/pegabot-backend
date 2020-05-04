@@ -59,11 +59,12 @@ module.exports = (screenName, config, index = {
     return error;
   }
   // If no access token and secret are provided, request a bearer token to make an App-auth
+  const twitterParams = config;
   if (!config.access_token_key || !config.access_token_secret) {
-    config.bearer_token = await requestBearer(config);
+    twitterParams.bearer_token = await requestBearer(config);
   }
   // Create Twitter client
-  const client = new Twitter(config);
+  const client = new Twitter(twitterParams);
   const param = {
     screen_name: screenName,
   };

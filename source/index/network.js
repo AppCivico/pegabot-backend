@@ -1,44 +1,47 @@
-module.exports = function (data) {
-  return new Promise((resolve) => {
-    let count_hashtags = 0;
-    let count_mentions = 0;
-    let distribution_hashtags = [];
-    let distribution_user_mentions = [];
-    data.forEach(function (current) {
-      // Add the count of hashtags and mentions for each tweets to the total
-      count_hashtags += current.entities.hashtags.length;
-      count_mentions += current.entities.user_mentions.length;
-      // Add news values for each distribution array if the value is not present yet
-      current.entities.hashtags.forEach(function (hashtag) {
-        if (distribution_hashtags.indexOf(hashtag.text) === -1) {
-          distribution_hashtags.push(hashtag.text);
-        }
-      });
-      current.entities.user_mentions.forEach(function (user_mention) {
-        if (current.in_reply_to_screen_name !== user_mention.screen_name && distribution_user_mentions.indexOf(user_mention.screen_name) === -1) {
-          distribution_user_mentions.push(user_mention.screen_name);
-        }
-        // If the current mention is actually in a reply, remove it from the count
-        else if (current.in_reply_to_screen_name === user_mention.screen_name) {
-          count_mentions--;
-        }
-      });
+module.exports = (data) => new Promise((resolve) => {
+  let countHashtags = 0;
+  let countMentions = 0;
+  const distributionHashtags = [];
+  const distributionUserMentions = [];
+
+  data.forEach((current) => {
+    // Add the count of hashtags and mentions for each tweets to the total
+    countHashtags += current.entities.hashtags.length;
+    countMentions += current.entities.user_mentions.length;
+
+    // Add news values for each distribution array if the value is not present yet
+    current.entities.hashtags.forEach((hashtag) => {
+      if (distributionHashtags.indexOf(hashtag.text) === -1) {
+        distributionHashtags.push(hashtag.text);
+      }
     });
-    let count_network = count_hashtags + count_mentions;
-    let average_network = (count_network / (data.length * 2));
-    if (average_network > 2) {
-      average_network /= 2;
-    } else if (average_network > 1) {
-      average_network = 1;
-    }
-    let score_hashtags = 1 - (distribution_hashtags.length / count_hashtags);
-    let score_mentions = 1 - (distribution_user_mentions.length / count_mentions);
-    let score_distrib = (score_hashtags + score_mentions) / 2;
-    let score_network = average_network + score_distrib;
-    let weight = 1;
-    if (score_network === 0) {
-      weight += 1;
-    }
-    resolve([score_network, weight]);
+
+    current.entities.user_mentions.forEach((userMention) => {
+      // eslint-disable-next-line max-len
+      if (current.in_reply_to_screen_name !== userMention.screen_name && distributionUserMentions.indexOf(userMention.screen_name) === -1) {
+        distributionUserMentions.push(userMention.screen_name);
+      } else if (current.in_reply_to_screen_name === userMention.screen_name) {
+        // If the current mention is actually in a reply, remove it from the count
+        countMentions -= 1;
+      }
+    });
   });
-};
+
+  const countNetwork = countHashtags + countMentions;
+  let averageNetwork = (countNetwork / (data.length * 2));
+  if (averageNetwork > 2) {
+    averageNetwork /= 2;
+  } else if (averageNetwork > 1) {
+    averageNetwork = 1;
+  }
+
+  const scoreHashtags = 1 - (distributionHashtags.length / countHashtags);
+  const scoreMentions = 1 - (distributionUserMentions.length / countMentions);
+  const scoreDistrib = (scoreHashtags + scoreMentions) / 2;
+  const scoreNetwork = averageNetwork + scoreDistrib;
+  let weight = 1;
+  if (scoreNetwork === 0) {
+    weight += 1;
+  }
+  resolve([scoreNetwork, weight]);
+});
