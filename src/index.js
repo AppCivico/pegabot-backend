@@ -6,11 +6,10 @@ const request = require('request');
 const bodyParser = require('body-parser');
 const async = require('async');
 const Twitter = require('twitter');
-const getBearerToken = require('get-twitter-bearer-token');
 const mcache = require('memory-cache');
 const qs = require('querystring');
 const fs = require('fs');
-const spottingbot = require('./../source/analyze');
+const spottingbot = require('../source/analyze');
 
 // creates express http server
 const app = express().use(bodyParser.json());

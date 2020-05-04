@@ -10,7 +10,7 @@ if (!screenName) {
 } else {
   console.log(`Starting user ${screenName} analysis...`);
 
-  analyze(screenName, config).then((info) => {
+  analyze(screenName, config, { friend: false, sentiment: false }).then((info) => {
     const userScore = Math.round(info.profiles[0].language_independent.user * 100);
     const friendsScore = Math.round(info.profiles[0].language_independent.friend * 100);
     const temporalScore = Math.round(info.profiles[0].language_independent.temporal * 100);
