@@ -1,23 +1,55 @@
 {
-  "name": "botometer-server",
-  "version": "1.0.0",
-  "description": "",
-  "main": "main.js",
+  "name": "spottingbot",
+  "version": "1.0.12",
+  "description": "Analyzing profile on Twitter for detect behavior of spamming bot",
+  "homepage": "https://github.com/AppCivico/spottingbot#readme",
   "scripts": {
-    "start": "node main.js",
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "lint": "eslint . --ext .js",
+    "cli": "node source/cli.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Valentin GUILLOT",
-  "license": "ISC",
+  "email": "valentin@eokoe.com",
+  "url": "https://github.com/AppCivico/spottingbot/issues",
+  "license": "GPL-3.0",
+  "bin": {
+    "spottingbot": "source/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AppCivico/spottingbot.git"
+  },
+  "keywords": [
+    "cli-app",
+    "cli",
+    "development",
+    "dev",
+    "build",
+    "tool",
+    "backend",
+    "math",
+    "bot",
+    "bots",
+    "twitter"
+  ],
   "dependencies": {
-    "async": "^2.6.0",
+    "async": "^2.6.1",
     "body-parser": "^1.18.2",
+    "dotenv": "^8.2.0",
     "express": "^4.16.3",
     "get-twitter-bearer-token": "^1.0.0",
     "memory-cache": "^0.2.0",
+    "multilang-sentiment": "^1.1.6",
     "node-botometer": "^0.1.7",
     "request": "^2.88.0",
-    "spottingbot": "^1.0.11",
     "twitter": "^1.7.1"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.2",
+    "nodemon": "^2.0.3"
   }
 }
