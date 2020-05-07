@@ -17,7 +17,6 @@ module.exports = (data) => new Promise((resolve) => {
     });
 
     current.entities.user_mentions.forEach((userMention) => {
-      // eslint-disable-next-line max-len
       if (current.in_reply_to_screen_name !== userMention.screen_name && distributionUserMentions.indexOf(userMention.screen_name) === -1) {
         distributionUserMentions.push(userMention.screen_name);
       } else if (current.in_reply_to_screen_name === userMention.screen_name) {
@@ -35,13 +34,17 @@ module.exports = (data) => new Promise((resolve) => {
     averageNetwork = 1;
   }
 
-  const scoreHashtags = 1 - (distributionHashtags.length / countHashtags);
-  const scoreMentions = 1 - (distributionUserMentions.length / countMentions);
+  let scoreHashtags = 0;
+  if (countHashtags > 0) scoreHashtags = 1 - (distributionHashtags.length / countHashtags);
+
+  let scoreMentions = 0;
+  if (countMentions > 0) scoreMentions = 1 - (distributionUserMentions.length / countMentions);
+
   const scoreDistrib = (scoreHashtags + scoreMentions) / 2;
   const scoreNetwork = averageNetwork + scoreDistrib;
   let weight = 1;
-  if (scoreNetwork === 0) {
-    weight += 1;
-  }
+
+  if (scoreNetwork === 0) weight += 1;
+
   resolve([scoreNetwork, weight]);
 });
