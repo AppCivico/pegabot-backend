@@ -1,8 +1,15 @@
 #!/usr/bin/env node
-require('dotenv').config();
+import dotenv from 'dotenv';
+import analyze from './analyze';
 
-const analyze = require('./analyze'); // Import our module
-const config = require('../twitter'); // import config keys
+dotenv.config();
+
+const config = {
+  consumer_key: process.env.TWITTER_CONSUMER_KEY,
+  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
+  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+};
 
 const screenName = process.argv[2];
 if (!screenName) {
