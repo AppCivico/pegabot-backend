@@ -39,10 +39,8 @@
     "body-parser": "^1.18.2",
     "dotenv": "^8.2.0",
     "express": "^4.16.3",
-    "get-twitter-bearer-token": "^1.0.0",
     "memory-cache": "^0.2.0",
     "multilang-sentiment": "^1.1.6",
-    "node-botometer": "^0.1.7",
     "request": "^2.88.0",
     "twitter": "^1.7.1"
   },

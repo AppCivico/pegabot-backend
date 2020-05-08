@@ -117,7 +117,7 @@ app.get('/botometer', (request, response) => {
       // result.profiles.forEach((profile) => {
       //   profile.bot_probability.all = Math.min(profile.bot_probability.all, 0.99);
       // });
-      response.json(result);
+      return response.json(result);
     });
   } else if (target === 'followers' || target === 'friends') {
     if (authenticated === 'true') {
