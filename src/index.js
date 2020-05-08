@@ -9,7 +9,7 @@ const Twitter = require('twitter');
 const mcache = require('memory-cache');
 const qs = require('querystring');
 const fs = require('fs');
-const spottingbot = require('../source/analyze');
+const spottingbot = require('./analyze');
 
 // creates express http server
 const app = express().use(bodyParser.json());

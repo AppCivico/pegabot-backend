@@ -7,7 +7,7 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "lint": "eslint . --ext .js",
-    "cli": "node source/cli.js",
+    "cli": "node src/cli.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Valentin GUILLOT",
@@ -15,7 +15,7 @@
   "url": "https://github.com/AppCivico/spottingbot/issues",
   "license": "GPL-3.0",
   "bin": {
-    "spottingbot": "source/cli.js"
+    "spottingbot": "src/cli.js"
   },
   "repository": {
     "type": "git",
