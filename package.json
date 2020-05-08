@@ -4,10 +4,10 @@
   "description": "Analyzing profile on Twitter for detect behavior of spamming bot",
   "homepage": "https://github.com/AppCivico/spottingbot#readme",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
+    "start": "babel-node src/index.js",
+    "dev": "nodemon src/index.js --exec babel-node",
     "lint": "eslint . --ext .js",
-    "cli": "node src/cli.js",
+    "cli": "babel-node src/cli.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Valentin GUILLOT",
@@ -22,14 +22,6 @@
     "url": "https://github.com/AppCivico/spottingbot.git"
   },
   "keywords": [
-    "cli-app",
-    "cli",
-    "development",
-    "dev",
-    "build",
-    "tool",
-    "backend",
-    "math",
     "bot",
     "bots",
     "twitter"
@@ -45,6 +37,10 @@
     "twitter": "^1.7.1"
   },
   "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.6",
+    "@babel/node": "^7.8.7",
+    "@babel/preset-env": "^7.9.6",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.20.2",
