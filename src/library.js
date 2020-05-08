@@ -1,6 +1,6 @@
-const editDistance = (s1, s2) => {
-  s1 = s1.toLowerCase();
-  s2 = s2.toLowerCase();
+const editDistance = (string1, string2) => {
+  const s1 = string1.toLowerCase();
+  const s2 = string2.toLowerCase();
 
   const costs = [];
   for (let i = 0; i <= s1.length; i += 1) {
@@ -19,7 +19,7 @@ const editDistance = (s1, s2) => {
   return costs[s2.length];
 };
 
-module.exports = {
+export default {
 
   getNumberOfDigit: (string) => string.replace(/[^0-9]/g, '').length,
 

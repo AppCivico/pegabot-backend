@@ -1,8 +1,6 @@
 #!/usr/bin/env node
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import analyze from './analyze';
-
-dotenv.config();
 
 const config = {
   consumer_key: process.env.TWITTER_CONSUMER_KEY,

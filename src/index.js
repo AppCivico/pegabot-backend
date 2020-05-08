@@ -1,15 +1,14 @@
-require('dotenv').config();
-
 // Imports dependencies and set up http server
-const express = require('express');
-const request = require('request');
-const bodyParser = require('body-parser');
-const async = require('async');
-const Twitter = require('twitter');
-const mcache = require('memory-cache');
-const qs = require('querystring');
-const fs = require('fs');
-const spottingbot = require('./analyze');
+import 'dotenv/config';
+import express from 'express';
+import request from 'request';
+import bodyParser from 'body-parser';
+import async from 'async';
+import Twitter from 'twitter';
+import mcache from 'memory-cache';
+import qs from 'querystring';
+import fs from 'fs';
+import spottingbot from './analyze';
 
 // creates express http server
 const app = express().use(bodyParser.json());
@@ -49,7 +48,7 @@ const requestTwitterList = (client, searchFor, profile, limit, callback) => {
           cursor,
         };
 
-        client.get(`${searchFor}/list`, params, (err, tweets, responseTwitter) => {
+        client.get(`${searchFor}/list`, params, (err, userTweets, responseTwitter) => {
           if (err) {
             console.log(err);
             next(err);
@@ -86,13 +85,38 @@ const requestTwitterList = (client, searchFor, profile, limit, callback) => {
       },
     );
   });
+};
+
+function getTokenUrl(req, searchFor, profile, limit, callback) {
+  let ssl = 'http://';
+  if (req.connection.encrypted) {
+    ssl = 'https://';
+  }
+  const oauth = {
+    callback: `${ssl + req.headers.host}/resultados?socialnetwork=twitter&authenticated=true&profile=${profile}&search_for=${searchFor}&limit=${limit}#conteudo`,
+    consumer_key: config.consumer_key,
+    consumer_secret: config.consumer_secret,
+  };
+  const url = 'https://api.twitter.com/oauth/request_token';
+  request.post({ url, oauth }, (err, r, body) => {
+    if (err) {
+      callback(err, null);
+    }
+    const reqData = qs.parse(body);
+    if (!reqData.oauth_token || !reqData.oauth_token_secret) {
+      callback(body, null);
+    }
+    mcache.put(reqData.oauth_token, reqData.oauth_token_secret, 3600 * 1000);
+    const uri = `${'https://api.twitter.com/oauth/authenticate?'}${qs.stringify({ oauth_token: reqData.oauth_token })}`;
+    callback(null, uri);
+  });
 }
 
-app.get('/botometer', (request, response) => {
-  const target = request.query.search_for;
-  const { profile } = request.query;
-  let { limit } = request.query;
-  const { authenticated } = request.query;
+app.get('/botometer', (req, response) => {
+  const target = req.query.search_for;
+  const { profile } = req.query;
+  let { limit } = req.query;
+  const { authenticated } = req.query;
   const key = `${target}:${profile}`;
   const cachedKey = mcache.get(key);
 
@@ -132,8 +156,7 @@ app.get('/botometer', (request, response) => {
         verifier,
       };
       const url = 'https://api.twitter.com/oauth/access_token';
-      const request2 = require('request');
-      request2.post({ url, oauth }, (e, r, body) => {
+      request.post({ url, oauth }, (e, r, body) => {
         const permData = qs.parse(body);
         token = permData.oauth_token;
         tokenSecret = permData.oauth_token_secret;
@@ -167,35 +190,11 @@ app.get('/botometer', (request, response) => {
   }
 });
 
-function getTokenUrl(req, search_for, profile, limit, callback) {
-  let ssl = 'http://';
-  if (req.connection.encrypted) {
-    ssl = 'https://';
-  }
-  const oauth = {
-    callback: `${ssl + req.headers.host}/resultados?socialnetwork=twitter&authenticated=true&profile=${profile}&search_for=${search_for}&limit=${limit}#conteudo`,
-    consumer_key: config.consumer_key,
-    consumer_secret: config.consumer_secret,
-  };
-  const url = 'https://api.twitter.com/oauth/request_token';
-  request.post({ url, oauth }, (err, r, body) => {
-    if (err) {
-      callback(err, null);
-    }
-    const req_data = qs.parse(body);
-    if (!req_data.oauth_token || !req_data.oauth_token_secret) {
-      callback(body, null);
-    }
-    mcache.put(req_data.oauth_token, req_data.oauth_token_secret, 3600 * 1000);
-    const uri = `${'https://api.twitter.com/oauth/authenticate' + '?'}${qs.stringify({ oauth_token: req_data.oauth_token })}`;
-    callback(null, uri);
-  });
-}
 
-
-app.post('/feedback', (request, response) => {
-  const { opinion } = request.body;
-  const { profile } = request.body;
+// request
+app.post('/feedback', (req, response) => {
+  const { opinion } = req.body;
+  const { profile } = req.body;
   if (!opinion || !profile) {
     response.status(400).send('JSON Parameters opinion and profile required.');
     return;
@@ -208,7 +207,7 @@ app.post('/feedback', (request, response) => {
     response.status(400).send('profile should be a JSON object and need to contains at least an username and a bot_probability.');
     return;
   }
-  const screen_name = profile.username;
+  const screenName = profile.username;
   if (fs.existsSync('opinion.json') === false) {
     const object = {
       approve: {
@@ -222,11 +221,12 @@ app.post('/feedback', (request, response) => {
   }
   const content = fs.readFileSync('opinion.json');
   const data = JSON.parse(content);
-  const index = data[opinion].profiles.findIndex((element) => element.username === screen_name);
+  const index = data[opinion].profiles.findIndex((element) => element.username === screenName);
 
   if (index !== -1) {
-    if (data[opinion].profiles[index].bot_probability.all <= (profile.bot_probability.all + 0.10) && data[opinion].profiles[index].bot_probability.all >= (profile.bot_probability.all - 0.10)) {
-      data[opinion].profiles[index].count++;
+    if (data[opinion].profiles[index].bot_probability.all <= (profile.bot_probability.all + 0.10)
+      && data[opinion].profiles[index].bot_probability.all >= (profile.bot_probability.all - 0.10)) {
+      data[opinion].profiles[index].count += 1;
     } else {
       profile.count = 1;
       data[opinion].profiles[index] = profile;
@@ -240,7 +240,7 @@ app.post('/feedback', (request, response) => {
   response.send('OK');
 });
 
-app.get('/feedback', (request, response) => {
+app.get('/feedback', (req, response) => {
   if (fs.existsSync('opinion.json') === false) {
     response.send('No feedback yet');
     return;

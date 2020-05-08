@@ -1,6 +1,6 @@
-const sentiment = require('multilang-sentiment');
+import sentiment from 'multilang-sentiment';
 
-module.exports = (data) => new Promise((resolve) => {
+export default (data) => new Promise((resolve) => {
   let sentimentNeutralSum = 0;
 
   data.forEach((current) => {

@@ -1,22 +1,15 @@
-// Import external module
-const async = require('async');
+// Import external modules
+import async from 'async';
+import request from 'request';
+import Twitter from 'twitter';
+import { stringify } from 'querystring';
 
-const request = require('request');
-
-const Twitter = require('twitter');
-
-// Import our module
-const { stringify } = require('querystring');
-
-const userIndex = require('./index/user');
-
-const friendsIndex = require('./index/friends');
-
-const temporalIndex = require('./index/temporal');
-
-const networkIndex = require('./index/network');
-
-const sentimentIndex = require('./index/sentiment');
+// Import our modules
+import userIndex from './index/user';
+import friendsIndex from './index/friends';
+import temporalIndex from './index/temporal';
+import networkIndex from './index/network';
+import sentimentIndex from './index/sentiment';
 
 // Request a bearer token for an App Auth
 const requestBearer = (config) => new Promise((resolve, reject) => {

@@ -1,6 +1,6 @@
-const library = require('../library');
+import library from '../library';
 
-module.exports = (data) => new Promise((resolve) => {
+export default (data) => new Promise((resolve) => {
   const creationArray = [];
   const delayTwoTweets = [];
 

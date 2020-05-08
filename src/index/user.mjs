@@ -1,6 +1,6 @@
-const library = require('../library');
+import library from '../library';
 
-module.exports = (data) => new Promise((resolve) => {
+export default (data) => new Promise((resolve) => {
   // if user is verified, the final result will be 0
   if (data.verified) return resolve([0, 3]);
 

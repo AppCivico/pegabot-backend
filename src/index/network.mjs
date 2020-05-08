@@ -1,4 +1,4 @@
-module.exports = (data) => new Promise((resolve) => {
+export default (data) => new Promise((resolve) => {
   let countHashtags = 0;
   let countMentions = 0;
   const distributionHashtags = [];
