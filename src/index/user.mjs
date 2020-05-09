@@ -1,8 +1,8 @@
 import library from '../library';
 
-export default (data) => new Promise((resolve) => {
+export default async (data) => {
   // if user is verified, the final result will be 0
-  if (data.verified) return resolve([0, 3]);
+  if (data.verified) return [0, 3];
 
   // let friends_ratio = 0;
   const { name } = data;
@@ -80,5 +80,6 @@ export default (data) => new Promise((resolve) => {
 
   // limits userScore to range 0 and 1
   userScore = Math.min(1, Math.max(0, userScore));
-  return resolve([userScore, 1]);
-});
+
+  return [userScore, 1];
+};

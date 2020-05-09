@@ -1,6 +1,6 @@
 import sentiment from 'multilang-sentiment';
 
-export default (data) => new Promise((resolve) => {
+export default async (data) => {
   let sentimentNeutralSum = 0;
 
   data.forEach((current) => {
@@ -15,5 +15,5 @@ export default (data) => new Promise((resolve) => {
   const scoreSentiment = sentimentNeutralSum / data.length;
   const weight = 2;
 
-  resolve([scoreSentiment, weight]);
-});
+  return [scoreSentiment, weight];
+};

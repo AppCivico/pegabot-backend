@@ -1,6 +1,6 @@
 import library from '../library';
 
-export default (data) => new Promise((resolve) => {
+export default async (data) => {
   let friendsScore = 0;
   const distributionFriendsOffset = [];
   const distributionFriendsAge = [];
@@ -53,5 +53,5 @@ export default (data) => new Promise((resolve) => {
   friendsScore = ((scoreOffset * 2) + scoreAge + scoreFriends + scoreFollowers + scoreStatuses) / (5 * 2);
   const weight = 1;
 
-  resolve([friendsScore, weight]);
-});
+  return [friendsScore, weight];
+};

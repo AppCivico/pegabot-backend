@@ -1,6 +1,6 @@
 import library from '../library';
 
-export default (data) => new Promise((resolve) => {
+export default async (data) => {
   const creationArray = [];
   const delayTwoTweets = [];
 
@@ -31,5 +31,5 @@ export default (data) => new Promise((resolve) => {
   let weight = 1;
   if (temporalScore === 0) weight += 1;
 
-  resolve([temporalScore, weight]);
-});
+  return [temporalScore, weight];
+};

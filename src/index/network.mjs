@@ -1,4 +1,4 @@
-export default (data) => new Promise((resolve) => {
+export default async (data) => {
   let countHashtags = 0;
   let countMentions = 0;
   const distributionHashtags = [];
@@ -46,5 +46,5 @@ export default (data) => new Promise((resolve) => {
 
   if (scoreNetwork === 0) weight += 1;
 
-  resolve([scoreNetwork, weight]);
-});
+  return [scoreNetwork, weight];
+};
