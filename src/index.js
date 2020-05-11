@@ -162,8 +162,8 @@ app.get('/botometer', async (req, response) => {
         ...oauth,
       };
 
-      const res = await axios(params).catch((e) => console.error(e));
-      const permData = res ? res.data : {};
+      const res = await axios(params).catch((e) => e);
+      const permData = res && res.data ? res.data : {};
 
       token = permData.oauth_token;
       tokenSecret = permData.oauth_token_secret;
