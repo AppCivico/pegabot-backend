@@ -1,6 +1,6 @@
 // Import external modules
 import async from 'async';
-import request from 'request';
+import axios from 'axios';
 import Twitter from 'twitter';
 import { stringify } from 'querystring';
 
@@ -12,29 +12,27 @@ import networkIndex from './index/network';
 import sentimentIndex from './index/sentiment';
 
 // Request a bearer token for an App Auth
-const requestBearer = (config) => new Promise((resolve, reject) => {
-  const body = {
-    grant_type: 'client_credentials',
-  };
-  const param = {
-    method: 'POST',
-    url: 'https://api.twitter.com/oauth2/token',
-    headers: {
-      Authorization: `Basic ${Buffer.from(`${config.consumer_key}:${config.consumer_secret}`).toString('base64')}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': 29,
-    },
-    body: stringify(body),
-  };
-  request(param, (err, res, b) => {
-    if (err) {
-      reject(err);
-      return err;
-    }
-    const data = JSON.parse(b);
-    return resolve(data.access_token);
-  });
-});
+const requestBearer = async (config) => {
+  try {
+    const param = {
+      method: 'post',
+      url: 'https://api.twitter.com/oauth2/token',
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${config.consumer_key}:${config.consumer_secret}`).toString('base64')}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': 29,
+      },
+      data: stringify({
+        grant_type: 'client_credentials',
+      }),
+    };
+
+    const { data } = await axios(param);
+    return data.access_token;
+  } catch (error) {
+    return null;
+  }
+};
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
@@ -55,6 +53,7 @@ module.exports = (screenName, config, index = {
   const twitterParams = config;
   if (!config.access_token_key || !config.access_token_secret) {
     twitterParams.bearer_token = await requestBearer(config);
+    console.log('twitterParams.bearer_token', twitterParams.bearer_token);
   }
   // Create Twitter client
   const client = new Twitter(twitterParams);
