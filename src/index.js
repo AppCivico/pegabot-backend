@@ -181,15 +181,15 @@ app.get('/botometer', async (req, response) => {
         response.json(object);
       });
     } else {
-      getTokenUrl(request, target, profile, limit, (err, uri) => {
+      getTokenUrl(req, target, profile, limit, (err, uri) => {
         if (err) {
           response.status(500).send(err);
           return;
         }
-        const object = {
+
+        response.json({
           request_url: uri,
-        };
-        response.json(object);
+        });
       });
     }
   } else {
