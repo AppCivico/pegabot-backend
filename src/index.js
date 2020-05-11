@@ -2,6 +2,7 @@
 import 'dotenv/config';
 import express from 'express';
 import request from 'request';
+import axios from 'axios';
 import bodyParser from 'body-parser';
 import async from 'async';
 import Twitter from 'twitter';
@@ -112,7 +113,7 @@ function getTokenUrl(req, searchFor, profile, limit, callback) {
   });
 }
 
-app.get('/botometer', (req, response) => {
+app.get('/botometer', async (req, response) => {
   const target = req.query.search_for;
   const { profile } = req.query;
   let { limit } = req.query;
@@ -145,9 +146,9 @@ app.get('/botometer', (req, response) => {
     });
   } else if (target === 'followers' || target === 'friends') {
     if (authenticated === 'true') {
-      let token = request.query.oauth_token;
-      let tokenSecret = mcache.get(token);
-      const verifier = request.query.oauth_verifier;
+      let token = req.query.oauth_token; // eslint-disable-line
+      let tokenSecret = mcache.get(token); // eslint-disable-line
+      const verifier = req.query.oauth_verifier;
       const oauth = {
         consumer_key: config.consumer_key,
         consumer_secret: config.consumer_secret,
@@ -155,23 +156,29 @@ app.get('/botometer', (req, response) => {
         tokenSecret,
         verifier,
       };
-      const url = 'https://api.twitter.com/oauth/access_token';
-      request.post({ url, oauth }, (e, r, body) => {
-        const permData = qs.parse(body);
-        token = permData.oauth_token;
-        tokenSecret = permData.oauth_token_secret;
-        const client = new Twitter({
-          consumer_key: config.consumer_key,
-          consumer_secret: config.consumer_secret,
-          access_token_key: token,
-          access_token_secret: tokenSecret,
-        });
-        requestTwitterList(client, target, profile, limit, (object) => {
-          if (typeof object.metadata.error === 'undefined') {
-            mcache.put(key, JSON.stringify(object), cacheDuration * 1000);
-          }
-          response.json(object);
-        });
+      const params = {
+        method: 'post',
+        url: 'https://api.twitter.com/oauth/access_token',
+        ...oauth,
+      };
+
+      const res = await axios(params).catch((e) => console.error(e));
+      const permData = res ? res.data : {};
+
+      token = permData.oauth_token;
+      tokenSecret = permData.oauth_token_secret;
+      const client = new Twitter({
+        consumer_key: config.consumer_key,
+        consumer_secret: config.consumer_secret,
+        access_token_key: token,
+        access_token_secret: tokenSecret,
+      });
+
+      requestTwitterList(client, target, profile, limit, (object) => {
+        if (typeof object.metadata.error === 'undefined') {
+          mcache.put(key, JSON.stringify(object), cacheDuration * 1000);
+        }
+        response.json(object);
       });
     } else {
       getTokenUrl(request, target, profile, limit, (err, uri) => {
