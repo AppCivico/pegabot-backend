@@ -1,7 +1,6 @@
 // Imports dependencies and set up http server
 import 'dotenv/config';
 import express from 'express';
-import axios from 'axios';
 import bodyParser from 'body-parser';
 import async from 'async';
 import Twitter from 'twitter';
@@ -140,28 +139,21 @@ app.get('/botometer', async (req, response) => {
     });
   } else if (target === 'followers' || target === 'friends') {
     if (authenticated === 'true') {
-      let token = req.query.oauth_token; // eslint-disable-line
-      let tokenSecret = mcache.get(token); // eslint-disable-line
+      let token = req.query.oauth_token;
+      let tokenSecret = mcache.get(token);
       const verifier = req.query.oauth_verifier;
-      const oauth = {
+
+      let client = new TwitterLite({
         consumer_key: config.consumer_key,
         consumer_secret: config.consumer_secret,
-        token,
-        tokenSecret,
-        verifier,
-      };
-      const params = {
-        method: 'post',
-        url: 'https://api.twitter.com/oauth/access_token',
-        ...oauth,
-      };
+      });
 
-      const res = await axios(params).catch((e) => e);
-      const permData = res && res.data ? res.data : {};
+      const permData = await client.getAccessToken({ oauth_verifier: verifier, oauth_token: token });
 
       token = permData.oauth_token;
       tokenSecret = permData.oauth_token_secret;
-      const client = new Twitter({
+
+      client = new Twitter({
         consumer_key: config.consumer_key,
         consumer_secret: config.consumer_secret,
         access_token_key: token,
@@ -245,4 +237,9 @@ app.get('/feedback', (req, response) => {
   const content = fs.readFileSync('opinion.json');
   const data = JSON.parse(content);
   response.json(data);
+});
+
+// dev: get the /resultados callback params, use them to test followers/friends on /botometer with authenticated user
+app.get('/resultados', (req) => {
+  console.log('req', req._parsedUrl.search); // eslint-disable-line no-underscore-dangle
 });
