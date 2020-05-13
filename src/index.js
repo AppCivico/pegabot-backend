@@ -89,23 +89,26 @@ const requestTwitterList = (client, searchFor, profile, limit, callback) => {
 };
 
 function getTokenUrl(req, searchFor, profile, limit, callback) {
-  let ssl = 'http://';
-  if (req.connection.encrypted) {
-    ssl = 'https://';
-  }
+  const ssl = req.connection.encrypted ? 'https://' : 'http://';
+
   const oauth = {
-    callback: `${ssl + req.headers.host}/resultados?socialnetwork=twitter&authenticated=true&profile=${profile}&search_for=${searchFor}&limit=${limit}#conteudo`,
+    method: 'POST',
+    oauth_callback: `${ssl + req.headers.host}/resultados?socialnetwork=twitter&authenticated=true&profile=${profile}&search_for=${searchFor}&limit=${limit}#conteudo`,
+    x_auth_access_type: 'read',
     consumer_key: config.consumer_key,
     consumer_secret: config.consumer_secret,
   };
+
   const url = 'https://api.twitter.com/oauth/request_token';
-  request.post({ url, oauth }, (err, r, body) => {
+  request({ url, oauth }, (err, r, body) => {
     if (err) {
       callback(err, null);
+      return;
     }
     const reqData = qs.parse(body);
     if (!reqData.oauth_token || !reqData.oauth_token_secret) {
       callback(body, null);
+      return;
     }
     mcache.put(reqData.oauth_token, reqData.oauth_token_secret, 3600 * 1000);
     const uri = `${'https://api.twitter.com/oauth/authenticate?'}${qs.stringify({ oauth_token: reqData.oauth_token })}`;
@@ -184,12 +187,9 @@ app.get('/botometer', async (req, response) => {
       getTokenUrl(req, target, profile, limit, (err, uri) => {
         if (err) {
           response.status(500).send(err);
-          return;
+        } else {
+          response.json({ request_url: uri });
         }
-
-        response.json({
-          request_url: uri,
-        });
       });
     }
   } else {
