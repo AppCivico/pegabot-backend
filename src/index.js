@@ -1,7 +1,6 @@
 // Imports dependencies and set up http server
 import 'dotenv/config';
 import express from 'express';
-import request from 'request';
 import axios from 'axios';
 import bodyParser from 'body-parser';
 import async from 'async';
@@ -9,6 +8,7 @@ import Twitter from 'twitter';
 import mcache from 'memory-cache';
 import qs from 'querystring';
 import fs from 'fs';
+import TwitterLite from 'twitter-lite';
 import spottingbot from './analyze';
 
 // creates express http server
@@ -88,32 +88,23 @@ const requestTwitterList = (client, searchFor, profile, limit, callback) => {
   });
 };
 
-function getTokenUrl(req, searchFor, profile, limit, callback) {
-  const ssl = req.connection.encrypted ? 'https://' : 'http://';
+// If you get an error 415, add your callback url to your Twitter App.
+async function getTokenUrl(req, searchFor, profile, limit) {
+  try {
+    const ssl = req.connection.encrypted ? 'https://' : 'http://';
+    const oauthCallback = `${ssl + req.headers.host}/resultados?socialnetwork=twitter&authenticated=true&profile=${profile}&search_for=${searchFor}&limit=${limit}#conteudo`;
 
-  const oauth = {
-    method: 'POST',
-    oauth_callback: `${ssl + req.headers.host}/resultados?socialnetwork=twitter&authenticated=true&profile=${profile}&search_for=${searchFor}&limit=${limit}#conteudo`,
-    x_auth_access_type: 'read',
-    consumer_key: config.consumer_key,
-    consumer_secret: config.consumer_secret,
-  };
+    const client = new TwitterLite({
+      consumer_key: config.consumer_key,
+      consumer_secret: config.consumer_secret,
+    });
 
-  const url = 'https://api.twitter.com/oauth/request_token';
-  request({ url, oauth }, (err, r, body) => {
-    if (err) {
-      callback(err, null);
-      return;
-    }
-    const reqData = qs.parse(body);
-    if (!reqData.oauth_token || !reqData.oauth_token_secret) {
-      callback(body, null);
-      return;
-    }
-    mcache.put(reqData.oauth_token, reqData.oauth_token_secret, 3600 * 1000);
+    const reqData = await client.getRequestToken(oauthCallback);
     const uri = `${'https://api.twitter.com/oauth/authenticate?'}${qs.stringify({ oauth_token: reqData.oauth_token })}`;
-    callback(null, uri);
-  });
+    return uri;
+  } catch (error) {
+    return error;
+  }
 }
 
 app.get('/botometer', async (req, response) => {
@@ -184,13 +175,12 @@ app.get('/botometer', async (req, response) => {
         response.json(object);
       });
     } else {
-      getTokenUrl(req, target, profile, limit, (err, uri) => {
-        if (err) {
-          response.status(500).send(err);
-        } else {
-          response.json({ request_url: uri });
-        }
-      });
+      const result = await getTokenUrl(req, target, profile, limit);
+      if (result.errors) {
+        response.status(500).send(result);
+      } else {
+        response.json({ request_url: result });
+      }
     }
   } else {
     response.status(400).send('search_for is wrong');
