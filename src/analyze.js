@@ -65,107 +65,84 @@ module.exports = (screenName, config, index = {
   let indexCount = 0;
   // All the following functions will be executing at the same time and then call the final one
   async.parallel([
-    /*
-      This function is used to get the users/show endpoint, it is used for calculate following index:
-      - user
-    */
-    (callback) => {
-      if (index.user === false) {
-        callback();
-        return;
-      }
-      client.get('users/show', param, async (error, _tweets, responseTwitterUser) => {
-        if (error) {
-          callback(error);
-          return;
+    // This function is used to get the users/show endpoint and to calculate the "user" index
+    async (callback) => {
+      try {
+        if (index.user === false) {
+          callback();
+        } else {
+          const data = await client.get('users/show', param);
+          const res = await userIndex(data);
+          indexCount += res[1];
+          callback(null, res[0], data);
         }
-        const data = JSON.parse(responseTwitterUser.body);
-        const res = await userIndex(data);
-        indexCount += res[1];
-        callback(null, res[0], data);
-      });
+      } catch (error) {
+        callback(error);
+      }
     },
-    /*
-      This function is used to get the followers/list endpoint, it is used for calculate following index:
-      - friend
-    */
-    (callback) => {
-      if (index.friend === false) {
-        callback();
-        return;
-      }
-      param.count = 200;
-      client.get('followers/list', param, async (error, tweets, responseTwitterUser) => {
-        if (error) {
-          callback(error);
-          return;
+    // This function is used to get the followers/list endpoint and to calculate the "friend" index
+    async (callback) => {
+      try {
+        if (index.friend === false) {
+          callback();
+        } else {
+          param.count = 200;
+          const data = await client.get('followers/list', param);
+          const res = await friendsIndex(data);
+          indexCount += res[1];
+          callback(null, res[0], data);
         }
-        const data = JSON.parse(responseTwitterUser.body);
-        const res = await friendsIndex(data);
-        indexCount += res[1];
-        callback(null, res[0]);
-      });
+      } catch (error) {
+        callback(error);
+      }
     },
-    /*
-      This function is used to get the friends/list endpoint, it is used for calculate following index:
-      - friend
-    */
-    (callback) => {
-      if (index.friend === false) {
-        callback();
-        return;
-      }
-      param.count = 200;
-      client.get('friends/list', param, async (error, tweets, responseTwitterUser) => {
-        if (error) {
-          callback(error);
-          return;
+    // This function is used to get the friends/list endpoint and to calculate the "friend" index
+    async (callback) => {
+      try {
+        if (index.friend === false) {
+          callback();
+        } else {
+          param.count = 200;
+          const data = await client.get('friends/list', param);
+          const res = await friendsIndex(data);
+          indexCount += res[1];
+          callback(null, res[0], data);
         }
-        const data = JSON.parse(responseTwitterUser.body);
-        const res = await friendsIndex(data);
-        callback(null, res[0]);
-      });
+      } catch (error) {
+        callback(error);
+      }
     },
-    /*
-      This function is used to get the statuses/user_timeline endpoint, it is used for calculate following index:
-      - temporal
-      - network
-      - sentiment
-    */
-    (callback) => {
-      if (index.temporal === false && index.network === false && index.sentiment === false) {
-        callback();
-        return;
+    // This function is used to get the friends/list endpoint and to calculate the "temporal", "network" and "sentiment" indexes
+    async (callback) => {
+      try {
+        if (index.temporal === false && index.network === false && index.sentiment === false) {
+          callback();
+        } else {
+          param.count = 200;
+          const data = await client.get('statuses/user_timeline', param);
+          let res1 = [];
+          let res2 = [];
+          let res3 = [];
+          if (index.temporal !== false) {
+            res1 = await temporalIndex(data);
+            indexCount += res1[1];
+          }
+          if (index.network !== false) {
+            res2 = await networkIndex(data);
+            indexCount += res2[1];
+          }
+          if (index.sentiment !== false) {
+            res3 = await sentimentIndex(data);
+            indexCount += res3[1];
+          }
+          callback(null, [res1[0], res2[0], res3[0]]);
+        }
+      } catch (error) {
+        callback(error);
       }
-      param.count = 200;
-      client.get('statuses/user_timeline', param, async (error, tweets, responseTwitterUser) => {
-        if (error) {
-          callback(error);
-          return;
-        }
-        const data = JSON.parse(responseTwitterUser.body);
-        let res1 = [];
-        let res2 = [];
-        let res3 = [];
-        if (index.temporal !== false) {
-          res1 = await temporalIndex(data);
-          indexCount += res1[1];
-        }
-        if (index.network !== false) {
-          res2 = await networkIndex(data);
-          indexCount += res2[1];
-        }
-        if (index.sentiment !== false) {
-          res3 = await sentimentIndex(data);
-          indexCount += res3[1];
-        }
-        callback(null, [res1[0], res2[0], res3[0]]);
-      });
     },
   ],
-  /*
-    This function is the final one and occurs when all index get calculated
-  */
+  //  This function is the final one and occurs when all indexes get calculated
   (err, results) => {
     if (err) {
       if (cb) cb(err, null);
