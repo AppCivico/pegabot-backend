@@ -2,12 +2,11 @@
 import 'dotenv/config';
 import express from 'express';
 import bodyParser from 'body-parser';
+import TwitterLite from 'twitter-lite';
 import async from 'async';
-import Twitter from 'twitter';
 import mcache from 'memory-cache';
 import qs from 'querystring';
 import fs from 'fs';
-import TwitterLite from 'twitter-lite';
 import spottingbot from './analyze';
 
 // creates express http server
@@ -25,7 +24,7 @@ const config = {
 
 const cacheDuration = process.env.CACHE_DURATION || 2592000;
 
-const requestTwitterList = (client, searchFor, profile, limit, callback) => {
+const requestTwitterList = async (client, searchFor, profile, limit, callback) => {
   let cursor = -1;
   const list = [];
   let total = 0;
@@ -33,58 +32,55 @@ const requestTwitterList = (client, searchFor, profile, limit, callback) => {
     screen_name: profile,
   };
 
-  client.get('users/show', param, (error, tweets, responseTwitterUser) => {
-    if (error) {
-      console.log(error);
-    }
-    total = JSON.parse(responseTwitterUser.body)[`${searchFor}_count`];
+  const responseUser = await client.get('users/show', param);
+  total = responseUser[`${searchFor}_count`];
 
-    async.whilst(
-      () => cursor === -1,
-      (next) => {
-        const params = {
-          screen_name: profile,
-          count: limit,
-          cursor,
-        };
+  async.whilst(
+    () => cursor === -1,
+    async (next) => {
+      const params = {
+        screen_name: profile,
+        count: limit,
+        cursor,
+      };
 
-        client.get(`${searchFor}/list`, params, (err, userTweets, responseTwitter) => {
-          if (err) {
-            console.log(err);
-            next(err);
-          } else {
-            const data = JSON.parse(responseTwitter.body);
-            data.users.forEach((current) => {
-              list.push(current);
-            });
-            cursor = data.next_cursor;
-            next();
-          }
+      try {
+        const responseList = await client.get(`${searchFor}/list`, params);
+        responseList.users.forEach((current) => {
+          list.push(current);
         });
-      },
-      (err) => {
-        const object = {
-          metadata: {
-            count: list.length,
-            total,
-          },
-          profiles: [],
-        };
-        list.forEach((value) => {
-          object.profiles.push({
-            username: value.screen_name,
-            url: `https://twitter.com/${value.screen_name}`,
-            avatar: value.profile_image_url,
-            user_profile_language: value.lang,
-          });
+        cursor = responseList.next_cursor;
+        next();
+      } catch (error) {
+        console.error(error);
+        next(error);
+      }
+    },
+    (err) => {
+      const object = {
+        metadata: {
+          count: list.length,
+          total,
+        },
+        profiles: [],
+      };
+
+      list.forEach((value) => {
+        object.profiles.push({
+          username: value.screen_name,
+          url: `https://twitter.com/${value.screen_name}`,
+          avatar: value.profile_image_url,
+          user_profile_language: value.lang,
         });
-        if (err) {
-          object.metadata.error = err;
-        }
-        callback(object);
-      },
-    );
-  });
+      });
+
+      if (err) {
+        object.metadata.error = err;
+      }
+
+      callback(object);
+    },
+  );
 };
 
 // If you get an error 415, add your callback url to your Twitter App.
@@ -139,25 +135,15 @@ app.get('/botometer', async (req, response) => {
     });
   } else if (target === 'followers' || target === 'friends') {
     if (authenticated === 'true') {
-      let token = req.query.oauth_token;
-      let tokenSecret = mcache.get(token);
-      const verifier = req.query.oauth_verifier;
+      // const token = req.query.oauth_token;
+      // const tokenSecret = mcache.get(token);
+      // const verifier = req.query.oauth_verifier;
 
-      let client = new TwitterLite({
+      const client = new TwitterLite({
         consumer_key: config.consumer_key,
         consumer_secret: config.consumer_secret,
-      });
-
-      const permData = await client.getAccessToken({ oauth_verifier: verifier, oauth_token: token });
-
-      token = permData.oauth_token;
-      tokenSecret = permData.oauth_token_secret;
-
-      client = new Twitter({
-        consumer_key: config.consumer_key,
-        consumer_secret: config.consumer_secret,
-        access_token_key: token,
-        access_token_secret: tokenSecret,
+        access_token_key: undefined,
+        access_token_secret: undefined,
       });
 
       requestTwitterList(client, target, profile, limit, (object) => {

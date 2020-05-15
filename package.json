@@ -28,13 +28,11 @@
   ],
   "dependencies": {
     "async": "^2.6.1",
-    "axios": "^0.19.2",
     "body-parser": "^1.18.2",
     "dotenv": "^8.2.0",
     "express": "^4.16.3",
     "memory-cache": "^0.2.0",
     "multilang-sentiment": "^1.1.6",
-    "twitter": "^1.7.1",
     "twitter-lite": "^0.11.0"
   },
   "devDependencies": {
