@@ -1,8 +1,6 @@
 // Import external modules
 import async from 'async';
-import axios from 'axios';
-import Twitter from 'twitter';
-import { stringify } from 'querystring';
+import TwitterLite from 'twitter-lite';
 
 // Import our modules
 import userIndex from './index/user';
@@ -10,29 +8,6 @@ import friendsIndex from './index/friends';
 import temporalIndex from './index/temporal';
 import networkIndex from './index/network';
 import sentimentIndex from './index/sentiment';
-
-// Request a bearer token for an App Auth
-const requestBearer = async (config) => {
-  try {
-    const param = {
-      method: 'post',
-      url: 'https://api.twitter.com/oauth2/token',
-      headers: {
-        Authorization: `Basic ${Buffer.from(`${config.consumer_key}:${config.consumer_secret}`).toString('base64')}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': 29,
-      },
-      data: stringify({
-        grant_type: 'client_credentials',
-      }),
-    };
-
-    const { data } = await axios(param);
-    return data.access_token;
-  } catch (error) {
-    return null;
-  }
-};
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
@@ -49,17 +24,20 @@ module.exports = (screenName, config, index = {
     reject(error);
     return error;
   }
-  // If no access token and secret are provided, request a bearer token to make an App-auth
+
   const twitterParams = config;
-  if (!config.access_token_key || !config.access_token_secret) {
-    twitterParams.bearer_token = await requestBearer(config);
-    console.log('twitterParams.bearer_token', twitterParams.bearer_token);
-  }
   // Create Twitter client
-  const client = new Twitter(twitterParams);
-  const param = {
-    screen_name: screenName,
-  };
+  let client = new TwitterLite(twitterParams);
+
+  // If no access token and secret are provided, request a bearer token to make an App-auth
+  if (!config.access_token_key || !config.access_token_secret) {
+    const bearerToken = await client.getBearerToken();
+    twitterParams.bearer_token = bearerToken.access_token;
+    client = new TwitterLite(twitterParams); // create new Twitter Client with bearerToken
+  }
+
+  const param = { screen_name: screenName };
+
   // Index count is the divisor for the final average score, it is increase at same time of the index score calculation according to the
   // weight of these index
   let indexCount = 0;
