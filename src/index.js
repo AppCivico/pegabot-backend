@@ -119,20 +119,18 @@ app.get('/botometer', async (req, response) => {
   } else if (cachedKey) {
     response.send(cachedKey);
   } else if (target === 'profile') {
-    spottingbot(profile, config, { friend: false, sentiment: false }, (err, result) => {
-      if (err) {
-        return response.json({
-          metadata: {
-            error: `${profile} não encontrado`,
-          },
-        });
-      }
-      result.profiles[0].language_dependent = null;
-      // result.profiles.forEach((profile) => {
-      //   profile.bot_probability.all = Math.min(profile.bot_probability.all, 0.99);
-      // });
-      return response.json(result);
-    });
+    const result = await spottingbot(profile, config, { friend: false, sentiment: false });
+    if (!result || result.error) {
+      response.json({
+        metadata: { error: result.error },
+      });
+    }
+
+    result.profiles[0].language_dependent = null;
+    // result.profiles.forEach((currentProfile) => {
+    //   currentProfile.bot_probability.all = Math.min(currentProfile.bot_probability.all, 0.99);
+    // });
+    response.json(result);
   } else if (target === 'followers' || target === 'friends') {
     if (authenticated === 'true') {
       // const token = req.query.oauth_token;
