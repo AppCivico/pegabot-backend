@@ -100,7 +100,7 @@ async function getTokenUrl(req, searchFor, profile, limit) {
   }
 }
 
-app.get('/botometer', async (req, response) => {
+app.get('/botometer', async (req, res) => {
   const target = req.query.search_for;
   const { profile } = req.query;
   let { limit } = req.query;
@@ -113,13 +113,13 @@ app.get('/botometer', async (req, response) => {
   }
   console.log(`Request ${target} for ${profile}`);
   if (typeof target === 'undefined' || typeof profile === 'undefined') {
-    response.status(400).send('One parameter is missing');
+    res.status(400).send('One parameter is missing');
   } else if (cachedKey) {
-    response.send(cachedKey);
+    res.send(cachedKey);
   } else if (target === 'profile') {
     const result = await spottingbot(profile, config, { friend: false, sentiment: false });
     if (!result || result.error) {
-      response.json({
+      res.json({
         metadata: { error: result.error },
       });
     }
@@ -128,7 +128,7 @@ app.get('/botometer', async (req, response) => {
     // result.profiles.forEach((currentProfile) => {
     //   currentProfile.bot_probability.all = Math.min(currentProfile.bot_probability.all, 0.99);
     // });
-    response.json(result);
+    res.json(result);
   } else if (target === 'followers' || target === 'friends') {
     if (authenticated === 'true') {
       // const token = req.query.oauth_token;
@@ -146,36 +146,36 @@ app.get('/botometer', async (req, response) => {
         if (typeof object.metadata.error === 'undefined') {
           mcache.put(key, JSON.stringify(object), cacheDuration * 1000);
         }
-        response.json(object);
+        res.json(object);
       });
     } else {
       const result = await getTokenUrl(req, target, profile, limit);
       if (result.errors) {
-        response.status(500).send(result);
+        res.status(500).send(result);
       } else {
-        response.json({ request_url: result });
+        res.json({ request_url: result });
       }
     }
   } else {
-    response.status(400).send('search_for is wrong');
+    res.status(400).send('search_for is wrong');
   }
 });
 
 
 // request
-app.post('/feedback', (req, response) => {
+app.post('/feedback', (req, res) => {
   const { opinion } = req.body;
   const { profile } = req.body;
   if (!opinion || !profile) {
-    response.status(400).send('JSON Parameters opinion and profile required.');
+    res.status(400).send('JSON Parameters opinion and profile required.');
     return;
   }
   if (opinion !== 'approve' && opinion !== 'disapprove') {
-    response.status(400).send('opinion is not correct, should be approve or disapprove.');
+    res.status(400).send('opinion is not correct, should be approve or disapprove.');
     return;
   }
   if (typeof profile !== 'object' || typeof profile.username === 'undefined' || typeof profile.bot_probability === 'undefined') {
-    response.status(400).send('profile should be a JSON object and need to contains at least an username and a bot_probability.');
+    res.status(400).send('profile should be a JSON object and need to contains at least an username and a bot_probability.');
     return;
   }
   const screenName = profile.username;
@@ -208,17 +208,17 @@ app.post('/feedback', (req, response) => {
   }
 
   fs.writeFileSync('opinion.json', JSON.stringify(data));
-  response.send('OK');
+  res.send('OK');
 });
 
-app.get('/feedback', (req, response) => {
+app.get('/feedback', (req, res) => {
   if (fs.existsSync('opinion.json') === false) {
-    response.send('No feedback yet');
+    res.send('No feedback yet');
     return;
   }
   const content = fs.readFileSync('opinion.json');
   const data = JSON.parse(content);
-  response.json(data);
+  res.json(data);
 });
 
 app.get('/status', (req, res) => {
