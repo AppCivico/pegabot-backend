@@ -223,7 +223,8 @@ app.get('/feedback', (req, response) => {
   response.json(data);
 });
 
-// dev: get the /resultados callback params, use them to test followers/friends on /botometer with authenticated user
-app.get('/resultados', (req) => {
-  console.log('req', req._parsedUrl.search); // eslint-disable-line no-underscore-dangle
+app.get('/status', (req, res) => {
+  res.sendStatus(200);
 });
+
+export default app;
