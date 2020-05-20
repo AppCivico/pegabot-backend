@@ -118,8 +118,8 @@ app.get('/botometer', async (req, res) => {
     res.send(cachedKey);
   } else if (target === 'profile') {
     const result = await spottingbot(profile, config, { friend: false, sentiment: false });
-    if (!result || result.error) {
-      res.json({
+    if (result.error) {
+      res.status(500).json({
         metadata: { error: result.error },
       });
     }
