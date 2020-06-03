@@ -42,6 +42,7 @@ module.exports = async (screenName, config, index = {
     // get users/show and calculate "user" index
     if (index.user !== false) {
       const data = await client.get('users/show', param);
+      console.log(JSON.stringify(data, null, 2));
       const res = await userIndex(data);
       indexCount += res[1];
       results.push([res[0], data]);
