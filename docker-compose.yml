@@ -1,0 +1,15 @@
+version: "3"
+services:
+  api:
+    image: appcivico/pegabot
+    container_name: pegabot
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    ports:
+      - "1337:5000"
+    volumes:
+      - .:/home/node/app
+      - /home/node/app/node_modules
+    network_mode: "bridge"

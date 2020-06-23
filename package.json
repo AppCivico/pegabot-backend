@@ -9,7 +9,9 @@
     "lint": "eslint . --ext .js",
     "cli": "babel-node src/cli.js",
     "test": "npm run lint && npm run test:integration",
-    "test:integration": "mocha ./test/**/*.spec.js --require @babel/register"
+    "test:integration": "mocha ./test/**/*.spec.js --require @babel/register",
+    "docker:build": "docker-compose up -d --build api",
+    "docker:log": "docker logs pegabot_api -f"
   },
   "author": "Valentin GUILLOT",
   "email": "valentin@eokoe.com",
