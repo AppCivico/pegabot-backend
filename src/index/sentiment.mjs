@@ -6,9 +6,15 @@ export default async (data) => {
   data.forEach((current) => {
     let { lang } = current;
     const { text } = current;
-    if (lang === 'und') lang = null;
+    let res = {};
 
-    const res = sentiment(text, lang);
+    if (lang === 'und') {
+      lang = null;
+      res = sentiment(text);
+    } else {
+      res = sentiment(text, lang);
+    }
+
     if (res.comparative === 0) sentimentNeutralSum += 1;
   });
 
