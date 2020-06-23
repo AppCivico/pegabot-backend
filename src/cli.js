@@ -17,7 +17,7 @@ if (!screenName) {
 
 (async () => {
   console.log(`Starting user ${screenName} analysis...`);
-  const info = await analyze(screenName, config, { friend: false, sentiment: false });
+  const info = await analyze(screenName, config, { friend: false });
 
   const userScore = Math.round(info.profiles[0].language_independent.user * 100);
   const friendsScore = Math.round(info.profiles[0].language_independent.friend * 100);
