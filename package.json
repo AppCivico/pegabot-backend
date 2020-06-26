@@ -11,7 +11,7 @@
     "test": "npm run lint && npm run test:integration",
     "test:integration": "mocha ./test/**/*.spec.js --require @babel/register",
     "docker:build": "docker-compose up -d --build api",
-    "docker:log": "docker logs pegabot -f"
+    "docker:log": "docker logs pegabot-api -f"
   },
   "author": "Valentin GUILLOT",
   "email": "valentin@eokoe.com",
