@@ -1,7 +1,4 @@
-Disponível em
-
-[Espanhol](https://github.com/AppCivico/pegabot-backend/tree/master/README_ES.md) \
-[Inglês](https://github.com/AppCivico/pegabot-backend/tree/master/README.md)
+Disponível em [Espanhol](https://github.com/AppCivico/pegabot-backend/tree/master/README_ES.md) [Inglês](https://github.com/AppCivico/pegabot-backend/tree/master/README.md)
 
 
 # spottingbot

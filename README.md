@@ -1,7 +1,4 @@
-Available in
-
-[Spanish](https://github.com/AppCivico/pegabot-backend/tree/master/README_ES.md) \
-[Portuguese](https://github.com/AppCivico/pegabot-backend/tree/master/README_PT.md)
+Available in [Spanish](https://github.com/AppCivico/pegabot-backend/tree/master/README_ES.md) [Portuguese](https://github.com/AppCivico/pegabot-backend/tree/master/README_PT.md)
 
 # spottingbot
 Analyzing profiles on Twitter to detect bot behavior
