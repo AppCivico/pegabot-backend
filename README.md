@@ -1,13 +1,18 @@
+Available in
+
+[Spanish](https://github.com/AppCivico/pegabot-backend/tree/master/README_ES.md) \
+[Portuguese](https://github.com/AppCivico/pegabot-backend/tree/master/README_PT.md)
+
 # spottingbot
-Analyzing profile on Twitter for detect behavior of a spamming bot
+Analyzing profiles on Twitter to detect bot behavior
 
-**_spottingbot is an experimental and open-source project that needs you to evolve, do not hesitate to contribute on our [GitHub repository](https://github.com/AppCivico/spottingbot) by opening a pull request or to contact us at [valentin@appcivico.com](mailto:valentin@appcivico.com). A documentation about how the current indexes are calculated is also available [here](https://github.com/AppCivico/spottingbot/blob/master/documentation/)_**
+**_spottingbot is an experimental and open-source project that needs you to evolve, do not hesitate to contribute on our [GitHub repository](https://github.com/AppCivico/pegabot-backend) by opening a pull request or to contact us at [jordan@appcivico.com](mailto:jordan@appcivico.com). Documentation on how the current indexes are calculated is also available [here](https://github.com/AppCivico/pegabot-backend/tree/master/documentation)_**
 
-**You can also join us on our [Telegram group](https://t.me/joinchat/AOHjCkUyx1zPuNzhf36mEw) for freely talk about suggestions, improvement or simply ask us anything**
+**You can also join us on our [Telegram group](https://t.me/joinchat/AOHjCkUyx1zPuNzhf36mEw) to freely talk about suggestions, improvement or simply ask us anything**
 
 ## Usage
 
-spottingbot can be used both as a [command-line interface application (cli)](https://github.com/AppCivico/spottingbot#command-line-interface) or as an [independent module](https://github.com/AppCivico/spottingbot#module)
+spottingbot can be used both as a command-line interface application (cli) or as an independent module
 
 ### Command-line interface
 
@@ -17,15 +22,13 @@ spottingbot can be used both as a [command-line interface application (cli)](htt
 
 #### Settings file
 
-Create a `.twitter.json` file that contains:
+Create a .env file that contains:
 
-```json
-{
-  "consumer_key": "Your application consumer key",
-  "consumer_secret": "Your application consumer secret",
-  "access_token_key": "Your application access token key, only for user authentication",
-  "access_token_secret": "Your application access token secret, only for user authentication"
-}
+```
+TWITTER_CONSUMER_KEY="Your application consumer key"
+TWITTER_CONSUMER_SECRET="Your application consumer secret"
+TWITTER_ACCESS_TOKEN_KEY="Your application access token key, only for user authentication"
+TWITTER_ACCESS_TOKEN_SECRET="Your application access token secret, only for user authentication"
 ```
 
 *Both User and App-only authentication are supported, for App-only, the Bearer token will be automatically requested*
@@ -38,7 +41,7 @@ Create a `.twitter.json` file that contains:
 
 `source/cli.js username`
 
-*`username` have to be replaced by the profile to analyze*
+*`username` has to be replaced by the profile to analyze*
 
 #### Install bin locally on your system
 
@@ -55,12 +58,12 @@ Create a `.twitter.json` file that contains:
 ```js
 const spottingbot = require('spottingbot');
 
-spottingbot(username, twitter_config, index);
+spottingbot(username, index);
 ```
 
 `username` is a string that contains the screen name of the Twitter profile to analyze.
 
-`twitter_config` is an object that contains Twitter credentials, both User and App-only authentication are supported, for App-only, the Bearer token will be automatically requested, the `twitter_config` object should be like:
+`twitter_config` is an object that contains Twitter credentials, both User and App-only authentication are supported, for App-only, the Bearer token will be automatically requested, the `twitter_config` object should be like this:
 
 ```js
 {
@@ -71,7 +74,7 @@ spottingbot(username, twitter_config, index);
 }
 ```
 
-`index` is used for disabling some index, it is an object that looks like
+`index` is used to disable some indexes, it's an object that looks like this:
 ```js
 {
   user: true,
@@ -81,13 +84,13 @@ spottingbot(username, twitter_config, index);
 }
 ```
 
-By default, and if omitted, everything is `true`.
+By default, or if omitted, everything is `true`.
 
-To disabling only one index, this is not necessary to put everything in the object, `{friend: false}`, is correct.
+To disable only one index, it isn't necessary to add the others keys in the object, `{friend: false}`, will work.
 
 #### Return value
 
-*spottingbot* handle both *callback* style and *node promise* style
+*spottingbot* handles both *callback* style and *node promise* style
 
 ##### Callback
 
@@ -153,4 +156,4 @@ The return value is an object that contains
 
 **PegaBot is a project of the [Institute of Technology and Society of Rio de Janeiro (ITS Rio)](https://itsrio.org), [Instituto Equidade & Tecnologia](https://tecnologiaequidade.org.br/) and [AppCívico](https://appcivico.com/).**
 
-**spottingbot is an experimental and open-source project that needs you to evolve, do not hesitate to contribute on our [GitHub repository](https://github.com/AppCivico/spottingbot) by opening a pull request or to contact us at [valentin@appcivico.com](mailto:valentin@appcivico.com). A documentation about how the current indexes are calculated is also available [here](https://github.com/AppCivico/spottingbot/blob/master/documentation/)**
+**spottingbot is an experimental and open-source project that needs you to evolve, do not hesitate to contribute on our [GitHub repository](https://github.com/AppCivico/pegabot-backend) by opening a pull request or to contact us at [jordan@appcivico.com](mailto:jordan@appcivico.com). Documentation on how the current indexes are calculated is also available [here](hhttps://github.com/AppCivico/pegabot-backend/tree/master/documentation)_**
