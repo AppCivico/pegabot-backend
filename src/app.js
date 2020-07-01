@@ -124,7 +124,7 @@ app.get('/botometer', async (req, res) => {
       return;
     }
 
-    // if (result && result.profiles && result.profiles[0] && result.profiles[0].language_dependent) result.profiles[0].language_dependent = null;
+    if (result && result.profiles && result.profiles[0] && result.profiles[0].language_dependent) result.profiles[0].language_dependent = null;
     // result.profiles.forEach((currentProfile) => {
     //   currentProfile.bot_probability.all = Math.min(currentProfile.bot_probability.all, 0.99);
     // });
