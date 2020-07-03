@@ -8,7 +8,9 @@ services:
       dockerfile: ./Dockerfile
     restart: unless-stopped
     ports:
-      - "1337:5000"
+      - "${EXPOSED_PORT}:${PORT}"
+    expose: 
+      - "${EXPOSED_PORT}"
     volumes:
       - .:/home/node/app
       - /home/node/app/node_modules

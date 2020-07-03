@@ -4,8 +4,6 @@ WORKDIR /home/node/app
 
 COPY . .
 
-EXPOSE 1337
-
 RUN yarn
 
 CMD [ "npm", "run", "start" ]
