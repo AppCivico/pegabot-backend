@@ -6,13 +6,20 @@ export default async (data, defaultLanguage = 'pt') => {
   data.forEach((current) => {
     let { lang } = current;
     const { text } = current;
-    let res = {};
+    try {
+      let res = {};
 
-    // use portuguese as default language
-    if (lang === 'und') lang = defaultLanguage;
-    res = sentiment(text, lang);
+      if (!lang || ['und', 'in'].includes(lang)) lang = defaultLanguage;
 
-    if (res.comparative === 0) sentimentNeutralSum += 1;
+      res = sentiment(text, lang);
+
+      if (res.comparative === 0) sentimentNeutralSum += 1;
+    } catch (error) {
+      console.log('Error trying to analyse sentiment');
+      console.log('text', text);
+      console.log('lang', lang);
+      console.log(error);
+    }
   });
 
   const scoreSentiment = sentimentNeutralSum / data.length;

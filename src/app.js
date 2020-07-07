@@ -112,6 +112,7 @@ app.get('/botometer', async (req, res) => {
   const origin = req.get('host');
   const sentimentLang = library.getDefaultLanguage(origin);
 
+  console.log('profile', profile);
   if (!limit || limit > 200) {
     limit = 200;
   }
@@ -122,8 +123,9 @@ app.get('/botometer', async (req, res) => {
   } else if (target === 'profile') {
     try {
       const result = await spottingbot(profile, config, { friend: false }, sentimentLang);
-
+      console.log('result', result);
       if (result.error) {
+        console.log('result.error', result.error);
         res.status(500).json({ metadata: { error: result.error } });
         return;
       }
@@ -134,6 +136,7 @@ app.get('/botometer', async (req, res) => {
       // });
       res.json(result);
     } catch (error) {
+      console.log('error', error);
       res.status(500).json({ metadata: { error } });
     }
   } else if (target === 'followers' || target === 'friends') {
