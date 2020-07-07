@@ -8,12 +8,9 @@ export default async (data) => {
     const { text } = current;
     let res = {};
 
-    if (lang === 'und') {
-      lang = null;
-      res = sentiment(text);
-    } else {
-      res = sentiment(text, lang);
-    }
+    // use portuguese as default language
+    if (lang === 'und') lang = 'pt';
+    res = sentiment(text, lang);
 
     if (res.comparative === 0) sentimentNeutralSum += 1;
   });
