@@ -11,7 +11,7 @@ import sentimentIndex from './index/sentiment';
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
-}, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
+}, sentimentLang, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
   if (!screenName || !config) {
     const error = 'You need to provide an username to analyze and a config for twitter app';
     if (cb) cb(error, null);
@@ -110,7 +110,7 @@ module.exports = (screenName, config, index = {
             indexCount += res2[1];
           }
           if (index.sentiment !== false) {
-            res3 = await sentimentIndex(data);
+            res3 = await sentimentIndex(data, sentimentLang);
             indexCount += res3[1];
           }
           callback(null, [res1[0], res2[0], res3[0]]);

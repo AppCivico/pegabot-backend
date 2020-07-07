@@ -1,6 +1,6 @@
 import sentiment from 'multilang-sentiment';
 
-export default async (data) => {
+export default async (data, defaultLanguage = 'pt') => {
   let sentimentNeutralSum = 0;
 
   data.forEach((current) => {
@@ -9,7 +9,7 @@ export default async (data) => {
     let res = {};
 
     // use portuguese as default language
-    if (lang === 'und') lang = 'pt';
+    if (lang === 'und') lang = defaultLanguage;
     res = sentiment(text, lang);
 
     if (res.comparative === 0) sentimentNeutralSum += 1;

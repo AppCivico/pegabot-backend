@@ -8,6 +8,7 @@ import mcache from 'memory-cache';
 import qs from 'querystring';
 import fs from 'fs';
 import spottingbot from './analyze';
+import library from './library';
 
 // creates express http server
 const app = express();
@@ -108,17 +109,19 @@ app.get('/botometer', async (req, res) => {
   const key = `${target}:${profile}`;
   const cachedKey = mcache.get(key);
 
+  const origin = req.get('host');
+  const sentimentLang = library.getDefaultLanguage(origin);
+
   if (!limit || limit > 200) {
     limit = 200;
   }
-  console.log(`Request ${target} for ${profile}`);
   if (typeof target === 'undefined' || typeof profile === 'undefined') {
     res.status(400).send('One parameter is missing');
   } else if (cachedKey) {
     res.send(cachedKey);
   } else if (target === 'profile') {
     try {
-      const result = await spottingbot(profile, config, { friend: false });
+      const result = await spottingbot(profile, config, { friend: false }, sentimentLang);
 
       if (result.error) {
         res.status(500).json({ metadata: { error: result.error } });
