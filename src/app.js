@@ -109,8 +109,8 @@ app.get('/botometer', async (req, res) => {
   const key = `${target}:${profile}`;
   const cachedKey = mcache.get(key);
 
-  const origin = req.get('host');
-  const sentimentLang = library.getDefaultLanguage(origin);
+  const referer = req.get('referer');
+  const sentimentLang = library.getDefaultLanguage(referer);
 
   console.log('profile', profile);
   if (!limit || limit > 200) {

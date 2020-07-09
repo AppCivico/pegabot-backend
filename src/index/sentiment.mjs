@@ -3,7 +3,11 @@ import sentiment from 'multilang-sentiment';
 export default async (data, defaultLanguage = 'pt') => {
   let sentimentNeutralSum = 0;
 
-  data.forEach((current) => {
+  const halfLength = Math.ceil(data.length / 2);
+
+  const leftSide = data.splice(0, halfLength);
+
+  leftSide.forEach((current) => {
     let { lang } = current;
     const { text } = current;
     try {
