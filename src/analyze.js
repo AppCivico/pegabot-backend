@@ -41,6 +41,9 @@ module.exports = (screenName, config, index = {
   // Index count is the divisor for the final average score, it is increase at same time of the index score calculation according to the
   // weight of these index
   let indexCount = 0;
+  // get tweets timeline. We will use it for both the user and sentiment/temporal/network calculations
+  const timeline = await client.get('statuses/user_timeline', param);
+
   // All the following functions will be executing at the same time and then call the final one
   async.parallel([
     // This function is used to get the users/show endpoint and to calculate the "user" index
@@ -49,7 +52,13 @@ module.exports = (screenName, config, index = {
         if (index.user === false) {
           callback();
         } else {
-          const data = await client.get('users/show', param);
+          let data = {};
+          // get user data from statuses/user_timeline endpoint instead of the users/show endpoint
+          if (timeline && timeline[0] && timeline[0].user2) {
+            data = timeline[0].user;
+          } else { // if we couldn't get the user data from the timeline, get from the users/show endpoint
+            data = await client.get('users/show', param);
+          }
           const res = await userIndex(data);
           indexCount += res[1];
           callback(null, res[0], data);
@@ -97,7 +106,7 @@ module.exports = (screenName, config, index = {
           callback();
         } else {
           param.count = 200;
-          const data = await client.get('statuses/user_timeline', param);
+          const data = timeline;
           let res1 = [];
           let res2 = [];
           let res3 = [];

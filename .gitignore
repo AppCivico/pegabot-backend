@@ -62,3 +62,5 @@ typings/
 
 node_modules/
 run-container.sh
+
+test.js
