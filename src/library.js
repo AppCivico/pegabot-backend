@@ -52,7 +52,8 @@ export default {
     return (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength);
   },
 
-  getDefaultLanguage: (origin) => {
+  getDefaultLanguage: (origin = '') => {
+    if (!origin || typeof origin !== 'string') return 'pt';
     if (origin.includes('es.pegabots')) return 'es';
     if (origin.includes('en.pegabots')) return 'en';
     return 'pt';
