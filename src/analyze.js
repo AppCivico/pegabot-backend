@@ -36,7 +36,7 @@ module.exports = (screenName, config, index = {
     client = new TwitterLite(twitterParams); // create new Twitter Client with bearerToken
   }
 
-  const param = { screen_name: screenName };
+  const param = { screen_name: screenName, count: 200 };
 
   // Index count is the divisor for the final average score, it is increase at same time of the index score calculation according to the
   // weight of these index

@@ -3,11 +3,14 @@ import sentiment from 'multilang-sentiment';
 export default async (data, defaultLanguage = 'pt') => {
   let sentimentNeutralSum = 0;
 
-  const halfLength = Math.ceil(data.length / 2);
+  let tweets = [];
+  if (data.length <= 100) {
+    tweets = data;
+  } else {
+    tweets = data.slice(0, 100);
+  }
 
-  const leftSide = data.splice(0, halfLength);
-
-  leftSide.forEach((current) => {
+  tweets.forEach((current) => {
     let { lang } = current;
     const { text } = current;
     try {
@@ -26,7 +29,7 @@ export default async (data, defaultLanguage = 'pt') => {
     }
   });
 
-  const scoreSentiment = sentimentNeutralSum / data.length;
+  const scoreSentiment = sentimentNeutralSum / tweets.length;
   const weight = 2;
 
   return [scoreSentiment, weight];
