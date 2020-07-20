@@ -112,6 +112,8 @@ app.get('/botometer', async (req, res) => {
   const referer = req.get('referer');
   const sentimentLang = library.getDefaultLanguage(referer);
 
+  const { getData } = req.query;
+
   console.log('profile', profile);
   if (!limit || limit > 200) {
     limit = 200;
@@ -122,7 +124,7 @@ app.get('/botometer', async (req, res) => {
     res.send(cachedKey);
   } else if (target === 'profile') {
     try {
-      const result = await spottingbot(profile, config, { friend: false }, sentimentLang);
+      const result = await spottingbot(profile, config, { friend: false }, sentimentLang, getData);
       console.log('result', result);
       if (result.error) {
         console.log('result.error', result.error);

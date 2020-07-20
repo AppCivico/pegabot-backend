@@ -46,5 +46,5 @@ export default async (data) => {
 
   if (scoreNetwork === 0) weight += 1;
 
-  return [scoreNetwork, weight];
+  return [scoreNetwork, weight, distributionHashtags, distributionUserMentions];
 };
