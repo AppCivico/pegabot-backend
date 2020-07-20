@@ -17,15 +17,20 @@ if (!screenName) {
 
 (async () => {
   console.log(`Starting user ${screenName} analysis...`);
-  const info = await analyze(screenName, config, { friend: false });
+  try {
+    const info = await analyze(screenName, config, { friend: false });
 
-  const userScore = Math.round(info.profiles[0].language_independent.user * 100);
-  const friendsScore = Math.round(info.profiles[0].language_independent.friend * 100);
-  const temporalScore = Math.round(info.profiles[0].language_independent.temporal * 100);
-  const networkScore = Math.round(info.profiles[0].language_independent.network * 100);
-  const sentimentScore = Math.round(info.profiles[0].language_dependent.sentiment.value * 100);
-  const finalScore = Math.round(info.profiles[0].bot_probability.all * 100);
+    const userScore = Math.round(info.profiles[0].language_independent.user * 100);
+    const friendsScore = Math.round(info.profiles[0].language_independent.friend * 100);
+    const temporalScore = Math.round(info.profiles[0].language_independent.temporal * 100);
+    const networkScore = Math.round(info.profiles[0].language_independent.network * 100);
+    const sentimentScore = Math.round(info.profiles[0].language_dependent.sentiment.value * 100);
+    const finalScore = Math.round(info.profiles[0].bot_probability.all * 100);
 
-  const msg = `User score: ${userScore}%\nFriends score: ${friendsScore}%\nTemporal score: ${temporalScore}%\nNetwork score ${networkScore}%\nSentiment score: ${sentimentScore}%\nFinal score: ${finalScore}%`;
-  console.log(msg);
+    const msg = `User score: ${userScore}%\nFriends score: ${friendsScore}%\nTemporal score: ${temporalScore}%\nNetwork score ${networkScore}%\nSentiment score: ${sentimentScore}%\nFinal score: ${finalScore}%`;
+    console.log(msg);
+  } catch (error) {
+    console.log('Error, could not process');
+    console.log(error);
+  }
 })();

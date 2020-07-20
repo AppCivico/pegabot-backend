@@ -124,11 +124,11 @@ app.get('/botometer', async (req, res) => {
     res.send(cachedKey);
   } else if (target === 'profile') {
     try {
-      const result = await spottingbot(profile, config, { friend: false }, sentimentLang, getData);
-      console.log('result', result);
-      if (result.error) {
-        console.log('result.error', result.error);
-        res.status(500).json({ metadata: { error: result.error } });
+      const result = await spottingbot(profile, config, { friend: false }, sentimentLang, getData).catch((err) => err);
+      if (result && result.profiles && result.profiles[0]) console.log(result.profiles[0]);
+      if (result.errors) {
+        console.log('result.error', result.errors);
+        res.status(404).json({ metadata: { error: result.errors } });
         return;
       }
 

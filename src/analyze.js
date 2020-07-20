@@ -45,7 +45,13 @@ module.exports = (screenName, config, index = {
   // weight of these index
   let indexCount = 0;
   // get tweets timeline. We will use it for both the user and sentiment/temporal/network calculations
-  const timeline = await client.get('statuses/user_timeline', param);
+  const timeline = await client.get('statuses/user_timeline', param).catch((err) => err);
+
+  if (timeline.errors) {
+    if (cb) cb(timeline, null);
+    reject(timeline);
+    return timeline;
+  }
 
   // All the following functions will be executing at the same time and then call the final one
   async.parallel([
