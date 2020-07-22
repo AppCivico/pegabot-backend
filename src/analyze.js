@@ -8,6 +8,7 @@ import friendsIndex from './index/friends';
 import temporalIndex from './index/temporal';
 import networkIndex from './index/network';
 import sentimentIndex from './index/sentiment';
+import library from './library';
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
@@ -47,6 +48,9 @@ module.exports = (screenName, config, index = {
   // get tweets timeline. We will use it for both the user and sentiment/temporal/network calculations
   const timeline = await client.get('statuses/user_timeline', param).catch((err) => err);
 
+  // get and store rate limits
+  if (getData) timeline.rateLimit = await library.getRateStatus(timeline);
+
   if (timeline.errors) {
     if (cb) cb(timeline, null);
     reject(timeline);
@@ -63,11 +67,8 @@ module.exports = (screenName, config, index = {
         } else {
           let data = {};
           // get user data from statuses/user_timeline endpoint instead of the users/show endpoint
-          if (timeline && timeline[0] && timeline[0].user2) {
-            data = timeline[0].user;
-          } else { // if we couldn't get the user data from the timeline, get from the users/show endpoint
-            data = await client.get('users/show', param);
-          }
+          data = timeline[0].user;
+
           const res = await userIndex(data);
           indexCount += res[1];
           callback(null, res[0], data);
@@ -225,6 +226,7 @@ module.exports = (screenName, config, index = {
       data.mentions = mentionsUsed;
 
       object.twitter_data = data;
+      object.rate_limit = timeline.rateLimit;
     }
 
     if (cb) cb(null, object);

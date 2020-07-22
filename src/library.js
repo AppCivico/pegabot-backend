@@ -58,4 +58,12 @@ export default {
     if (origin.includes('en.pegabots')) return 'en';
     return 'pt';
   },
+
+  getRateStatus: (res) => {
+    const remaining = res._headers.get('x-rate-limit-remaining'); // eslint-disable-line no-underscore-dangle
+    const limit = res._headers.get('x-rate-limit-limit'); // eslint-disable-line no-underscore-dangle
+    const delta = (res._headers.get('x-rate-limit-reset') * 1000) - Date.now(); // eslint-disable-line no-underscore-dangle
+    const toReset = Math.ceil(delta / 1000 / 60);
+    return { remaining, limit, toReset };
+  },
 };
