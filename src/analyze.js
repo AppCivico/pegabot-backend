@@ -236,12 +236,13 @@ module.exports = (screenName, config, index = {
     }
 
     // save Analysis Data on database
-    newRequest.analysis_total = total;
-    newRequest.analysis_user = userScore;
-    newRequest.analysis_friend = friendsScore;
-    newRequest.analysis_sentiment = sentimentScore;
-    newRequest.analysis_temporal = temporalScore;
-    newRequest.analysis_network = networkScore;
+    newRequest.analysisTotal = total;
+    newRequest.analysisUser = userScore;
+    newRequest.analysisFriend = friendsScore;
+    newRequest.analysisSentiment = sentimentScore;
+    newRequest.analysisTemporal = temporalScore;
+    newRequest.analysisNetwork = networkScore;
+    newRequest.analysisResponse = object;
 
     newRequest.save();
 

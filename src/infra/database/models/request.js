@@ -21,29 +21,33 @@ export default class Request extends Model {
         allowNull: true,
         type: DataTypes.STRING,
       },
-      analysis_total: {
+      analysisTotal: {
         allowNull: true,
         type: DataTypes.STRING,
       },
-      analysis_user: {
+      analysisUser: {
         allowNull: true,
         type: DataTypes.STRING,
       },
-      analysis_friend: {
+      analysisFriend: {
         allowNull: true,
         type: DataTypes.STRING,
       },
-      analysis_sentiment: {
+      analysisSentiment: {
         allowNull: true,
         type: DataTypes.STRING,
       },
-      analysis_temporal: {
+      analysisTemporal: {
         allowNull: true,
         type: DataTypes.STRING,
       },
-      analysis_network: {
+      analysisNetwork: {
         allowNull: true,
         type: DataTypes.STRING,
+      },
+      analysisResponse: {
+        allowNull: true,
+        type: DataTypes.JSON,
       },
     }, {
       sequelize,
