@@ -1,3 +1,5 @@
+import { execSync } from 'child_process';
+
 const editDistance = (string1, string2) => {
   const s1 = string1.toLowerCase();
   const s2 = string2.toLowerCase();
@@ -67,4 +69,6 @@ export default {
     const toReset = Math.ceil(delta / 1000 / 60);
     return { remaining, limit, toReset };
   },
+
+  getGitHead: async () => execSync('git rev-parse HEAD', { encoding: 'utf8' }),
 };

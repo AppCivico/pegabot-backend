@@ -55,7 +55,9 @@ module.exports = (screenName, config, index = {
   if (getData) timeline.rateLimit = await library.getRateStatus(timeline);
 
   // store apiResponse on database and get new row ID
-  const { id: newRequestID } = await Request.create({ screenName, apiResponse: timeline }).then((r) => r.dataValues);
+  const { id: newRequestID } = await Request.create(
+    { screenName, apiResponse: timeline, gitHead: await library.getGitHead() },
+  ).then((r) => r.dataValues);
 
   if (timeline.errors) {
     if (cb) cb(timeline, null);

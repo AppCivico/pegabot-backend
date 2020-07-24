@@ -17,6 +17,10 @@ export default class Request extends Model {
         allowNull: false,
         type: DataTypes.JSON,
       },
+      gitHead: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
     }, {
       sequelize,
       modelName: 'Requests',
