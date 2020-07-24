@@ -21,6 +21,30 @@ export default class Request extends Model {
         allowNull: true,
         type: DataTypes.STRING,
       },
+      analysis_total: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      analysis_user: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      analysis_friend: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      analysis_sentiment: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      analysis_temporal: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      analysis_network: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
     }, {
       sequelize,
       modelName: 'Requests',

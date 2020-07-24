@@ -54,10 +54,8 @@ module.exports = (screenName, config, index = {
   // get and store rate limits
   if (getData) timeline.rateLimit = await library.getRateStatus(timeline);
 
-  // store apiResponse on database and get new row ID
-  const { id: newRequestID } = await Request.create(
-    { screenName, apiResponse: timeline, gitHead: await library.getGitHead() },
-  ).then((r) => r.dataValues);
+  // store apiResponse on database and get request instance
+  const newRequest = await Request.create({ screenName, apiResponse: { timeline }, gitHead: await library.getGitHead() });
 
   if (timeline.errors) {
     if (cb) cb(timeline, null);
@@ -218,24 +216,34 @@ module.exports = (screenName, config, index = {
       }),
     };
 
-    // add data from twitter to return
+    // add data from twitter to complement return (if getDate is true) and save to database
+    const data = {};
+    const userData = timeline[0].user;
+
+    data.created_at = userData.created_at;
+    data.user_id = userData.id_str;
+    data.user_name = userData.name;
+    data.following = userData.friends_count;
+    data.followers = userData.followers_count;
+    data.number_tweets = userData.statuses_count;
+
+    data.hashtags = hashtagsUsed;
+    data.mentions = mentionsUsed;
+
     if (getData) {
-      const data = {};
-      const userData = timeline[0].user;
-
-      data.created_at = userData.created_at;
-      data.user_id = userData.id_str;
-      data.user_name = userData.name;
-      data.following = userData.friends_count;
-      data.followers = userData.followers_count;
-      data.number_tweets = userData.statuses_count;
-
-      data.hashtags = hashtagsUsed;
-      data.mentions = mentionsUsed;
-
       object.twitter_data = data;
       object.rate_limit = timeline.rateLimit;
     }
+
+    // save Analysis Data on database
+    newRequest.analysis_total = total;
+    newRequest.analysis_user = userScore;
+    newRequest.analysis_friend = friendsScore;
+    newRequest.analysis_sentiment = sentimentScore;
+    newRequest.analysis_temporal = temporalScore;
+    newRequest.analysis_network = networkScore;
+
+    newRequest.save();
 
     if (cb) cb(null, object);
     resolve(object);
