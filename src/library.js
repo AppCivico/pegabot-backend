@@ -60,6 +60,7 @@ export default {
   },
 
   getRateStatus: (res) => {
+    if (!res || !res._headers) return {}; // eslint-disable-line no-underscore-dangle
     const remaining = res._headers.get('x-rate-limit-remaining'); // eslint-disable-line no-underscore-dangle
     const limit = res._headers.get('x-rate-limit-limit'); // eslint-disable-line no-underscore-dangle
     const delta = (res._headers.get('x-rate-limit-reset') * 1000) - Date.now(); // eslint-disable-line no-underscore-dangle
