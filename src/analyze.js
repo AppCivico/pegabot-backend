@@ -10,6 +10,9 @@ import networkIndex from './index/network';
 import sentimentIndex from './index/sentiment';
 import library from './library';
 
+// Import DB modules
+import { Request } from './infra/database/index';
+
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
 }, sentimentLang, getData, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
@@ -50,6 +53,9 @@ module.exports = (screenName, config, index = {
 
   // get and store rate limits
   if (getData) timeline.rateLimit = await library.getRateStatus(timeline);
+
+  // store apiResponse on database and get new row ID
+  const { id: newRequestID } = await Request.create({ screenName, apiResponse: timeline }).then((r) => r.dataValues);
 
   if (timeline.errors) {
     if (cb) cb(timeline, null);
