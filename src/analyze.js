@@ -11,7 +11,7 @@ import sentimentIndex from './index/sentiment';
 import library from './library';
 
 // Import DB modules
-import { Request } from './infra/database/index';
+import { Request, Analysis } from './infra/database/index';
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
@@ -150,7 +150,7 @@ module.exports = (screenName, config, index = {
     },
   ],
   //  This function is the final one and occurs when all indexes get calculated
-  (err, results) => {
+  async (err, results) => {
     if (err) {
       if (cb) cb(err, null);
       reject(err);
@@ -236,14 +236,18 @@ module.exports = (screenName, config, index = {
     }
 
     // save Analysis Data on database
-    newRequest.analysisTotal = total;
-    newRequest.analysisUser = userScore;
-    newRequest.analysisFriend = friendsScore;
-    newRequest.analysisSentiment = sentimentScore;
-    newRequest.analysisTemporal = temporalScore;
-    newRequest.analysisNetwork = networkScore;
-    newRequest.analysisResponse = object;
+    const { id: newAnalysisID } = await Analysis.create({
+      fullResponse: object,
+      total,
+      user: userScore,
+      friend: friendsScore,
+      sentiment: sentimentScore,
+      temporal: temporalScore,
+      network: networkScore,
+    }).then((e) => e.dataValues);
 
+    // update request
+    newRequest.analysisID = newAnalysisID;
     newRequest.save();
 
     if (cb) cb(null, object);

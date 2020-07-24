@@ -1,5 +1,6 @@
 import Sequelize from 'sequelize';
 import RequestModel from './models/request';
+import AnalysisModel from './models/analyses';
 import Config from './config';
 
 const env = process.env.NODE_ENV || 'development';
@@ -15,12 +16,15 @@ if (config.use_env_variable) {
 const sequelize = new Sequelize(...sequelizeArgs);
 const models = {
   Request: RequestModel.init(sequelize, Sequelize),
+  Analysis: AnalysisModel.init(sequelize, Sequelize),
 };
 
 Object.values(models)
   .filter((model) => typeof model.associate === 'function')
   .forEach((model) => model.associate(models));
 
-const { Request } = models;
+const { Request, Analysis } = models;
 
-export { sequelize, Sequelize, Request };
+export {
+  sequelize, Sequelize, Request, Analysis,
+};
