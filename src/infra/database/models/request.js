@@ -25,6 +25,10 @@ export default class Request extends Model {
         allowNull: true,
         type: DataTypes.INTEGER,
       },
+      userDataID: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
+      },
     }, {
       sequelize,
       modelName: 'Requests',

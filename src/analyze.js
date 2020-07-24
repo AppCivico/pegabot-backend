@@ -11,7 +11,7 @@ import sentimentIndex from './index/sentiment';
 import library from './library';
 
 // Import DB modules
-import { Request, Analysis } from './infra/database/index';
+import { Request, Analysis, UserData } from './infra/database/index';
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
@@ -244,10 +244,23 @@ module.exports = (screenName, config, index = {
       sentiment: sentimentScore,
       temporal: temporalScore,
       network: networkScore,
-    }).then((e) => e.dataValues);
+    }).then((res) => res.dataValues);
+
+    // save User Data on database
+    const { id: newUserDataID } = await UserData.create({
+      username: data.user_name,
+      twitterID: data.user_id,
+      profileCreatedAt: data.created_at,
+      followingCount: data.following,
+      followersCount: data.followers,
+      statusesCount: data.number_tweets,
+      hashtagsUsed: data.hashtags,
+      mentionsUsed: data.mentions,
+    }).then((res) => res.dataValues);
 
     // update request
     newRequest.analysisID = newAnalysisID;
+    newRequest.userDataID = newUserDataID;
     newRequest.save();
 
     if (cb) cb(null, object);
