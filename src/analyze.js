@@ -9,6 +9,7 @@ import temporalIndex from './index/temporal';
 import networkIndex from './index/network';
 import sentimentIndex from './index/sentiment';
 import library from './library';
+import redis from './redis';
 
 // Import DB modules
 import { Request, Analysis, UserData } from './infra/database/index';

@@ -10,8 +10,10 @@
     "cli": "babel-node src/cli.js",
     "test": "npm run lint && npm run test:integration",
     "test:integration": "mocha ./test/**/*.spec.js --require @babel/register",
-    "docker:build": "docker-compose up -d --build api",
-    "docker:log": "docker logs pegabot-api -f"
+    "api:build": "docker-compose up -d --build api",
+    "api:log": "docker logs pegabot-api -f",
+    "redis:build": "docker-compose up -d --build redis",
+    "redis:log": "docker logs pegabot-api-redis -f"
   },
   "author": "Valentin GUILLOT",
   "email": "valentin@eokoe.com",
@@ -38,6 +40,7 @@
     "multilang-sentiment": "^1.1.6",
     "pg": "^8.3.0",
     "pg-hstore": "^2.3.3",
+    "redis": "^3.0.2",
     "sequelize": "^6.3.3",
     "sinon": "^9.0.2",
     "twitter-lite": "^0.11.0"

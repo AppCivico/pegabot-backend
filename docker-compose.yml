@@ -1,4 +1,6 @@
 version: "2"
+networks:
+  redis:
 services:
   api:
     image: appcivico/pegabot
@@ -14,4 +16,16 @@ services:
     volumes:
       - .:/home/node/app
       - /home/node/app/node_modules
-    network_mode: "bridge"
+    networks:
+      - redis
+  redis:
+    image: "redis"
+    container_name: pegabot-api-redis
+    command: "redis-server /usr/local/etc/redis/redis.conf --port ${REDIS_PORT} --requirepass ${REDIS_PASSWORD}"
+    volumes:
+    - ./redis.conf:/usr/local/etc/redis/redis.conf
+    ports:
+     - "${REDIS_PORT}:${REDIS_PORT}"
+    restart: unless-stopped
+    networks:
+      - redis
