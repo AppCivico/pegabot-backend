@@ -71,4 +71,13 @@ export default {
   },
 
   getGitHead: async () => execSync('git rev-parse HEAD', { encoding: 'utf8' }),
+
+  getTimelineUser: (apiRes) => {
+    if (!apiRes || !apiRes[0]) return {};
+    const { user } = apiRes[0];
+    const timeline = apiRes;
+    timeline.forEach((e) => { delete e.user; });
+
+    return { user, timeline };
+  },
 };

@@ -12,7 +12,9 @@ import library from './library';
 import redis from './redis';
 
 // Import DB modules
-import { Request, Analysis, UserData } from './infra/database/index';
+import {
+  Request, Analysis, UserData, ApiData,
+} from './infra/database/index';
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
@@ -50,13 +52,17 @@ module.exports = (screenName, config, index = {
   // weight of these index
   let indexCount = 0;
   // get tweets timeline. We will use it for both the user and sentiment/temporal/network calculations
-  const timeline = await client.get('statuses/user_timeline', param).catch((err) => err);
+  const apiAnswer = await client.get('statuses/user_timeline', param).catch((err) => err);
+  const { timeline, user } = library.getTimelineUser(apiAnswer);
 
   // get and store rate limits
   if (getData) timeline.rateLimit = await library.getRateStatus(timeline);
 
+  // store api response
+  const { id: apiDataID } = await ApiData.create({ statusesUserTimeline: { user, timeline }, params: param });
+
   // store apiResponse on database and get request instance
-  const newRequest = await Request.create({ screenName, apiResponse: { timeline }, gitHead: await library.getGitHead() });
+  const newRequest = await Request.create({ screenName, apiDataID, gitHead: await library.getGitHead() });
 
   if (timeline.errors) {
     if (cb) cb(timeline, null);
@@ -72,10 +78,7 @@ module.exports = (screenName, config, index = {
         if (index.user === false) {
           callback();
         } else {
-          let data = {};
-          // get user data from statuses/user_timeline endpoint instead of the users/show endpoint
-          data = timeline[0].user;
-
+          const data = user;
           const res = await userIndex(data);
           indexCount += res[1];
           callback(null, res[0], data);
@@ -128,7 +131,7 @@ module.exports = (screenName, config, index = {
           let res2 = [];
           let res3 = [];
           if (index.temporal !== false) {
-            res1 = await temporalIndex(data);
+            res1 = await temporalIndex(data, user);
             indexCount += res1[1];
           }
           if (index.network !== false) {
@@ -158,7 +161,6 @@ module.exports = (screenName, config, index = {
       return err;
     }
     // Save all results in the correct variable
-    const user = results[0][1];
     let userScore = results[0][0];
     let friendsScore = (results[1] + (results[2] * 1.5)) / (2 * 1.5);
     let temporalScore = results[3][0];
@@ -219,14 +221,13 @@ module.exports = (screenName, config, index = {
 
     // add data from twitter to complement return (if getDate is true) and save to database
     const data = {};
-    const userData = timeline[0].user;
 
-    data.created_at = userData.created_at;
-    data.user_id = userData.id_str;
-    data.user_name = userData.name;
-    data.following = userData.friends_count;
-    data.followers = userData.followers_count;
-    data.number_tweets = userData.statuses_count;
+    data.created_at = user.created_at;
+    data.user_id = user.id_str;
+    data.user_name = user.name;
+    data.following = user.friends_count;
+    data.followers = user.followers_count;
+    data.number_tweets = user.statuses_count;
 
     data.hashtags = hashtagsUsed;
     data.mentions = mentionsUsed;

@@ -13,10 +13,6 @@ export default class Request extends Model {
         allowNull: false,
         type: DataTypes.STRING,
       },
-      apiResponse: {
-        allowNull: false,
-        type: DataTypes.JSON,
-      },
       gitHead: {
         allowNull: true,
         type: DataTypes.STRING,
@@ -26,6 +22,10 @@ export default class Request extends Model {
         type: DataTypes.INTEGER,
       },
       userDataID: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
+      },
+      apiDataID: {
         allowNull: true,
         type: DataTypes.INTEGER,
       },

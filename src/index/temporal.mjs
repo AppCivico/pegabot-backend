@@ -1,6 +1,6 @@
 import library from '../library';
 
-export default async (data) => {
+export default async (data, user) => {
   const creationArray = [];
   const delayTwoTweets = [];
 
@@ -20,8 +20,8 @@ export default async (data) => {
   }
 
   // Calculate tweets-by-day ratio
-  const age = library.convertTwitterDateToDaysAge(data[0].user.created_at);
-  const numberOfTweets = data[0].user.statuses_count;
+  const age = library.convertTwitterDateToDaysAge(user.created_at);
+  const numberOfTweets = user.statuses_count;
   const ratioTweetsDay = numberOfTweets / age;
   const ratioTweetScore = ratioTweetsDay * 0.015;
 
