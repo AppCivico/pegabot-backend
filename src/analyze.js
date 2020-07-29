@@ -74,7 +74,7 @@ module.exports = (screenName, config, index = {
   const apiAnswer = await client.get('statuses/user_timeline', param).catch((err) => err);
 
   // if there's an error, save the api response as is and update the new request entry with it
-  if (apiAnswer.errors) {
+  if (!apiAnswer || apiAnswer.error || apiAnswer.errors) {
     const { id: apiDataID } = await ApiData.create({ statusesUserTimeline: apiAnswer, params: param });
     newRequest.apiDataID = apiDataID;
     newRequest.save();
