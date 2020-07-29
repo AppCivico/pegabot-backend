@@ -4,6 +4,6 @@ WORKDIR /home/node/app
 
 COPY . .
 
-RUN yarn
+RUN npm i
 
 CMD [ "npm", "run", "start" ]
