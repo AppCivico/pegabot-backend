@@ -66,24 +66,34 @@ module.exports = (screenName, config, index = {
   // Index count is the divisor for the final average score, it is increase at same time of the index score calculation according to the
   // weight of these index
   let indexCount = 0;
+
+  // store new client request and get request instance
+  const newRequest = await Request.create({ screenName, gitHead: await library.getGitHead() });
+
   // get tweets timeline. We will use it for both the user and sentiment/temporal/network calculations
   const apiAnswer = await client.get('statuses/user_timeline', param).catch((err) => err);
+
+  // if there's an error, save the api response as is and update the new request entry with it
+  if (apiAnswer.errors) {
+    const { id: apiDataID } = await ApiData.create({ statusesUserTimeline: apiAnswer, params: param });
+    newRequest.apiDataID = apiDataID;
+    newRequest.save();
+    if (cb) cb(apiAnswer, null);
+    reject(apiAnswer);
+    return apiAnswer;
+  }
+
+  // format api answer
   const { timeline, user } = library.getTimelineUser(apiAnswer);
 
   // get and store rate limits
-  if (getData) timeline.rateLimit = await library.getRateStatus(timeline);
+  if (getData && timeline) timeline.rateLimit = await library.getRateStatus(timeline);
 
-  // store api response
+  // store formated api response
   const { id: apiDataID } = await ApiData.create({ statusesUserTimeline: { user, timeline }, params: param });
+  newRequest.apiDataID = apiDataID;
+  newRequest.save();
 
-  // store apiResponse on database and get request instance
-  const newRequest = await Request.create({ screenName, apiDataID, gitHead: await library.getGitHead() });
-
-  if (timeline.errors) {
-    if (cb) cb(timeline, null);
-    reject(timeline);
-    return timeline;
-  }
 
   // All the following functions will be executing at the same time and then call the final one
   async.parallel([
