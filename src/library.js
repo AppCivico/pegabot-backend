@@ -1,4 +1,23 @@
 import { execSync } from 'child_process';
+import { Op } from 'sequelize';
+import { Request } from './infra/database/index';
+
+function getCacheInterval(interval) {
+  let newInterval = interval || process.env.CACHE_INTERVAL;
+  if (!newInterval || !newInterval.match(/[0-9]{1,}_(days|hours|minutes|seconds)/i)) newInterval = '10_days';
+  const splitStr = newInterval.split('_');
+
+  const value = splitStr[0];
+  const time = splitStr[1];
+  const date = new Date();
+
+  if (time === 'days') date.setDate(date.getDate() - value);
+  if (time === 'hours') date.setHours(date.getHours() - value);
+  if (time === 'minutes') date.setMinutes(date.getMinutes() - value);
+  if (time === 'seconds') date.setSeconds(date.getSeconds() - value);
+
+  return date;
+}
 
 const editDistance = (string1, string2) => {
   const s1 = string1.toLowerCase();
@@ -79,5 +98,43 @@ export default {
     timeline.forEach((e) => { delete e.user; });
 
     return { user, timeline };
+  },
+
+  getCachedRequest: async (screenName, interval) => {
+    const startDate = new Date();
+    const endDate = getCacheInterval(interval);
+
+    const cached = await Request.findOne({
+      where: {
+        screenName,
+        createdAt: { [Op.between]: [startDate, endDate] },
+      },
+      order: [['createdAt', 'DESC']],
+      include: ['analysis', 'userdata'],
+      raw: true,
+    });
+    if (!cached || !cached.id || !cached.analysisID) return null;
+    return cached;
+  },
+
+  formatCached: (cached, getData) => {
+    const res = cached['analysis.fullResponse'];
+
+    if (getData) {
+      const data = {};
+      data.created_at = cached['userdata.profileCreatedAt'];
+      data.user_id = cached['userdata.twitterID'];
+      data.user_name = cached['userdata.username'];
+      data.following = cached['userdata.followingCount'];
+      data.followers = cached['userdata.followersCount'];
+      data.number_tweets = cached['userdata.statusesCount'];
+
+      data.hashtags = cached['userdata.hashtagsUsed'];
+      data.mentions = cached['userdata.hashtagsUsed'];
+
+      res.twitter_data = data;
+      res.rate_limit = {};
+    }
+    return res;
   },
 };

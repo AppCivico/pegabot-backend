@@ -9,7 +9,6 @@ import temporalIndex from './index/temporal';
 import networkIndex from './index/network';
 import sentimentIndex from './index/sentiment';
 import library from './library';
-import redis from './redis';
 
 // Import DB modules
 import {
@@ -18,7 +17,7 @@ import {
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
-}, sentimentLang, getData, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
+}, sentimentLang, getData, chaceInterval, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
   if (!screenName || !config) {
     const error = 'You need to provide an username to analyze and a config for twitter app';
     if (cb) cb(error, null);
@@ -30,6 +29,14 @@ module.exports = (screenName, config, index = {
     if (cb) cb(error, null);
     reject(error);
     return error;
+  }
+
+  let cachedResult = await library.getCachedRequest(screenName, chaceInterval);
+  if (cachedResult) {
+    cachedResult = library.formatCached(cachedResult, getData);
+    if (cb) cb(null, cachedResult);
+    resolve(cachedResult);
+    return cachedResult;
   }
 
   const twitterParams = config;
@@ -137,10 +144,8 @@ module.exports = (screenName, config, index = {
           if (index.network !== false) {
             res2 = await networkIndex(data);
             indexCount += res2[1];
-            if (getData) {
-              hashtagsUsed = res2[2]; // eslint-disable-line prefer-destructuring
-              mentionsUsed = res2[3]; // eslint-disable-line prefer-destructuring
-            }
+            hashtagsUsed = res2[2]; // eslint-disable-line prefer-destructuring
+            mentionsUsed = res2[3]; // eslint-disable-line prefer-destructuring
           }
           if (index.sentiment !== false) {
             res3 = await sentimentIndex(data, sentimentLang);

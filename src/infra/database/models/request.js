@@ -1,6 +1,6 @@
 import { Model } from 'sequelize';
 
-export default class Request extends Model {
+const requestModel = class Request extends Model {
   static init(sequelize, DataTypes) {
     return super.init({
       id: {
@@ -34,4 +34,20 @@ export default class Request extends Model {
       modelName: 'Requests',
     });
   }
-}
+};
+
+requestModel.associate = (models) => {
+  requestModel.hasOne(models.Analysis, {
+    as: 'analysis', foreignKey: 'id', sourceKey: 'analysisID', onDelete: 'CASCADE', onUpdate: 'CASCADE',
+  });
+
+  requestModel.hasOne(models.UserData, {
+    as: 'userdata', foreignKey: 'id', sourceKey: 'userDataID', onDelete: 'CASCADE', onUpdate: 'CASCADE',
+  });
+
+  requestModel.hasOne(models.ApiData, {
+    as: 'apidata', foreignKey: 'id', sourceKey: 'apiDataID', onDelete: 'CASCADE', onUpdate: 'CASCADE',
+  });
+};
+
+export default requestModel;
