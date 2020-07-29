@@ -2,6 +2,13 @@ import { execSync } from 'child_process';
 import { Op } from 'sequelize';
 import { Request } from './infra/database/index';
 
+/**
+ * Configure a date to complete the cached result time rante
+ * @param {string} interval - This string must be a number and a valid time period (days|hours|minutes|seconds) separated by an underline
+ * @return {Date} A date object
+ * @example
+ * getCacheInterval('2_days')
+ */
 function getCacheInterval(interval) {
   let newInterval = interval || process.env.CACHE_INTERVAL;
   if (!newInterval || !newInterval.match(/[0-9]{1,}_(days|hours|minutes|seconds)/i)) newInterval = '10_days';
@@ -100,6 +107,15 @@ export default {
     return { user, timeline };
   },
 
+
+  /**
+ * Get cached result data for an user withing the desired time interval
+ * @param {string} screenName - the name of the user
+ * @param {string} interval - a string to set the desired time range (See: getCacheInterval)
+ * @return {object} An object containing the results of a previous analysis
+ * @example
+ * getCachedRequest('myUnser123','3_hours')
+ */
   getCachedRequest: async (screenName, interval) => {
     const startDate = new Date();
     const endDate = getCacheInterval(interval);
@@ -107,12 +123,14 @@ export default {
     const cached = await Request.findOne({
       where: {
         screenName,
-        createdAt: { [Op.between]: [startDate, endDate] },
+        createdAt: { [Op.between]: [endDate, startDate] },
+        cachedRequestID: null, // cant be a request that used another cached request
       },
-      order: [['createdAt', 'DESC']],
-      include: ['analysis', 'userdata'],
+      order: [['createdAt', 'DESC']], // select the newest entry
+      include: ['analysis', 'userdata'], // get extra data as well
       raw: true,
     });
+
     if (!cached || !cached.id || !cached.analysisID) return null;
     return cached;
   },

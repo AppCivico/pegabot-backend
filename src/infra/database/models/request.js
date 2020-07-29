@@ -29,6 +29,10 @@ const requestModel = class Request extends Model {
         allowNull: true,
         type: DataTypes.INTEGER,
       },
+      cachedRequestID: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
+      },
     }, {
       sequelize,
       modelName: 'Requests',

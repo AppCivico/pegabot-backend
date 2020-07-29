@@ -12,12 +12,12 @@ import library from './library';
 
 // Import DB modules
 import {
-  Request, Analysis, UserData, ApiData,
+  Request, Analysis, UserData, ApiData, CachedRequest,
 } from './infra/database/index';
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
-}, sentimentLang, getData, chaceInterval, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
+}, sentimentLang, getData, cacheInterval, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
   if (!screenName || !config) {
     const error = 'You need to provide an username to analyze and a config for twitter app';
     if (cb) cb(error, null);
@@ -31,8 +31,16 @@ module.exports = (screenName, config, index = {
     return error;
   }
 
-  let cachedResult = await library.getCachedRequest(screenName, chaceInterval);
+
+  // check if we have a saved analysis of that user withing the desired time interval
+  let cachedResult = await library.getCachedRequest(screenName, cacheInterval);
   if (cachedResult) {
+    const { id: cachedResultID } = cachedResult; // use the original result to add an entry in the CachedRequest table
+    const { id: cachedRequestID } = await CachedRequest.create({ cachedResultID }).then((res) => res.dataValues);
+    // save the current request but link it with the CachedRequest we just created
+    await Request.create({ screenName, gitHead: await library.getGitHead(), cachedRequestID });
+
+    // format and return the cached result
     cachedResult = library.formatCached(cachedResult, getData);
     if (cb) cb(null, cachedResult);
     resolve(cachedResult);
