@@ -11,6 +11,7 @@ services:
       - "${EXPOSED_PORT}:${PORT}"
     expose: 
       - "${EXPOSED_PORT}"
+    network_mode: "bridge"
     # volumes:
     #   - .:/home/node/app
     #   - /home/node/app/node_modules
