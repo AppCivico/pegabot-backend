@@ -148,6 +148,29 @@ O valor do retorno é um objeto que contem
 }
 ```
 
+##### Banco de Dados PSQL
+
+O Pegabot usa um sistema de cache para evitar refazer analises no mesmo usuário.
+Esse sistema de cache usa um Banco de Dados PSQL.
+
+Como configurar o Banco de Dados PSQL:
+How to set-up the PostgreSQL database:
+
+1. Instale e configura o PSQL na sua máquina
+2. Cria um banco de dados para o pegabots. Se quiser, você pode criar um novo usuário com senha para ser o dono da banco de dados, ou só usar o usuário padrão postgres.
+3. Preencha os dados do banco no arquivo .env. Examplo:
+
+```
+DATABASE_HOST="127.0.0.1"
+DATABASE_USER="postgres"
+DATABASE_PASSWORD=""
+DATABASE_NAME="pegabot"
+```
+
+4. Instale o módulo npm `sequelize-cli`
+5. Execute as migrations com `sequelize-cli db:migrate`
+
+
 **spottingbot é um projeto inspirado por [Botometer](https://botometer.iuni.iu.edu/#!/), um porjeto [OSoMe](https://osome.iuni.iu.edu/).**
 
 **Esse projeto é parta de iniciativa [PegaBot](http://www.pegabot.com.br).**
