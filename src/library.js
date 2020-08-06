@@ -37,6 +37,28 @@ function convertTwitterResetTime(timestamp) {
   }
 }
 
+async function getRateLimits(client, useBearerToke) {
+  try {
+    let twitterClient = client;
+    if (!twitterClient) twitterClient = await getTwitterClient(useBearerToke);
+    const results = await twitterClient.get('application/rate_limit_status', { resources: 'statuses' }).catch((e) => e);
+    if (results && results.resources && results.resources.statuses && results.resources.statuses) {
+      const aux = results.resources.statuses['/statuses/user_timeline'];
+      aux.toReset = convertTwitterResetTime(aux.reset);
+      if (aux.toReset) {
+        delete aux.reset;
+      } else {
+        aux.toReset = aux.reset;
+      }
+      return aux;
+    }
+
+    return results;
+  } catch (error) {
+    return { error };
+  }
+}
+
 
 /**
  * Configure a date to complete the cached result time rante
@@ -124,7 +146,7 @@ export default {
   },
 
   getRateStatus: (res) => {
-    if (!res || !res._headers) return {}; // eslint-disable-line no-underscore-dangle
+    if (!res || !res._headers) return getRateLimits(null, true) || {}; // eslint-disable-line no-underscore-dangle
     const remaining = res._headers.get('x-rate-limit-remaining'); // eslint-disable-line no-underscore-dangle
     const limit = res._headers.get('x-rate-limit-limit'); // eslint-disable-line no-underscore-dangle
     const delta = (res._headers.get('x-rate-limit-reset') * 1000) - Date.now(); // eslint-disable-line no-underscore-dangle
@@ -192,25 +214,6 @@ export default {
     return res;
   },
 
-  getRateLimits: async (client, useBearerToke) => {
-    try {
-      let twitterClient = client;
-      if (!twitterClient) twitterClient = await getTwitterClient(useBearerToke);
-      const results = await twitterClient.get('application/rate_limit_status', { resources: 'statuses' }).catch((e) => e);
-      if (results && results.resources && results.resources.statuses && results.resources.statuses) {
-        const aux = results.resources.statuses['/statuses/user_timeline'];
-        aux.toReset = convertTwitterResetTime(aux.reset);
-        if (aux.toReset) {
-          delete aux.reset;
-        } else {
-          aux.toReset = aux.reset;
-        }
-        return aux;
-      }
+  getRateLimits,
 
-      return results;
-    } catch (error) {
-      return { error };
-    }
-  },
 };
