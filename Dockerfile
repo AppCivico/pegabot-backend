@@ -9,4 +9,4 @@ COPY . .
 
 RUN npx sequelize-cli db:migrate
 
-CMD ["babel-node", "src/index.js" ]
+CMD ["npx", "babel-node", "src/index.js" ]
