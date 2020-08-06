@@ -238,6 +238,13 @@ app.get('/feedback', (req, res) => {
   res.json(data);
 });
 
+app.get('/user-timeline-rate-limit', async (req, res) => {
+  const rateLimits = await library.getRateLimits(null, true);
+  let status = 200;
+  if (!rateLimits || rateLimits.error) status = 500;
+  res.status(status).json(rateLimits);
+});
+
 app.get('/status', (req, res) => {
   res.sendStatus(200);
 });

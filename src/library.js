@@ -1,6 +1,42 @@
 import { execSync } from 'child_process';
 import { Op } from 'sequelize';
+import TwitterLite from 'twitter-lite';
 import { Request } from './infra/database/index';
+
+
+async function getTwitterClient(useBearerToke) {
+  const config = {
+    consumer_key: process.env.TWITTER_CONSUMER_KEY,
+    consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+    access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
+    access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+  };
+
+  const twitterParams = config;
+  // Create Twitter client
+  let client = new TwitterLite(twitterParams);
+
+  // If no access token and secret are provided, request a bearer token to make an App-auth
+  if (!config.access_token_key || !config.access_token_secret || useBearerToke) {
+    const bearerToken = await client.getBearerToken();
+    twitterParams.bearer_token = bearerToken.access_token;
+    client = new TwitterLite(twitterParams); // create new Twitter Client with bearerToken
+  }
+
+  return client;
+}
+
+function convertTwitterResetTime(timestamp) {
+  try {
+    const delta = (timestamp * 1000) - Date.now();
+    const toReset = Math.ceil(delta / 1000 / 60);
+    return toReset;
+  } catch (error) {
+    console.log('error', error);
+    return null;
+  }
+}
+
 
 /**
  * Configure a date to complete the cached result time rante
@@ -154,5 +190,27 @@ export default {
       res.rate_limit = {};
     }
     return res;
+  },
+
+  getRateLimits: async (client, useBearerToke) => {
+    try {
+      let twitterClient = client;
+      if (!twitterClient) twitterClient = await getTwitterClient(useBearerToke);
+      const results = await twitterClient.get('application/rate_limit_status', { resources: 'statuses' }).catch((e) => e);
+      if (results && results.resources && results.resources.statuses && results.resources.statuses) {
+        const aux = results.resources.statuses['/statuses/user_timeline'];
+        aux.toReset = convertTwitterResetTime(aux.reset);
+        if (aux.toReset) {
+          delete aux.reset;
+        } else {
+          aux.toReset = aux.reset;
+        }
+        return aux;
+      }
+
+      return results;
+    } catch (error) {
+      return { error };
+    }
   },
 };
