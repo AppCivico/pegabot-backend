@@ -68,8 +68,8 @@ async function getRateLimits(client, useBearerToke) {
  * getCacheInterval('2_days')
  */
 function getCacheInterval(interval) {
-  let newInterval = interval || process.env.CACHE_INTERVAL;
-  if (!newInterval || !newInterval.match(/[0-9]{1,}_(days|hours|minutes|seconds)/i)) newInterval = '10_days';
+  let newInterval = interval || process.env.DEFAULT_CACHE_INTERVAL;
+  if (!newInterval || !newInterval.match(/[0-9]{1,}_(days|hours|minutes|seconds)/i)) newInterval = '1_days';
   const splitStr = newInterval.split('_');
 
   const value = splitStr[0];
@@ -208,6 +208,7 @@ export default {
       data.hashtags = cached['userdata.hashtagsUsed'];
       data.mentions = cached['userdata.hashtagsUsed'];
 
+      data.usedCache = true;
       res.twitter_data = data;
       res.rate_limit = {};
     }
