@@ -107,6 +107,12 @@ const editDistance = (string1, string2) => {
 
 export default {
 
+  getLoggingtext: (explanations) => {
+    if (!explanations || Array.isArray(explanations) === false) return '';
+    const res = explanations.join('\n');
+    return res;
+  },
+
   getNumberOfDigit: (string) => string.replace(/[^0-9]/g, '').length,
 
   convertTwitterDateToDaysAge: (date) => {

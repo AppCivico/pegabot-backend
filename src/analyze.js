@@ -17,7 +17,7 @@ import {
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
-}, sentimentLang, getData, cacheInterval, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
+}, sentimentLang, getData, cacheInterval, verbose, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
   if (!screenName || !config) {
     const error = 'You need to provide an username to analyze and a config for twitter app';
     if (cb) cb(error, null);
@@ -31,6 +31,7 @@ module.exports = (screenName, config, index = {
     return error;
   }
 
+  const explanations = [`Análise do usuário: ${screenName}`];
 
   // check if we have a saved analysis of that user withing the desired time interval
   let cachedResult = await library.getCachedRequest(screenName, cacheInterval);
@@ -40,8 +41,10 @@ module.exports = (screenName, config, index = {
     // save the current request but link it with the CachedRequest we just created
     await Request.create({ screenName, gitHead: await library.getGitHead(), cachedRequestID });
 
+    explanations.push(`Resultado foi cacheado com o resultado de ID ${cachedResultID}`);
     // format and return the cached result
     cachedResult = library.formatCached(cachedResult, getData);
+    if (verbose) cachedResult.logging = explanations.join('\n');
     if (cb) cb(null, cachedResult);
     resolve(cachedResult);
     return cachedResult;
@@ -94,6 +97,7 @@ module.exports = (screenName, config, index = {
   newRequest.apiDataID = apiDataID;
   newRequest.save();
 
+  explanations.push('Carregou a timeline com o endpoint "statuses/user_timeline"');
 
   // All the following functions will be executing at the same time and then call the final one
   async.parallel([
@@ -104,7 +108,9 @@ module.exports = (screenName, config, index = {
           callback();
         } else {
           const data = user;
-          const res = await userIndex(data);
+          const res = await userIndex(data, explanations);
+          explanations.push(`Score User: ${res[0]}`);
+          explanations.push(`Peso do Score Network: ${res[1]}`);
           indexCount += res[1];
           callback(null, res[0], data);
         }
@@ -156,17 +162,23 @@ module.exports = (screenName, config, index = {
           let res2 = [];
           let res3 = [];
           if (index.temporal !== false) {
-            res1 = await temporalIndex(data, user);
+            res1 = await temporalIndex(data, user, explanations);
+            explanations.push(`Score Temporal: ${res1[0]}`);
+            explanations.push(`Peso do Score Temporal: ${res1[1]}`);
             indexCount += res1[1];
           }
           if (index.network !== false) {
-            res2 = await networkIndex(data);
-            indexCount += res2[1];
+            res2 = await networkIndex(data, explanations);
+            explanations.push(`Score Network: ${res2[0]}`);
+            explanations.push(`Peso do Score Network: ${res2[1]}`);
             hashtagsUsed = res2[2]; // eslint-disable-line prefer-destructuring
             mentionsUsed = res2[3]; // eslint-disable-line prefer-destructuring
+            indexCount += res2[1];
           }
           if (index.sentiment !== false) {
-            res3 = await sentimentIndex(data, sentimentLang);
+            res3 = await sentimentIndex(data, sentimentLang, explanations);
+            explanations.push(`Score Sentiment: ${res3[0]}`);
+            explanations.push(`Peso do Score Sentiment: ${res3[1]}`);
             indexCount += res3[1];
           }
           callback(null, [res1[0], res2[0], res3[0]]);
@@ -183,6 +195,9 @@ module.exports = (screenName, config, index = {
       reject(err);
       return err;
     }
+
+    explanations.push('\nCálculo do resultado final\n');
+
     // Save all results in the correct variable
     let userScore = results[0][0];
     let friendsScore = (results[1] + (results[2] * 1.5)) / (2 * 1.5);
@@ -198,10 +213,21 @@ module.exports = (screenName, config, index = {
     if (!isNumber(networkScore)) networkScore = null;
     if (!isNumber(sentimentScore)) sentimentScore = null;
 
+    explanations.push(`Score User: ${userScore}`);
+    explanations.push(`Score Friend (Ignorado): ${friendsScore}`);
+    explanations.push(`Score Temporal: ${temporalScore}`);
+    explanations.push(`Score Netword: ${networkScore}`);
+    explanations.push(`Score Sentiment: ${sentimentScore}`);
+
     const scoreSum = userScore + friendsScore + temporalScore + networkScore + sentimentScore;
 
     // Adjustment for not getting any score more than 0.99 in the final result
     const total = Math.min(scoreSum / indexCount, 0.99);
+
+    explanations.push(`Somamos todos os ${indexCount} scores que temos: ${userScore} + ${friendsScore} + ${temporalScore} + ${networkScore} + ${sentimentScore} = ${scoreSum}`);
+    explanations.push('Dividimos a soma pela quantidade de scores e limitamos o resultado a 0.99');
+    explanations.push(`Fica: ${scoreSum} / ${indexCount} = ${total}`);
+    explanations.push(`Total: ${total}`);
 
     if (networkScore > 1) {
       networkScore /= 2;
@@ -258,6 +284,10 @@ module.exports = (screenName, config, index = {
     if (getData) {
       object.twitter_data = data;
       object.rate_limit = timeline.rateLimit;
+    }
+
+    if (verbose) {
+      object.logging = library.getLoggingtext(explanations);
     }
 
     // save Analysis Data on database

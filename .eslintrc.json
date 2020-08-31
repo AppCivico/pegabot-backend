@@ -18,7 +18,7 @@
         "no-console": "off",
         "max-len": [
             "error",
-            150,
+            180,
             {
                 "code": 120,
                 "ignoreUrls": true,

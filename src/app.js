@@ -109,6 +109,7 @@ app.get('/botometer', async (req, res) => {
   const cacheInterval = req.query.cache_duration;
   const key = `${target}:${profile}`;
   const cachedKey = mcache.get(key);
+  const { logging } = req.query;
 
   const referer = req.get('referer');
   const sentimentLang = library.getDefaultLanguage(referer);
@@ -125,7 +126,7 @@ app.get('/botometer', async (req, res) => {
     res.send(cachedKey);
   } else if (target === 'profile') {
     try {
-      const result = await spottingbot(profile, config, { friend: false }, sentimentLang, getData, cacheInterval).catch((err) => err);
+      const result = await spottingbot(profile, config, { friend: false }, sentimentLang, getData, cacheInterval, logging).catch((err) => err);
 
       if (result && result.profiles && result.profiles[0]) console.log(result.profiles[0]);
 

@@ -32,7 +32,7 @@ Fazmos o mesmo com as menções e removemos ambas as pontuações de 1.
 
 Depois, calculamos a média das duas pontuações e somamos-as a pontuação média da rede.
 
-Pontuação ((Total de hashtags + menções) / (Quantidade de dado * 2)) + ((1 - (número de diferentes hashtags usados / total de hashtags)) + (1 -(número de diferentes menções usadas / total de menções / 2 )))
+Pontuação = ((Total de hashtags + menções) / (Quantidade de dado * 2)) + ((1 - (número de diferentes hashtags usados / total de hashtags)) + (1 -(número de diferentes menções usadas / total de menções / 2 )))
 
 Mais explicações:
 
