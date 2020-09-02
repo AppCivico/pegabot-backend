@@ -7,6 +7,6 @@ RUN npm install && npm cache clean --force
 
 COPY . .
 
-RUN npx sequelize-cli db:migrate
+# RUN npx sequelize-cli db:migrate
 
 CMD ["npx", "babel-node", "src/index.js" ]
