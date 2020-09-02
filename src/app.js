@@ -109,7 +109,7 @@ app.get('/botometer', async (req, res) => {
   const cacheInterval = req.query.cache_duration;
   const key = `${target}:${profile}`;
   const cachedKey = mcache.get(key);
-  const { logging } = req.query;
+  const logging = req.query.verbose || req.query.logging;
 
   const referer = req.get('referer');
   const sentimentLang = library.getDefaultLanguage(referer);
