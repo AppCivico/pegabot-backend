@@ -145,7 +145,7 @@ app.get('/botometer', async (req, res) => {
 
       if (logging === '1' && result.logging) {
         const loggingText = result.logging;
-        const fileName = `${profile}_analise`;
+        const fileName = `${profile}_analise.txt`;
         res.set({ 'Content-Disposition': `attachment; filename="${fileName}"`, 'Content-type': 'application/octet-stream' });
         res.send(loggingText);
       } else {
