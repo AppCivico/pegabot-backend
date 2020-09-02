@@ -286,7 +286,7 @@ module.exports = (screenName, config, index = {
       object.rate_limit = timeline.rateLimit;
     }
 
-    if (verbose) {
+    if (verbose === '1') {
       object.logging = library.getLoggingtext(explanations);
     }
 

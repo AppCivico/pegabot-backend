@@ -142,7 +142,15 @@ app.get('/botometer', async (req, res) => {
       // result.profiles.forEach((currentProfile) => {
       //   currentProfile.bot_probability.all = Math.min(currentProfile.bot_probability.all, 0.99);
       // });
-      res.json(result);
+
+      if (logging === '1' && result.logging) {
+        const loggingText = result.logging;
+        const fileName = `${profile}_analise.txt`;
+        res.set({ 'Content-Disposition': `attachment; filename="${fileName}"`, 'Content-type': 'text/txt' });
+        res.send(loggingText);
+      } else {
+        res.json(result);
+      }
     } catch (error) {
       console.log('error', error);
       res.status(500).json({ metadata: { error } });
