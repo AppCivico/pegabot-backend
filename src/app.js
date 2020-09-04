@@ -193,10 +193,6 @@ app.post('/feedback', async (req, res) => {
   const { opinion } = req.body;
   const analysisID = req.body.analysis_id;
 
-  console.log('req.body', req.body);
-  console.log('analysisID', analysisID);
-
-
   const result = await library.saveFeedback(analysisID, opinion);
   if (result && result.id) {
     res.status(200).send(result);
