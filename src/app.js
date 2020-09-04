@@ -189,52 +189,20 @@ app.get('/botometer', async (req, res) => {
 
 
 // request
-app.post('/feedback', (req, res) => {
+app.post('/feedback', async (req, res) => {
   const { opinion } = req.body;
-  const { profile } = req.body;
-  if (!opinion || !profile) {
-    res.status(400).send('JSON Parameters opinion and profile required.');
-    return;
-  }
-  if (opinion !== 'approve' && opinion !== 'disapprove') {
-    res.status(400).send('opinion is not correct, should be approve or disapprove.');
-    return;
-  }
-  if (typeof profile !== 'object' || typeof profile.username === 'undefined' || typeof profile.bot_probability === 'undefined') {
-    res.status(400).send('profile should be a JSON object and need to contains at least an username and a bot_probability.');
-    return;
-  }
-  const screenName = profile.username;
-  if (fs.existsSync('opinion.json') === false) {
-    const object = {
-      approve: {
-        profiles: [],
-      },
-      disapprove: {
-        profiles: [],
-      },
-    };
-    fs.writeFileSync('opinion.json', JSON.stringify(object));
-  }
-  const content = fs.readFileSync('opinion.json');
-  const data = JSON.parse(content);
-  const index = data[opinion].profiles.findIndex((element) => element.username === screenName);
+  const analysisID = req.body.analysis_id;
 
-  if (index !== -1) {
-    if (data[opinion].profiles[index].bot_probability.all <= (profile.bot_probability.all + 0.10)
-      && data[opinion].profiles[index].bot_probability.all >= (profile.bot_probability.all - 0.10)) {
-      data[opinion].profiles[index].count += 1;
-    } else {
-      profile.count = 1;
-      data[opinion].profiles[index] = profile;
-    }
+  console.log('req.body', req.body);
+  console.log('analysisID', analysisID);
+
+
+  const result = await library.saveFeedback(analysisID, opinion);
+  if (result && result.id) {
+    res.status(200).send(result);
   } else {
-    profile.count = 1;
-    data[opinion].profiles.push(profile);
+    res.status(500).send(result);
   }
-
-  fs.writeFileSync('opinion.json', JSON.stringify(data));
-  res.send('OK');
 });
 
 app.get('/feedback', (req, res) => {

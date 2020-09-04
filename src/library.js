@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import { Op } from 'sequelize';
 import TwitterLite from 'twitter-lite';
-import { Request } from './infra/database/index';
+import { Request, Feedback } from './infra/database/index';
 
 
 async function getTwitterClient(useBearerToke) {
@@ -222,5 +222,22 @@ export default {
   },
 
   getRateLimits,
+  saveFeedback: async (analysisID, opinion) => {
+    try {
+      if (['approve', 'disapprove'].includes(opinion) === false) {
+        return { error: 'Opinion is not correct, should be "approve" or "disapprove".' };
+      }
+
+      if (!analysisID || !parseInt(analysisID, 10)) {
+        return { error: 'Send analysis_id as a number' };
+      }
+
+      const { id: newFeedbackID } = await Feedback.create({ analysisID, opinion }).then((res) => res.dataValues);
+      return { id: newFeedbackID };
+    } catch (error) {
+      console.log('error', error);
+      return { error: 'Could not save feedback.' };
+    }
+  },
 
 };

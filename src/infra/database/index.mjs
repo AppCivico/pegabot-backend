@@ -4,6 +4,7 @@ import AnalysisModel from './models/analyses';
 import UserDataModel from './models/userdata';
 import ApiDataModel from './models/apidata';
 import CachedRequestsModel from './models/cachedRequests';
+import FeedbackModel from './models/feedbacks';
 import Config from './config';
 
 const env = process.env.NODE_ENV || 'development';
@@ -23,6 +24,7 @@ const models = {
   UserData: UserDataModel.init(sequelize, Sequelize),
   ApiData: ApiDataModel.init(sequelize, Sequelize),
   CachedRequest: CachedRequestsModel.init(sequelize, Sequelize),
+  Feedback: FeedbackModel.init(sequelize, Sequelize),
 };
 
 Object.values(models)
@@ -30,9 +32,9 @@ Object.values(models)
   .forEach((model) => model.associate(models));
 
 const {
-  Request, Analysis, UserData, ApiData, CachedRequest,
+  Request, Analysis, UserData, ApiData, CachedRequest, Feedback,
 } = models;
 
 export {
-  sequelize, Sequelize, Request, Analysis, UserData, ApiData, CachedRequest,
+  sequelize, Sequelize, Request, Analysis, UserData, ApiData, CachedRequest, Feedback,
 };
