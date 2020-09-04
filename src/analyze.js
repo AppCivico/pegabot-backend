@@ -323,6 +323,8 @@ module.exports = (screenName, config, index = {
     newRequest.userDataID = newUserDataID;
     newRequest.save();
 
+    if (newAnalysisID) object.analysis_id = newAnalysisID;
+
     if (cb) cb(null, object);
     resolve(object);
     return object;
