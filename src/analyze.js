@@ -15,6 +15,8 @@ import {
   Request, Analysis, UserData, ApiData, CachedRequest,
 } from './infra/database/index';
 
+const useCache = process.env.USE_CACHE;
+
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
 }, sentimentLang, getData, cacheInterval, verbose, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
@@ -34,21 +36,24 @@ module.exports = (screenName, config, index = {
   const explanations = [`Análise do usuário: ${screenName}`];
 
   // check if we have a saved analysis of that user withing the desired time interval
-  // let cachedResult = await library.getCachedRequest(screenName, cacheInterval);
-  // if (cachedResult) {
-  //   const { id: cachedResultID } = cachedResult; // use the original result to add an entry in the CachedRequest table
-  //   const { id: cachedRequestID } = await CachedRequest.create({ cachedResultID }).then((res) => res.dataValues);
-  //   // save the current request but link it with the CachedRequest we just created
-  //   await Request.create({ screenName, gitHead: await library.getGitHead(), cachedRequestID });
+  if (useCache === '1') {
+    let cachedResult = await library.getCachedRequest(screenName, cacheInterval);
 
-  //   explanations.push(`Resultado foi cacheado com o resultado de ID ${cachedResultID}`);
-  //   // format and return the cached result
-  //   cachedResult = library.formatCached(cachedResult, getData);
-  //   if (verbose) cachedResult.logging = explanations.join('\n');
-  //   if (cb) cb(null, cachedResult);
-  //   resolve(cachedResult);
-  //   return cachedResult;
-  // }
+    if (cachedResult) {
+      const { id: cachedResultID } = cachedResult; // use the original result to add an entry in the CachedRequest table
+      const { id: cachedRequestID } = await CachedRequest.create({ cachedResultID }).then((res) => res.dataValues);
+      // save the current request but link it with the CachedRequest we just created
+      await Request.create({ screenName, gitHead: await library.getGitHead(), cachedRequestID });
+
+      explanations.push(`Resultado foi cacheado com o resultado de ID ${cachedResultID}`);
+      // format and return the cached result
+      cachedResult = library.formatCached(cachedResult, getData);
+      if (verbose) cachedResult.logging = explanations.join('\n');
+      if (cb) cb(null, cachedResult);
+      resolve(cachedResult);
+      return cachedResult;
+    }
+  }
 
   const twitterParams = config;
   // Create Twitter client
@@ -71,16 +76,16 @@ module.exports = (screenName, config, index = {
   let indexCount = 0;
 
   // store new client request and get request instance
-  // const newRequest = await Request.create({ screenName, gitHead: await library.getGitHead() });
+  const newRequest = await Request.create({ screenName, gitHead: await library.getGitHead() });
 
   // get tweets timeline. We will use it for both the user and sentiment/temporal/network calculations
   const apiAnswer = await client.get('statuses/user_timeline', param).catch((err) => err);
 
   // if there's an error, save the api response as is and update the new request entry with it
   if (!apiAnswer || apiAnswer.error || apiAnswer.errors || apiAnswer.length === 0) {
-    // const { id: apiDataID } = await ApiData.create({ statusesUserTimeline: apiAnswer, params: param });
-    // newRequest.apiDataID = apiDataID;
-    // newRequest.save();
+    const { id: apiDataID } = await ApiData.create({ statusesUserTimeline: apiAnswer, params: param });
+    newRequest.apiDataID = apiDataID;
+    newRequest.save();
     if (cb) cb(apiAnswer, null);
     reject(apiAnswer);
     return apiAnswer;
@@ -93,9 +98,9 @@ module.exports = (screenName, config, index = {
   if (getData && timeline) timeline.rateLimit = await library.getRateStatus(timeline);
 
   // store formated api response
-  // const { id: apiDataID } = await ApiData.create({ statusesUserTimeline: { user, timeline }, params: param });
-  // newRequest.apiDataID = apiDataID;
-  // newRequest.save();
+  const { id: apiDataID } = await ApiData.create({ statusesUserTimeline: { user, timeline }, params: param });
+  newRequest.apiDataID = apiDataID;
+  newRequest.save();
 
   explanations.push('Carregou a timeline com o endpoint "statuses/user_timeline"');
 
@@ -291,32 +296,32 @@ module.exports = (screenName, config, index = {
     }
 
     // save Analysis Data on database
-    // const { id: newAnalysisID } = await Analysis.create({
-    //   fullResponse: object,
-    //   total,
-    //   user: userScore,
-    //   friend: friendsScore,
-    //   sentiment: sentimentScore,
-    //   temporal: temporalScore,
-    //   network: networkScore,
-    // }).then((res) => res.dataValues);
+    const { id: newAnalysisID } = await Analysis.create({
+      fullResponse: object,
+      total,
+      user: userScore,
+      friend: friendsScore,
+      sentiment: sentimentScore,
+      temporal: temporalScore,
+      network: networkScore,
+    }).then((res) => res.dataValues);
 
     // save User Data on database
-    // const { id: newUserDataID } = await UserData.create({
-    //   username: data.user_name,
-    //   twitterID: data.user_id,
-    //   profileCreatedAt: data.created_at,
-    //   followingCount: data.following,
-    //   followersCount: data.followers,
-    //   statusesCount: data.number_tweets,
-    //   hashtagsUsed: data.hashtags,
-    //   mentionsUsed: data.mentions,
-    // }).then((res) => res.dataValues);
+    const { id: newUserDataID } = await UserData.create({
+      username: data.user_name,
+      twitterID: data.user_id,
+      profileCreatedAt: data.created_at,
+      followingCount: data.following,
+      followersCount: data.followers,
+      statusesCount: data.number_tweets,
+      hashtagsUsed: data.hashtags,
+      mentionsUsed: data.mentions,
+    }).then((res) => res.dataValues);
 
     // update request
-    // newRequest.analysisID = newAnalysisID;
-    // newRequest.userDataID = newUserDataID;
-    // newRequest.save();
+    newRequest.analysisID = newAnalysisID;
+    newRequest.userDataID = newUserDataID;
+    newRequest.save();
 
     if (cb) cb(null, object);
     resolve(object);
