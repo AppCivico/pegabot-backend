@@ -143,8 +143,8 @@ app.get('/botometer', async (req, res) => {
       //   currentProfile.bot_probability.all = Math.min(currentProfile.bot_probability.all, 0.99);
       // });
 
-      if (logging === '1' && result.logging) {
-        const loggingText = result.logging;
+      if (logging === '1' && result.profiles[0].bot_probability.info) {
+        const loggingText = result.profiles[0].bot_probability.info;
         const fileName = `${profile}_analise.txt`;
         res.set({ 'Content-Disposition': `attachment; filename="${fileName}"`, 'Content-type': 'application/octet-stream' });
         res.send(loggingText);

@@ -268,6 +268,7 @@ module.exports = (screenName, config, index = {
         },
         bot_probability: {
           all: total,
+          info: library.getLoggingtext(explanations),
         },
         user_profile_language: user.lang,
       }),
@@ -289,10 +290,6 @@ module.exports = (screenName, config, index = {
     if (getData) {
       object.twitter_data = data;
       object.rate_limit = timeline.rateLimit;
-    }
-
-    if (verbose === '1') {
-      object.logging = library.getLoggingtext(explanations);
     }
 
     // save Analysis Data on database
