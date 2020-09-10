@@ -19,7 +19,7 @@ const useCache = process.env.USE_CACHE;
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
-}, sentimentLang, getData, cacheInterval, verbose, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
+}, sentimentLang, getData, cacheInterval, verbose, origin, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
   if (!screenName || !config) {
     const error = 'You need to provide an username to analyze and a config for twitter app';
     if (cb) cb(error, null);
@@ -76,7 +76,7 @@ module.exports = (screenName, config, index = {
   let indexCount = 0;
 
   // store new client request and get request instance
-  const newRequest = await Request.create({ screenName, gitHead: await library.getGitHead() });
+  const newRequest = await Request.create({ screenName, gitHead: await library.getGitHead(), origin });
 
   // get tweets timeline. We will use it for both the user and sentiment/temporal/network calculations
   const apiAnswer = await client.get('statuses/user_timeline', param).catch((err) => err);

@@ -109,7 +109,9 @@ app.get('/botometer', async (req, res) => {
   const cacheInterval = req.query.cache_duration;
   const key = `${target}:${profile}`;
   const cachedKey = mcache.get(key);
-  const logging = req.query.verbose || req.query.logging;
+  const verbose = req.query.verbose || req.query.logging;
+  const isAdmin = req.query.is_admin;
+  const origin = isAdmin ? 'admin' : 'website';
 
   const referer = req.get('referer');
   const sentimentLang = library.getDefaultLanguage(referer);
@@ -126,7 +128,8 @@ app.get('/botometer', async (req, res) => {
     res.send(cachedKey);
   } else if (target === 'profile') {
     try {
-      const result = await spottingbot(profile, config, { friend: false }, sentimentLang, getData, cacheInterval, logging).catch((err) => err);
+      const result = await spottingbot(profile, config, { friend: false },
+        sentimentLang, getData, cacheInterval, verbose, origin).catch((err) => err);
 
       if (result && result.profiles && result.profiles[0]) console.log(result.profiles[0]);
 
@@ -143,7 +146,7 @@ app.get('/botometer', async (req, res) => {
       //   currentProfile.bot_probability.all = Math.min(currentProfile.bot_probability.all, 0.99);
       // });
 
-      if (logging === '1' && result.profiles[0].bot_probability.info) {
+      if (verbose === '1' && result.profiles[0].bot_probability.info) {
         const loggingText = result.profiles[0].bot_probability.info;
         const fileName = `${profile}_analise.txt`;
         res.set({ 'Content-Disposition': `attachment; filename="${fileName}"`, 'Content-type': 'application/octet-stream' });

@@ -33,6 +33,10 @@ const requestModel = class Request extends Model {
         allowNull: true,
         type: DataTypes.INTEGER,
       },
+      origin: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
     }, {
       sequelize,
       modelName: 'Requests',
