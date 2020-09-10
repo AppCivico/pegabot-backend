@@ -149,7 +149,7 @@ app.get('/botometer', async (req, res) => {
         res.set({ 'Content-Disposition': `attachment; filename="${fileName}"`, 'Content-type': 'application/octet-stream' });
         res.send(loggingText);
       } else {
-        delete result.profiles[0].bot_probability.info;
+        // delete result.profiles[0].bot_probability.info;
         res.json(result);
       }
     } catch (error) {
