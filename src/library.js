@@ -201,6 +201,7 @@ export default {
 
   formatCached: (cached, getData) => {
     const res = cached['analysis.fullResponse'];
+    res.profiles[0].bot_probability.info = cached['analysis.explanations'];
 
     if (getData) {
       const data = {};
@@ -218,6 +219,7 @@ export default {
       res.twitter_data = data;
       res.rate_limit = {};
     }
+
     return res;
   },
 

@@ -45,11 +45,12 @@ module.exports = (screenName, config, index = {
       // save the current request but link it with the CachedRequest we just created
       await Request.create({ screenName, gitHead: await library.getGitHead(), cachedRequestID });
 
-      explanations.push(`Resultado foi cacheado com o resultado de ID ${cachedResultID}`);
       // format and return the cached result
       cachedResult = library.formatCached(cachedResult, getData);
-      if (verbose) cachedResult.logging = explanations.join('\n');
+      if (!verbose) delete cachedResult.profiles[0].bot_probability.info;
+
       if (cb) cb(null, cachedResult);
+      console.log(JSON.stringify(cachedResult, null, 2));
       resolve(cachedResult);
       return cachedResult;
     }
@@ -251,7 +252,7 @@ module.exports = (screenName, config, index = {
       metadata: {
         count: 1,
       },
-      profiles: new Array({
+      profiles: [{
         username: param.screen_name,
         url: `https://twitter.com/${param.screen_name}`,
         avatar: user.profile_image_url,
@@ -268,11 +269,13 @@ module.exports = (screenName, config, index = {
         },
         bot_probability: {
           all: total,
-          info: library.getLoggingtext(explanations),
+          // info: ,
         },
         user_profile_language: user.lang,
-      }),
+      }],
     };
+
+    if (verbose) object.profiles[0].bot_probability.info = library.getLoggingtext(explanations);
 
     // add data from twitter to complement return (if getDate is true) and save to database
     const data = {};
@@ -301,6 +304,7 @@ module.exports = (screenName, config, index = {
       sentiment: sentimentScore,
       temporal: temporalScore,
       network: networkScore,
+      explanations,
     }).then((res) => res.dataValues);
 
     // save User Data on database
