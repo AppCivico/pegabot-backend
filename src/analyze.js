@@ -9,6 +9,7 @@ import temporalIndex from './index/temporal';
 import networkIndex from './index/network';
 import sentimentIndex from './index/sentiment';
 import library from './library';
+import document from './document';
 
 // Import DB modules
 import {
@@ -19,7 +20,7 @@ const useCache = process.env.USE_CACHE;
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
-}, sentimentLang, getData, cacheInterval, verbose, origin, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
+}, sentimentLang, getData, cacheInterval, verbose, origin, wantDocument, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
   if (!screenName || !config) {
     const error = 'You need to provide an username to analyze and a config for twitter app';
     if (cb) cb(error, null);
@@ -32,8 +33,6 @@ module.exports = (screenName, config, index = {
     reject(error);
     return error;
   }
-
-  const explanations = [`Análise do usuário: ${screenName}`];
 
   // check if we have a saved analysis of that user withing the desired time interval
   if (useCache === '1') {
@@ -103,7 +102,12 @@ module.exports = (screenName, config, index = {
   newRequest.apiDataID = apiDataID;
   newRequest.save();
 
+  const explanations = [`Análise do usuário: ${screenName}`];
   explanations.push('Carregou a timeline com o endpoint "statuses/user_timeline"');
+
+  const extraDetails = {};
+  extraDetails.TWITTER_HANDLE = screenName;
+  extraDetails.TWITTER_LINK = `https://twitter.com/${screenName}`;
 
   // All the following functions will be executing at the same time and then call the final one
   async.parallel([
@@ -114,7 +118,7 @@ module.exports = (screenName, config, index = {
           callback();
         } else {
           const data = user;
-          const res = await userIndex(data, explanations);
+          const res = await userIndex(data, explanations, extraDetails);
           explanations.push(`Score User: ${res[0]}`);
           explanations.push(`Peso do Score Network: ${res[1]}`);
           indexCount += res[1];
@@ -168,13 +172,13 @@ module.exports = (screenName, config, index = {
           let res2 = [];
           let res3 = [];
           if (index.temporal !== false) {
-            res1 = await temporalIndex(data, user, explanations);
+            res1 = await temporalIndex(data, user, explanations, extraDetails);
             explanations.push(`Score Temporal: ${res1[0]}`);
             explanations.push(`Peso do Score Temporal: ${res1[1]}`);
             indexCount += res1[1];
           }
           if (index.network !== false) {
-            res2 = await networkIndex(data, explanations);
+            res2 = await networkIndex(data, explanations, extraDetails);
             explanations.push(`Score Network: ${res2[0]}`);
             explanations.push(`Peso do Score Network: ${res2[1]}`);
             hashtagsUsed = res2[2]; // eslint-disable-line prefer-destructuring
@@ -182,7 +186,7 @@ module.exports = (screenName, config, index = {
             indexCount += res2[1];
           }
           if (index.sentiment !== false) {
-            res3 = await sentimentIndex(data, sentimentLang, explanations);
+            res3 = await sentimentIndex(data, sentimentLang, explanations, extraDetails);
             explanations.push(`Score Sentiment: ${res3[0]}`);
             explanations.push(`Peso do Score Sentiment: ${res3[1]}`);
             indexCount += res3[1];
@@ -275,7 +279,10 @@ module.exports = (screenName, config, index = {
       }],
     };
 
+    const details = await document.getExtraDetails(extraDetails);
+
     if (verbose) object.profiles[0].bot_probability.info = library.getLoggingtext(explanations);
+    if (wantDocument) object.profiles[0].bot_probability.extraDetails = details;
 
     // add data from twitter to complement return (if getDate is true) and save to database
     const data = {};
@@ -305,6 +312,7 @@ module.exports = (screenName, config, index = {
       temporal: temporalScore,
       network: networkScore,
       explanations,
+      details,
     }).then((res) => res.dataValues);
 
     // save User Data on database

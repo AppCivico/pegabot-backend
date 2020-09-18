@@ -112,6 +112,7 @@ app.get('/botometer', async (req, res) => {
   const verbose = req.query.verbose || req.query.logging;
   const isAdmin = req.query.is_admin;
   const origin = isAdmin ? 'admin' : 'website';
+  const wantsDocument = req.query.documento;
 
   const referer = req.get('referer');
   const sentimentLang = library.getDefaultLanguage(referer);
@@ -129,7 +130,7 @@ app.get('/botometer', async (req, res) => {
   } else if (target === 'profile') {
     try {
       const result = await spottingbot(profile, config, { friend: false },
-        sentimentLang, getData, cacheInterval, verbose, origin).catch((err) => err);
+        sentimentLang, getData, cacheInterval, verbose, origin, wantsDocument).catch((err) => err);
 
       if (result && result.profiles && result.profiles[0]) console.log(result.profiles[0]);
 
@@ -141,18 +142,14 @@ app.get('/botometer', async (req, res) => {
         return;
       }
 
-      // if (result && result.profiles && result.profiles[0] && result.profiles[0].language_dependent) result.profiles[0].language_dependent = null;
-      // result.profiles.forEach((currentProfile) => {
-      //   currentProfile.bot_probability.all = Math.min(currentProfile.bot_probability.all, 0.99);
-      // });
-
-      if (verbose === '1' && result.profiles[0].bot_probability.info) {
+      if (wantsDocument === '1' && result.profiles[0].bot_probability.extraDetails) {
+        res.send(result.profiles[0].bot_probability.extraDetails);
+      } else if (verbose === '1' && result.profiles[0].bot_probability.info) {
         const loggingText = result.profiles[0].bot_probability.info;
         const fileName = `${profile}_analise.txt`;
         res.set({ 'Content-Disposition': `attachment; filename="${fileName}"`, 'Content-type': 'application/octet-stream' });
         res.send(loggingText);
       } else {
-        // delete result.profiles[0].bot_probability.info;
         res.json(result);
       }
     } catch (error) {

@@ -41,6 +41,10 @@ export default class Analysis extends Model {
         allowNull: true,
         type: DataTypes.JSON,
       },
+      details: {
+        allowNull: true,
+        type: DataTypes.JSON,
+      },
     }, {
       sequelize,
       modelName: 'Analyses',

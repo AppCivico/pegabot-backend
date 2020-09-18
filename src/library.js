@@ -195,7 +195,9 @@ export default {
       raw: true,
     });
 
-    if (!cached || !cached.id || !cached.analysisID) return null;
+    // cached result need to have both the analysis.explanations and the analysis.details
+    if (!cached || !cached.id || !cached.analysisID
+      || !cached['analysis.explanations'] || !cached['analysis.details']) return null;
     return cached;
   },
 
@@ -242,4 +244,31 @@ export default {
     }
   },
 
+  getProfileCreationDate: (dateStr) => {
+    const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const newDate = new Date(dateStr);
+    const month = months[newDate.getMonth()];
+    const year = newDate.getFullYear();
+    return `${month} de ${year}`;
+  },
+
+  formatPercentage: (number) => {
+    try {
+      return number.toFixed(2);
+    } catch (error) {
+      return number;
+    }
+  },
+
+  getEmojiOnString(str) {
+    const happy = [':)', '(:', ':D'];
+    const sad = [':(', '):', 'D:'];
+
+    const result = {};
+
+    happy.forEach((e) => { if (str.includes(e)) result.happy = true; });
+    sad.forEach((e) => { if (str.includes(e)) result.sad = true; });
+
+    return result;
+  },
 };

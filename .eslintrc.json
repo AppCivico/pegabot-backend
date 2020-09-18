@@ -16,6 +16,7 @@
     },
     "rules": {
         "no-console": "off",
+        "no-param-reassign": "off",
         "max-len": [
             "error",
             180,

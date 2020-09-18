@@ -1,6 +1,6 @@
 import library from '../library';
 
-export default async (data, user, explanations = []) => {
+export default async (data, user, explanations = [], extraDetails = {}) => {
   explanations.push('\n-Análise do Score Temporal:\n');
   const creationArray = [];
   const delayTwoTweets = [];
@@ -65,6 +65,8 @@ export default async (data, user, explanations = []) => {
     weight += 1;
     explanations.push(`Score igual a zero, damos peso ${weight} a essa pontuação`);
   }
+
+  extraDetails.TWEET_MOMENT = creationArray;
 
   return [temporalScore, weight];
 };

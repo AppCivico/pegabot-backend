@@ -1,10 +1,12 @@
-export default async (data, explanations = []) => {
+export default async (data, explanations = [], extraDetails = {}) => {
   explanations.push('\n-Análise do Score Rede:\n');
 
   let countHashtags = 0;
   let countMentions = 0;
   const distributionHashtags = [];
   const distributionUserMentions = [];
+
+  const mentionsDetails = [];
 
   explanations.push(`Quantos tweets serão contados: ${data.length}`);
   explanations.push('Para cada tweet, conte quantas hashtags existem no total e salve quantas hashtags únicas existem em um array.');
@@ -24,6 +26,7 @@ export default async (data, explanations = []) => {
     current.entities.user_mentions.forEach((userMention) => {
       if (current.in_reply_to_screen_name !== userMention.screen_name && distributionUserMentions.indexOf(userMention.screen_name) === -1) {
         distributionUserMentions.push(userMention.screen_name);
+        mentionsDetails.push(userMention);
       } else if (current.in_reply_to_screen_name === userMention.screen_name) {
         // If the current mention is actually in a reply, remove it from the count
         countMentions -= 1;
@@ -66,6 +69,9 @@ export default async (data, explanations = []) => {
     explanations.push(`Fica:  1 - (${distributionHashtags.length} / ${countHashtags}) = ${scoreHashtags}`);
   }
 
+  extraDetails.HASHTAGS_ANALYSIS = `Total: ${countHashtags}. Únicas: ${distributionHashtags.length}`;
+  extraDetails.HASHTAGS_SCORE = scoreHashtags;
+
   let scoreMentions = 0;
   explanations.push('Configuramos o score de menções em zero');
   if (countMentions > 0) {
@@ -74,6 +80,10 @@ export default async (data, explanations = []) => {
     explanations.push('1 - ([Quantas menções únicas] / [Quantas menções no total]');
     explanations.push(`Fica:  1 - (${distributionUserMentions.length} / ${countMentions}) = ${scoreMentions}`);
   }
+
+
+  extraDetails.MENTIONS_ANALYSIS = `Total: ${countMentions}. Únicas: ${distributionUserMentions.length}`;
+  extraDetails.MENTIONS_SCORE = scoreMentions;
 
   const scoreDistrib = (scoreHashtags + scoreMentions) / 2;
   explanations.push('Calculamos o score distríbuido: ([Score das hashtags] + [Score das menções]) / 2');
@@ -90,6 +100,12 @@ export default async (data, explanations = []) => {
     weight += 1;
     explanations.push(`Se o score de rede for zero, configuramos o peso em ${weight}`);
   }
+
+  extraDetails.NETWORK_ANALYSIS = `Calculamos o score distríbuido (${scoreDistrib}) e o tamanho da rede (${averageNetwork})`;
+  extraDetails.NETWORK_SCORE = scoreNetwork;
+
+  extraDetails.HASHTAGS = distributionHashtags;
+  extraDetails.MENTIONS = mentionsDetails;
 
   return [scoreNetwork, weight, distributionHashtags, distributionUserMentions];
 };
