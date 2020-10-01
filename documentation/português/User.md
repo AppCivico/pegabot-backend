@@ -12,6 +12,7 @@
 * Número de Favoritos
 <br />
 <br />
+
 # Validação dos dados coletados
 * Número de caracteres no nome
 * Número de caracteres no nome de usuário, ou seja, o "@"/screen name
