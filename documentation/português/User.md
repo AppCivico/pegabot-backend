@@ -1,6 +1,6 @@
 <!-- **Chave de usuário do perfil:** -->
 # Endpoint da API do Twitter utilizado para coleta de dados
-**/users/show**
+* /users/show**
 
 # Dados coletados para análise
 * Nome

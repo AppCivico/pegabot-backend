@@ -1,7 +1,8 @@
 Este módulo analisa a dinâmica entre o perfil informado e seus amigos.
 
 # Endpoint da API do Twitter utilizado para coleta de dados
-**/followers/list**
+* /followers/list
+* /friends/list
 
 # Dados coletados para análise
 * Diferença no UTC, ou seja, timezone 
