@@ -5,6 +5,8 @@ Encontre aqui toda a explicação sobre o cálculo dos índices atuais
 
 **_Como sempre, não hesite em contribuir no nosso [repositório do GitHub](https://github.com/AppCivico/pegabot-backend) abrindo um pull request ou entrar em contato em [jordan@appcivico.com](mailto:jordan@appcivico.com)._**
 
+## User
+
 [Arquivo Markdown](https://github.com/AppCivico/pegabot-backend/blob/master/documentation/português/User.md) sobre [código fonte do cálculo de usuário](https://github.com/AppCivico/pegabot-backend/blob/master/src/index/user.mjs)
 
 ## Friend
