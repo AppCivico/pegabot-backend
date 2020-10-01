@@ -3,7 +3,7 @@ Disponível em [Espanhol](https://github.com/AppCivico/pegabot-backend/blob/mast
 # Documentação
 Encontre aqui toda a explicação sobre o cálculo dos índices atuais
 
-**_Como sempre, não hesite em contribuir no nosso [repositório do GitHub](https://github.com/AppCivico/pegabot-backend) abrindo um pull request ou entrar em contato em [jordan@appcivico.com](mailto:jordan@appcivico.com)._**
+**_Como sempre, não hesite em contribuir no nosso [repositório do GitHub](https://github.com/AppCivico/pegabot-backend) abrindo um pull request ou entrar em contato em [lucas.ansei@appcivico.com](mailto:lucas.ansei@appcivico.com)._**
 
 ## User
 
