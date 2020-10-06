@@ -1,15 +1,17 @@
-**Chave de rede do perfil:**
+Este módulo analisa a dinâmica entre o perfil informado e seus amigos.
 
-Dados para coletar:
-Todas as hashtags usadas na amostra da timeline
-Todas as menções usadas na amostra da timeline
-Tamanho da amostra
+# Endpoint da API do Twitter utilizado para coleta de dados
+* friends/list**
 
-Preparo do dado:
-Para cada dado coletado, coloque-o em um array de distribuição que contem um único elemento 
-de cada elemente diferente coletado. 
-Por exemplo, if temos cinco vezes a hashtag "#eleições", nós colocamos esse dados só uma vez no array.
-Para menções, não contamos uma menção se pertencer uma resposta.
+# Dados coletados para análise
+* Todas as hashtags usadas na amostra da timeline
+* Todas as menções usadas na amostra da timeline
+* Tamanho da amostra
+<br />
+
+# Validação dos dados coletados
+* Para cada dado coletado, é inserido em um array de distribuição que contem um único elemento  de cada elemente diferente coletado. (Por exemplo, se temos cinco vezes a hashtag "#eleições", nós colocamos esse dados só uma vez no array.)
+* Para menções, não contamos uma menção se pertencer uma resposta.
 
 Lista de subíndices:
 
