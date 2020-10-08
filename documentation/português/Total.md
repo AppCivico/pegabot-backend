@@ -18,6 +18,10 @@ Pode ser possível ter uma pontuação final maior que toda a pontuação dos ou
 * Nome de perfis, e usuário, expostos em tweets
 * Datas de criação de tweets
 * Conteúdo de tweets
+* ID das contas análisadas
+* ID das contas que tiveram tweets análisados, ou seja, o autor de uma menção, também possui seus dados coletados
+* URL de tweets
+* Contadores de interação dos tweets no momento da coleta, por ex: número de likes, retweets e etc
 
 ## Limites da API do Twitter e cache
 
