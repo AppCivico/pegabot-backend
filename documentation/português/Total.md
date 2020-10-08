@@ -1,3 +1,5 @@
+## Sobre a pontuação final da análise e os índices
+
 A pontuação total da análise não é uma simples média do subtotal das outras, ela é pesada de acordo com a importância de cada índice e também do contexto.
 
 Por exemplo, uma pontuação de usuário igual a 0, ou seja baixa probabilidade de ser um robô, por ser uma conta oficialmente verificada, irá pesar 3 vezes mais na pontuação final, pois a probabilidade de ser um robô é muito baixa, uma vez que é realizado todo um processo de validação manual pelo Twitter.
