@@ -18,3 +18,9 @@ Pode ser possível ter uma pontuação final maior que toda a pontuação dos ou
 * Nome de perfis, e usuário, expostos em tweets
 * Datas de criação de tweets
 * Conteúdo de tweets
+
+## Limites da API do Twitter e cache
+
+Ao utilizar a API do Twitter, sempre é necessário ter em mente o sistema de limite de requisições. Para a API do Twitter, em especial, os de listagem de tweets (timeline) e de amigos, o limite é determinado em 15 requisições a cada 15 minutos.<br>
+
+Portanto, tendo em vista a possibilidade de várias requisições para um mesmo perfil, é utilizado um sistema de caching. Que dura 2592000 segundos, ou seja, 30 dias. Isso significa que uma vez realizada uma análise, ela será mantida por 30 dias, para um determinado perfil.
