@@ -9,3 +9,12 @@ A pontuação do índice de Rede geralmente ultrapassa 1 mais que a Temporal.
 Mas a pontuação dos índices exibidas nunca ultrapassa 100% porque elas são divididas e ajustadas entre serem usadas no cálculo final e serem exibidas.
 
 Pode ser possível ter uma pontuação final maior que toda a pontuação dos outros índices.
+
+## Dados salvos no banco
+
+É salvo no banco a resposta JSON dos endpoints consultados (API do Twitter).
+
+* Nome do perfil, e usuário, solicitado
+* Nome de perfis, e usuário, expostos em tweets
+* Datas de criação de tweets
+* Conteúdo de tweets
