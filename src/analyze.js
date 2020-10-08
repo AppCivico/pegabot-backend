@@ -49,7 +49,10 @@ module.exports = (screenName, config, index = {
       if (!verbose) delete cachedResult.profiles[0].bot_probability.info;
 
       if (cb) cb(null, cachedResult);
+      console.log('penis');
       console.log(JSON.stringify(cachedResult, null, 2));
+      console.log('penis');
+
       resolve(cachedResult);
       return cachedResult;
     }
@@ -280,7 +283,9 @@ module.exports = (screenName, config, index = {
     };
 
     const details = await document.getExtraDetails(extraDetails);
-
+    // console.log("==========================================================");
+    // console.log(details);
+    // console.log("==========================================================");
     if (verbose) object.profiles[0].bot_probability.info = library.getLoggingtext(explanations);
     if (wantDocument) object.profiles[0].bot_probability.extraDetails = details;
 

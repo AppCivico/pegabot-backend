@@ -223,4 +223,84 @@ app.get('/status', (req, res) => {
   res.sendStatus(200);
 });
 
+app.get('/analyze', async (req, res) => {
+  const target            = req.query.search_for;
+
+  const { profile }       = req.query;
+  let { limit }           = req.query;
+  const { authenticated } = req.query;
+
+  const cacheInterval     = req.query.cache_duration;
+  const key               = `${target}:${profile}`;
+  const cachedKey         = mcache.get(key);
+
+  const verbose           = req.query.verbose || req.query.logging;
+  const isAdmin           = req.query.is_admin;
+  const origin = isAdmin ? 'admin' : 'website';
+  const wantsDocument = 1;
+
+  const referer = req.get('referer');
+  const sentimentLang = library.getDefaultLanguage(referer);
+
+  const { getData } = req.query;
+
+  console.log('profile', profile);
+  if (!limit || limit > 200) {
+    limit = 200;
+  }
+  if (typeof target === 'undefined' || typeof profile === 'undefined') {
+    res.status(400).send('One parameter is missing');
+  } else if (cachedKey) {
+    res.send(cachedKey);
+  } else if (target === 'profile') {
+    try {
+      const result = await spottingbot(profile, config, { friend: false },
+        sentimentLang, getData, cacheInterval, verbose, origin, wantsDocument).catch((err) => err);
+
+      if (!result || result.errors || result.error) {
+        let toSend = result;
+        if (result.errors) toSend = result.errors;
+
+        res.status(404).json({ metadata: { error: toSend } });
+        return;
+      }
+      
+      res.send(await library.buildAnalyzeReturn(result.profiles[0].bot_probability.extraDetails));
+
+    } catch (error) {
+      console.log('error', error);
+      res.status(500).json({ metadata: { error } });
+    }
+  } else if (target === 'followers' || target === 'friends') {
+    if (authenticated === 'true') {
+      // const token = req.query.oauth_token;
+      // const tokenSecret = mcache.get(token);
+      // const verifier = req.query.oauth_verifier;
+
+      const client = new TwitterLite({
+        consumer_key: config.consumer_key,
+        consumer_secret: config.consumer_secret,
+        access_token_key: undefined,
+        access_token_secret: undefined,
+      });
+
+      requestTwitterList(client, target, profile, limit, (object) => {
+        if (typeof object.metadata.error === 'undefined') {
+          mcache.put(key, JSON.stringify(object), cacheDuration * 1000);
+        }
+        res.json(object);
+      });
+    } else {
+      const result = await getTokenUrl(req, target, profile, limit);
+      if (result.errors) {
+        res.status(500).send(result);
+      } else {
+        res.json({ request_url: result });
+      }
+    }
+  } else {
+    res.status(400).send('search_for is wrong');
+  }
+}); 
+
 export default app;

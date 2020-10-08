@@ -3,6 +3,9 @@ import library from '../library';
 export default async (data, explanations = [], extraDetails = {}) => {
   explanations.push('\n-Análise de score de usuário');
 
+  const ret   = {};
+  ret.details = {};
+
   // if user is verified, the final result will be 0
   if (data.verified) {
     const score = 0;
@@ -11,7 +14,11 @@ export default async (data, explanations = [], extraDetails = {}) => {
     extraDetails.VERIFIED_ANALYSIS = 'Usuário verificado';
     extraDetails.VERIFIED_SCORE = '0 (Total do usuário)';
 
-    return [score, weight];
+    ret.score = 0;
+    ret.weight = 0;
+    ret.details.verified_user = 1;
+
+    return ret;
   }
 
   extraDetails.VERIFIED_ANALYSIS = 'Usuário não verificado';
@@ -223,5 +230,9 @@ export default async (data, explanations = [], extraDetails = {}) => {
   userScore = Math.min(1, Math.max(0, userScore));
   explanations.push('O score final ficará limitado entre 0 e 1');
 
-  return [userScore, 1];
+  // Build return object
+  ret.score  = userScore;
+  ret.weight = 1;
+
+  return ret;
 };

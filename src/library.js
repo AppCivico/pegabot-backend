@@ -1,6 +1,7 @@
 import { execSync } from 'child_process';
 import { Op } from 'sequelize';
 import TwitterLite from 'twitter-lite';
+import { getExtraDetails } from './document';
 import { Request, Feedback } from './infra/database/index';
 
 
@@ -270,5 +271,126 @@ export default {
     sad.forEach((e) => { if (str.includes(e)) result.sad = true; });
 
     return result;
+  },
+
+  buildAnalyzeReturn: async (extraDetails) => {
+    console.log("==========================================================");
+
+    console.log(extraDetails);
+    console.log("==========================================================");
+
+    const ret = {
+      root: {
+        profile: {
+          handle: extraDetails.TWITTER_HANDLE,
+          link: extraDetails.TWITTER_LINK,
+          description: 'Caso você tenha dúvidas',
+          figure: 'https://google.com',
+
+          analysis: []
+        },
+
+        network: {
+          description: 'foobar',
+          analysis: []
+        },
+
+        emotions: {
+          description: 'foobar',
+          analysis: []
+        }
+      }
+    };
+
+    const profileData = [
+      {
+        title: 'SELO DE VERIFICAÇÃO',
+        summary_key: 'VERIFIED_ANALYSIS',
+        score_key:   'VERIFIED_SCORE',
+        description: 'A presença do selo de verificação oferecido pelo Twitter influencia positivamente nos resultados, uma vez que a plataforma possui um procedimento manual para validar a identidade desses usuários.'
+      },
+      {
+        title: 'SEMELHANÇA DE NOME DO USUÁRIO E NOME DO PERFIL',
+        summary_key: 'SIMILARITY_ANALYSIS',
+        score_key: 'SIMILARITY_SCORE',
+        description: 'Compara cada uma das letras que compõe o nome do usuário (arroba/handle) e o nome que aparece no perfil. Caso exista a palavra "bot", um peso maior será adicionado.'
+      },
+      {
+        title: 'NÚMERO DE DÍGITOS NO NOME DO USUÁRIO',
+        summary_key: 'DIGIT_ANALYSIS',
+        score_key: 'DIGIT_SCORE',
+        description: 'Busca por uma composição de nome de perfil que contenha lertas e números. Caso exista uma quantidade superior a dois dígitos na composição, um peso maior é adicionado.'
+      },
+      {
+        title: 'COMPRIMENTO DO NOME DO PERFIL',
+        summary_key: 'LENGHT_PROFILE_ANALYSIS',
+        score_key: 'LENGHT_PROFILE_SCORE',
+        description: 'Pesos maiores são adicionados em nomes que possuem uma quantidade superior a 15 caracteres.'
+      },
+      {
+        title: 'COMPRIMENTO DO NOME DO USUÁRIO (OU ARROBA)',
+        summary_key: 'LENGHT_HANDLE_ANALYSIS',
+        score_key: 'LENGHT_HANDLE_SCORE',
+        description: 'Pesos maiores são adicionados em nomes de usuários que possuem uma quantidade superior a 10 caracteres.'
+      },
+      {
+        title: 'COMPRIMENTO DA DESCRIÇÃO',
+        summary_key: 'LENGHT_DESCRIPTION_ANALYSIS',
+        score_key: 'LENGHT_DESCRIPTION_SCORE',
+        description: 'Pesos maiores são adicionados em descrições que possuem uma quantidade inferior a 10 caracteres.'
+      },
+      {
+        title: 'IDADE DO PERFIL',
+        summary_key: 'AGE_ANALYSIS',
+        score_key: 'AGE_SCORE',
+        description: 'Perfis com uma data de criação inferior a 3 meses (90 dias) ganham uma pontuação maior.'
+      },
+      {
+        title: 'FOTO DO PERFIL',
+        summary_key: 'PROFILE_PIC_ANALYSIS',
+        score_key: 'PROFILE_PIC_SCORE',
+        description: 'Verificamos a existência de uma foto de perfil. Perfis que não possuem, recebem uma pontuação maior.',
+      },
+      {
+        title: 'NÚMERO DE TWEETS',
+        summary_key: 'TWEET_NUMBER_ANALYSIS',
+        score_key: 'TWEET_NUMBER_SCORE',        
+        description: 'Perfis que tuitam muito em um curto intervalo de tempo recebem uma pontuação maior.',
+      },
+      {
+        title: 'FAVORITOS',
+        summary_key: 'FAVORITES_ANALYSIS',
+        score_key: 'FAVORITES_SCORE',
+        description: 'A quantidade de favoritos de um perfil também é considerada. Perfis com maior quantidade de favoritos recebem uma pontuação maior.'
+      },
+      
+    ];
+
+    const networkKeys = [
+      'HASHTAGS_ANALYSIS', 'HASHTAGS_SCORE', 'MENTIONS_ANALYSIS',
+      'MENTIONS_SCORE', 'NETWORK_ANALYSIS', 'NETWORK_SCORE'
+    ];
+
+    const emotionsKeys = [
+      'SENTIMENT_ANALYSIS', 'SENTIMENT_SCORE', 'SENTIMENT_TOTAL_EMOJIS', 'SENTIMENT_HAPPY_EMOJIS',
+      'SENTIMENT_SAD_EMOJIS', 'LINK_TYPEFORM', 'LEXICON_TYPE', 'LEXICON_EXAMPLE'
+    ];
+
+    const litsKeys = [ 'TWEET_MOMENT', 'HASHTAGS', 'MENTIONS', 'SENTIMENT_EXAMPLE' ];
+
+    profileData.forEach( async function(section) {
+      ret.root.profile.analysis.push(
+        {
+          title:       section.title,
+          description: section.description,
+          summary:     `<p>${extraDetails[section.summary_key]}</p>`,
+          conclusion:  parseFloat(extraDetails[section.score_key])
+        }
+      );
+
+      
+    });
+
+    return ret;
   },
 };
