@@ -284,19 +284,19 @@ export default {
         profile: {
           handle: extraDetails.TWITTER_HANDLE,
           link: extraDetails.TWITTER_LINK,
-          description: 'Caso você tenha dúvidas',
+          description: 'Caso você tenha dúvidas ou discorde do resultado, você pode informar AQUI. Caso você queira analisar nosso código e sugerir melhorias, você pode acessar o respositório no GITHUB.',
           figure: 'https://google.com',
 
           analysis: []
         },
 
         network: {
-          description: 'foobar',
+          description: 'Lorem Ipsum',
           analysis: []
         },
 
         emotions: {
-          description: 'foobar',
+          description: 'Aṕos coletar os dados, os algoritmos do PEGABOT fornecem uma pontuação, em uma escada de -5 a 5m de cada uma das palavras dos tweets coletados. A classificação se baseia em uma biblioteca, onde, cada uma das palavras possui uma pontuação, sendo considerada mais ou menos negativa, positiva ou neutra. Assim, ao final da classificação, calcula-se a pontuação média para a quantidade de palavras positivas, negativas e neutras utilizadas pelo usuário.',
           analysis: []
         }
       }
@@ -366,9 +366,25 @@ export default {
       
     ];
 
-    const networkKeys = [
-      'HASHTAGS_ANALYSIS', 'HASHTAGS_SCORE', 'MENTIONS_ANALYSIS',
-      'MENTIONS_SCORE', 'NETWORK_ANALYSIS', 'NETWORK_SCORE'
+    const networkData = [
+      {
+        title: 'DISTRIBUIÇÃO DAS HASHTAGS',
+        summary_key: 'HASHTAGS_ANALYSIS',
+        score_key: 'HASHTAGS_SCORE',
+        description: 'Calcula o tamanho da distribuição dessas hashtags na rede'
+      },
+      {
+        title: 'DISTRIBUIÇÃO DAS MENÇÕES',
+        summary_key: 'MENTIONS_ANALYSIS',
+        score_key: 'MENTIONS_SCORE',
+        description: 'Calcula o tamanho da distribuição de menções ao perfil do usuário na rede. Usuários que apresentam resultado x recebem maior pontuação'
+      },
+      {
+        title: 'HASHTAGS E MENÇÕES',
+        summary_key: 'NETWORK_ANALYSIS',
+        score_key: 'NETWORK_SCORE',
+        description: 'Encontra a quantidade de hashtags utilizadas e quantidade de menções realizadas ao perfil do usuário dentro da amostra coletada'
+      },
     ];
 
     const emotionsKeys = [
@@ -387,8 +403,17 @@ export default {
           conclusion:  parseFloat(extraDetails[section.score_key])
         }
       );
+    });
 
-      
+    networkData.forEach( async function(section) {
+      ret.root.network.analysis.push(
+        {
+          title:       section.title,
+          description: section.description,
+          summary:     `<p>${extraDetails[section.summary_key]}</p>`,
+          conclusion:  parseFloat(extraDetails[section.score_key])
+        }
+      );
     });
 
     return ret;
