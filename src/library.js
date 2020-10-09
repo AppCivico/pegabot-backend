@@ -458,7 +458,7 @@ export default {
     const sortedList = extraDetails.TWEET_MOMENT.sort();
 
     sortedList.forEach( async function(tweet) {
-      const ymd = tweet.substring(0, 10);
+      const ymd = tweet.slice(0, 10);
 
       if (chartLabels.indexOf(ymd) === -1) {
         chartLabels.push(ymd);
