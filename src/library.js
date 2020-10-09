@@ -3,7 +3,8 @@ import { Op } from 'sequelize';
 import TwitterLite from 'twitter-lite';
 import { getExtraDetails } from './document';
 import { Request, Feedback } from './infra/database/index';
-
+const superagent = require('superagent');
+const md5Hex = require('md5-hex');
 
 async function getTwitterClient(useBearerToke) {
   const config = {
@@ -273,7 +274,63 @@ export default {
     return result;
   },
 
+
+// sub puppetter_signed_url {
+//   my %config = @_;
+
+//   my $secret = $ENV{PUPPETER_SECRET_TOKEN};
+//   my $host   = $ENV{PUPPETER_SERVICE_ROOT_URL};
+
+//   die 'missing PUPPETER_SECRET_TOKEN'     if !$secret;
+//   die 'missing PUPPETER_SERVICE_ROOT_URL' if !$host;
+//   die 'invalid width'                     if $config{w} !~ /^\d+$/a;
+//   die 'invalid height'                    if exists $config{h} && $config{h} !~ /^\d+$/a;
+//   die 'invalid resize width'              if exists $config{rw} && $config{rw} !~ /^\d+$/a;
+//   die 'invalid url' if $config{u} !~ /^http/i;
+
+//   my $my_url = Mojo::URL->new($host);
+
+//   my $calcBuffer = $secret . "\n";
+//   for my $field (keys %config) {
+//       $calcBuffer .= $field . '=' . $config{$field} . "\n";
+//       $my_url->query->merge($field, $config{$field});
+//   }
+
+//   my $calcSecret = md5_hex($calcBuffer);
+//   $my_url->query->merge('a', $calcSecret);
+
+//   return $my_url . '';
+// }
+
   buildAnalyzeReturn: async (extraDetails) => {
+    // Getting screenshots
+    const puppetterUrl = process.env.PUPPETER_SERVICE_ROOT_URL;
+    const puppetterSecret = process.env.PUPPETER_SECRET_TOKEN;
+
+    const calcBuffer = puppetterSecret + "\n" 
+    + 'u=' + '' + extraDetails.TWITTER_LINK + "\n"
+    + 'w=960' + "\n"
+    + 'h=520' + "\n";
+
+    const calcSecret = md5Hex(calcBuffer);    
+
+    const pictureUrl = await (async () => {
+      try {
+        const res = await superagent
+          .get(puppetterUrl)
+          .query({
+            u: '' + extraDetails.TWITTER_LINK,
+            w: 960,
+            h: 520,
+            a: calcSecret,
+          });
+              
+        // console.log(res);
+        return res.request.url;
+      } catch (err) {
+        console.error(err);
+      }
+    })();
 
     // Preparing the JSON that's going to be used on the return for /analyze
     const ret = {
@@ -282,7 +339,7 @@ export default {
           handle: extraDetails.TWITTER_HANDLE,
           link: extraDetails.TWITTER_LINK,
           description: 'Caso você tenha dúvidas ou discorde do resultado, você pode informar AQUI. Caso você queira analisar nosso código e sugerir melhorias, você pode acessar o respositório no GITHUB.',
-          figure: 'https://google.com',
+          figure: pictureUrl,
           chart: {},
           analyses: []
         },
