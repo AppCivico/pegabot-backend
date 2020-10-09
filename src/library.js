@@ -420,6 +420,35 @@ export default {
           conclusion:  parseFloat(extraDetails[section.score_key])
         }
       );
+
+      if ( section.title === 'NÚMERO DE TWEETS' ) {
+        // Preparing the tweet array to be used on a line chart, divided by day.
+        // I'm gonna treat this here instead of doing it when the array is filled, because I don't want to touch that legacy code
+        const chartLabels = [];
+        const chartData   = [];
+    
+        const sortedList = extraDetails.TWEET_MOMENT.sort();
+    
+        sortedList.forEach( async function(tweet) {
+          const tweetStr = tweet.toString();
+          const ymd      = tweetStr.substring(0, 10);
+    
+          if (chartLabels.indexOf(ymd) === -1) {
+            chartLabels.push(ymd);
+          }
+    
+          const ymdIndex = chartLabels.indexOf(ymd);
+          chartData[ymdIndex] = chartData[ymdIndex] + 1 || 1;
+    
+        });
+    
+        const analysisKey = ret.root.profile.analysis.length - 1;
+
+        ret.root.profile.analysis[analysisKey].chart = {};
+        ret.root.profile.analysis[analysisKey].chart.labels = chartLabels;
+        ret.root.profile.analysis[analysisKey].chart.data   = chartData;
+
+      }
     });
 
     networkData.forEach( async function(section) {
@@ -450,27 +479,6 @@ export default {
       ret.root.network[key] = list;
     });
 
-    // Preparing the tweet array to be used on a line chart, divided by day.
-    // I'm gonna treat this here instead of doing it when the array is filled, because I don't want to touch that legacy code
-    const chartLabels = [];
-    const chartData   = [];
-
-    const sortedList = extraDetails.TWEET_MOMENT.sort();
-
-    sortedList.forEach( async function(tweet) {
-      const tweetStr = tweet.toString();
-      const ymd      = tweetStr.substring(0, 10);
-
-      if (chartLabels.indexOf(ymd) === -1) {
-        chartLabels.push(ymd);
-      }
-
-      const ymdIndex = chartLabels.indexOf(ymd);
-      chartData[ymdIndex] = chartData[ymdIndex] + 1 || 1;
-
-    });
-    ret.root.profile.chart.labels = chartLabels;
-    ret.root.profile.chart.data   = chartData;
 
     return ret;
   },
