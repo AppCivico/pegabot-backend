@@ -290,8 +290,6 @@ export default {
         network: {
           description: 'Lorem Ipsum',
           analyses: [],
-          hashtags: [],
-          mentions: []
         },
 
         emotions: {
@@ -417,7 +415,7 @@ export default {
           title:       section.title,
           description: section.description,
           summary:     `<p>${extraDetails[section.summary_key]}</p>`,
-          conclusion:  parseFloat(extraDetails[section.score_key])
+          conclusion:  parseFloat(extraDetails[section.score_key]).toFixed(3)
         }
       );
 
@@ -457,28 +455,23 @@ export default {
           title:       section.title,
           description: section.description,
           summary:     `<p>${extraDetails[section.summary_key]}</p>`,
-          conclusion:  parseFloat(extraDetails[section.score_key])
+          conclusion:  parseFloat(extraDetails[section.score_key]).toFixed(3)
         }
       );
-    });
 
-    networkListsData.forEach( async function(section) {
-      let list = extraDetails[section.key];
-      const key  = section.key.toLowerCase();
-
-      if (key === 'mentions') {
-        // Removing id, id_str and indices array
-        // Might be sensitive data, not a good idea to include it on an endpoint return
+      const analysisKey = ret.root.network.analyses.length - 1;
+      if (section.title === 'DISTRIBUIÇÃO DAS HASHTAGS') {
+        ret.root.network.analyses[analysisKey].hashtags = [];
+        ret.root.network.analyses[analysisKey].hashtags = extraDetails.HASHTAGS;
+      }
+      else if (section.title === 'DISTRIBUIÇÃO DAS MENÇÕES') {
+        const list = extraDetails.MENTIONS;
         list.forEach( function(v) { delete v.id; delete v.id_str; delete v.indices } );
-      }
-      else if (key === 'hashtags') {
-        // Limiting to 10 first itens of the array
-        // list.slice(0, 10);
-      }
 
-      ret.root.network[key] = list;
+        ret.root.network.analyses[analysisKey].mentions = [];
+        ret.root.network.analyses[analysisKey].mentions = extraDetails.MENTIONS;
+      }
     });
-
 
     return ret;
   },
