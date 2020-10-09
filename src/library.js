@@ -473,6 +473,24 @@ export default {
       }
     });
 
+    ret.root.emotions.analyses.push(
+      {
+        title: undefined,
+        description: undefined,
+        summary: `<p>${extraDetails.SENTIMENT_ANALYSIS}</p>`,
+        conclusion: extraDetails.SENTIMENT_SCORE,
+        // samples: {
+        //   title: 'VEJA AQUI O EXEMPLO DE 3 TWEETS DO USUÁRIO',
+        //   list: [
+        //     {
+        //       caption: '',
+        //       capture: ''
+        //     }
+        //   ]
+        // }
+      }
+    )
+
     return ret;
   },
 };
