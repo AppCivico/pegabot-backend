@@ -8,6 +8,8 @@ export default async (data, explanations = [], extraDetails = {}) => {
 
   const mentionsDetails = [];
 
+  extraDetails.TWEET_ANALIZED_COUNT = data.length;
+
   explanations.push(`Quantos tweets serão contados: ${data.length}`);
   explanations.push('Para cada tweet, conte quantas hashtags existem no total e salve quantas hashtags únicas existem em um array.');
   explanations.push('Para cada tweet, conte quantas menções existem no total e salve quantas menções únicas existem em um array. Ignoramos as menções que estão na resposta de um tweet.');

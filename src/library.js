@@ -274,11 +274,8 @@ export default {
   },
 
   buildAnalyzeReturn: async (extraDetails) => {
-    console.log("==========================================================");
 
-    console.log(extraDetails);
-    console.log("==========================================================");
-
+    // Preparing the JSON that's going to be used on the return for /analyze
     const ret = {
       root: {
         profile: {
@@ -286,19 +283,23 @@ export default {
           link: extraDetails.TWITTER_LINK,
           description: 'Caso você tenha dúvidas ou discorde do resultado, você pode informar AQUI. Caso você queira analisar nosso código e sugerir melhorias, você pode acessar o respositório no GITHUB.',
           figure: 'https://google.com',
-
+          chart: {},
           analysis: []
         },
 
         network: {
           description: 'Lorem Ipsum',
-          analysis: []
+          analysis: [],
+          hashtags: [],
+          mentions: []
         },
 
         emotions: {
           description: 'Aṕos coletar os dados, os algoritmos do PEGABOT fornecem uma pontuação, em uma escada de -5 a 5m de cada uma das palavras dos tweets coletados. A classificação se baseia em uma biblioteca, onde, cada uma das palavras possui uma pontuação, sendo considerada mais ou menos negativa, positiva ou neutra. Assim, ao final da classificação, calcula-se a pontuação média para a quantidade de palavras positivas, negativas e neutras utilizadas pelo usuário.',
           analysis: []
-        }
+        },
+
+
       }
     };
 
@@ -363,7 +364,6 @@ export default {
         score_key: 'FAVORITES_SCORE',
         description: 'A quantidade de favoritos de um perfil também é considerada. Perfis com maior quantidade de favoritos recebem uma pontuação maior.'
       },
-      
     ];
 
     const networkData = [
@@ -392,7 +392,24 @@ export default {
       'SENTIMENT_SAD_EMOJIS', 'LINK_TYPEFORM', 'LEXICON_TYPE', 'LEXICON_EXAMPLE'
     ];
 
-    const litsKeys = [ 'TWEET_MOMENT', 'HASHTAGS', 'MENTIONS', 'SENTIMENT_EXAMPLE' ];
+    const networkListsData = [
+      // {
+      //   key: 'TWEET_MOMENT',
+      //   title: ''
+      // },
+      {
+        key: 'HASHTAGS',
+        title: 'HASHTAGS MAIS UTILIZADAS'
+      },
+      {
+        key: 'MENTIONS',
+        title: '@MENÇÕES'
+      },
+      // {
+      //   key: 'SENTIMENT_EXAMPLE',
+      //   title: 'VEJA AQUI O EXEMPLO DE 3 TWEETS DO USUÁRIO'
+      // }
+    ];
 
     profileData.forEach( async function(section) {
       ret.root.profile.analysis.push(
@@ -415,6 +432,44 @@ export default {
         }
       );
     });
+
+    networkListsData.forEach( async function(section) {
+      let list = extraDetails[section.key];
+      const key  = section.key.toLowerCase();
+
+      if (key === 'mentions') {
+        // Removing id, id_str and indices array
+        // Might be sensitive data, not a good idea to include it on an endpoint return
+        list.forEach( function(v) { delete v.id; delete v.id_str; delete v.indices } );
+      }
+      else if (key === 'hashtags') {
+        // Limiting to 10 first itens of the array
+        list.slice(0, 10);
+      }
+
+      ret.root.network[key] = list;
+    });
+
+    // Preparing the tweet array to be used on a line chart, divided by day.
+    // I'm gonna treat this here instead of doing it when the array is filled, because I don't want to touch that legacy code
+    const chartLabels = [];
+    const chartData   = [];
+
+    const sortedList = extraDetails.TWEET_MOMENT.sort();
+
+    sortedList.forEach( async function(tweet) {
+      const ymd = tweet.substring(0, 10);
+
+      if (chartLabels.indexOf(ymd) === -1) {
+        chartLabels.push(ymd);
+      }
+
+      const ymdIndex = chartLabels.indexOf(ymd);
+      chartData[ymdIndex] = chartData[ymdIndex] + 1 || 1;
+
+    });
+    ret.root.profile.chart.labels = chartLabels;
+    ret.root.profile.chart.data   = chartData;
 
     return ret;
   },
