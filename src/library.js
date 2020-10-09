@@ -284,19 +284,19 @@ export default {
           description: 'Caso você tenha dúvidas ou discorde do resultado, você pode informar AQUI. Caso você queira analisar nosso código e sugerir melhorias, você pode acessar o respositório no GITHUB.',
           figure: 'https://google.com',
           chart: {},
-          analysis: []
+          analyses: []
         },
 
         network: {
           description: 'Lorem Ipsum',
-          analysis: [],
+          analyses: [],
           hashtags: [],
           mentions: []
         },
 
         emotions: {
           description: 'Aṕos coletar os dados, os algoritmos do PEGABOT fornecem uma pontuação, em uma escada de -5 a 5m de cada uma das palavras dos tweets coletados. A classificação se baseia em uma biblioteca, onde, cada uma das palavras possui uma pontuação, sendo considerada mais ou menos negativa, positiva ou neutra. Assim, ao final da classificação, calcula-se a pontuação média para a quantidade de palavras positivas, negativas e neutras utilizadas pelo usuário.',
-          analysis: []
+          analyses: []
         },
 
 
@@ -412,7 +412,7 @@ export default {
     ];
 
     profileData.forEach( async function(section) {
-      ret.root.profile.analysis.push(
+      ret.root.profile.analyses.push(
         {
           title:       section.title,
           description: section.description,
@@ -442,17 +442,17 @@ export default {
     
         });
     
-        const analysisKey = ret.root.profile.analysis.length - 1;
+        const analysisKey = ret.root.profile.analyses.length - 1;
 
-        ret.root.profile.analysis[analysisKey].chart = {};
-        ret.root.profile.analysis[analysisKey].chart.labels = chartLabels;
-        ret.root.profile.analysis[analysisKey].chart.data   = chartData;
+        ret.root.profile.analyses[analysisKey].chart = {};
+        ret.root.profile.analyses[analysisKey].chart.labels = chartLabels;
+        ret.root.profile.analyses[analysisKey].chart.data   = chartData;
 
       }
     });
 
     networkData.forEach( async function(section) {
-      ret.root.network.analysis.push(
+      ret.root.network.analyses.push(
         {
           title:       section.title,
           description: section.description,
