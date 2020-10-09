@@ -3,7 +3,7 @@ Available in [Spanish](https://github.com/AppCivico/pegabot-backend/tree/master/
 # spottingbot
 Analyzing profiles on Twitter to detect bot behavior
 
-**_spottingbot is an experimental and open-source project that needs you to evolve, do not hesitate to contribute on our [GitHub repository](https://github.com/AppCivico/pegabot-backend) by opening a pull request or to contact us at [jordan@appcivico.com](mailto:jordan@appcivico.com). Documentation on how the current indexes are calculated is also available [here](https://github.com/AppCivico/pegabot-backend/tree/master/documentation)_**
+**_spottingbot is an experimental and open-source project that needs you to evolve, do not hesitate to contribute on our [GitHub repository](https://github.com/AppCivico/pegabot-backend) by opening a pull request or to contact us at [lucas.ansei@appcivico.com](mailto:lucas.ansei@appcivico.com). Documentation on how the current indexes are calculated is also available [here](https://github.com/AppCivico/pegabot-backend/tree/master/documentation)_**
 
 **You can also join us on our [Telegram group](https://t.me/joinchat/AOHjCkUyx1zPuNzhf36mEw) to freely talk about suggestions, improvement or simply ask us anything**
 
