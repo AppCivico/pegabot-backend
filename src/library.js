@@ -444,7 +444,7 @@ export default {
       }
       else if (key === 'hashtags') {
         // Limiting to 10 first itens of the array
-        list.slice(0, 10);
+        // list.slice(0, 10);
       }
 
       ret.root.network[key] = list;
