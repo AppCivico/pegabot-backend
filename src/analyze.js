@@ -49,9 +49,7 @@ module.exports = (screenName, config, index = {
       if (!verbose) delete cachedResult.profiles[0].bot_probability.info;
 
       if (cb) cb(null, cachedResult);
-      console.log('penis');
       console.log(JSON.stringify(cachedResult, null, 2));
-      console.log('penis');
 
       resolve(cachedResult);
       return cachedResult;
