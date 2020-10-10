@@ -9,10 +9,18 @@ import temporalIndex from './index/temporal';
 import networkIndex from './index/network';
 import sentimentIndex from './index/sentiment';
 import library from './library';
+import document from './document';
+
+// Import DB modules
+import {
+  Request, Analysis, UserData, ApiData, CachedRequest,
+} from './infra/database/index';
+
+const useCache = process.env.USE_CACHE;
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
-}, sentimentLang, getData, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
+}, sentimentLang, getData, cacheInterval, verbose, origin, wantDocument, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
   if (!screenName || !config) {
     const error = 'You need to provide an username to analyze and a config for twitter app';
     if (cb) cb(error, null);
@@ -24,6 +32,28 @@ module.exports = (screenName, config, index = {
     if (cb) cb(error, null);
     reject(error);
     return error;
+  }
+
+  // check if we have a saved analysis of that user withing the desired time interval
+  if (useCache === '1') {
+    let cachedResult = await library.getCachedRequest(screenName, cacheInterval);
+
+    if (cachedResult) {
+      const { id: cachedResultID } = cachedResult; // use the original result to add an entry in the CachedRequest table
+      const { id: cachedRequestID } = await CachedRequest.create({ cachedResultID }).then((res) => res.dataValues);
+      // save the current request but link it with the CachedRequest we just created
+      await Request.create({ screenName, gitHead: await library.getGitHead(), cachedRequestID });
+
+      // format and return the cached result
+      cachedResult = library.formatCached(cachedResult, getData);
+      if (!verbose) delete cachedResult.profiles[0].bot_probability.info;
+
+      if (cb) cb(null, cachedResult);
+      console.log(JSON.stringify(cachedResult, null, 2));
+
+      resolve(cachedResult);
+      return cachedResult;
+    }
   }
 
   const twitterParams = config;
@@ -45,17 +75,40 @@ module.exports = (screenName, config, index = {
   // Index count is the divisor for the final average score, it is increase at same time of the index score calculation according to the
   // weight of these index
   let indexCount = 0;
+
+  // store new client request and get request instance
+  const newRequest = await Request.create({ screenName, gitHead: await library.getGitHead(), origin });
+
   // get tweets timeline. We will use it for both the user and sentiment/temporal/network calculations
-  const timeline = await client.get('statuses/user_timeline', param).catch((err) => err);
+  const apiAnswer = await client.get('statuses/user_timeline', param).catch((err) => err);
+
+  // if there's an error, save the api response as is and update the new request entry with it
+  if (!apiAnswer || apiAnswer.error || apiAnswer.errors || apiAnswer.length === 0) {
+    const { id: apiDataID } = await ApiData.create({ statusesUserTimeline: apiAnswer, params: param });
+    newRequest.apiDataID = apiDataID;
+    newRequest.save();
+    if (cb) cb(apiAnswer, null);
+    reject(apiAnswer);
+    return apiAnswer;
+  }
+
+  // format api answer
+  const { timeline, user } = library.getTimelineUser(apiAnswer);
 
   // get and store rate limits
-  if (getData) timeline.rateLimit = await library.getRateStatus(timeline);
+  if (getData && timeline) timeline.rateLimit = await library.getRateStatus(timeline);
 
-  if (timeline.errors) {
-    if (cb) cb(timeline, null);
-    reject(timeline);
-    return timeline;
-  }
+  // store formated api response
+  const { id: apiDataID } = await ApiData.create({ statusesUserTimeline: { user, timeline }, params: param });
+  newRequest.apiDataID = apiDataID;
+  newRequest.save();
+
+  const explanations = [`Análise do usuário: ${screenName}`];
+  explanations.push('Carregou a timeline com o endpoint "statuses/user_timeline"');
+
+  const extraDetails = {};
+  extraDetails.TWITTER_HANDLE = screenName;
+  extraDetails.TWITTER_LINK = `https://twitter.com/${screenName}`;
 
   // All the following functions will be executing at the same time and then call the final one
   async.parallel([
@@ -65,11 +118,10 @@ module.exports = (screenName, config, index = {
         if (index.user === false) {
           callback();
         } else {
-          let data = {};
-          // get user data from statuses/user_timeline endpoint instead of the users/show endpoint
-          data = timeline[0].user;
-
-          const res = await userIndex(data);
+          const data = user;
+          const res = await userIndex(data, explanations, extraDetails);
+          explanations.push(`Score User: ${res[0]}`);
+          explanations.push(`Peso do Score Network: ${res[1]}`);
           indexCount += res[1];
           callback(null, res[0], data);
         }
@@ -121,19 +173,23 @@ module.exports = (screenName, config, index = {
           let res2 = [];
           let res3 = [];
           if (index.temporal !== false) {
-            res1 = await temporalIndex(data);
+            res1 = await temporalIndex(data, user, explanations, extraDetails);
+            explanations.push(`Score Temporal: ${res1[0]}`);
+            explanations.push(`Peso do Score Temporal: ${res1[1]}`);
             indexCount += res1[1];
           }
           if (index.network !== false) {
-            res2 = await networkIndex(data);
+            res2 = await networkIndex(data, explanations, extraDetails);
+            explanations.push(`Score Network: ${res2[0]}`);
+            explanations.push(`Peso do Score Network: ${res2[1]}`);
+            hashtagsUsed = res2[2]; // eslint-disable-line prefer-destructuring
+            mentionsUsed = res2[3]; // eslint-disable-line prefer-destructuring
             indexCount += res2[1];
-            if (getData) {
-              hashtagsUsed = res2[2]; // eslint-disable-line prefer-destructuring
-              mentionsUsed = res2[3]; // eslint-disable-line prefer-destructuring
-            }
           }
           if (index.sentiment !== false) {
-            res3 = await sentimentIndex(data, sentimentLang);
+            res3 = await sentimentIndex(data, sentimentLang, explanations, extraDetails);
+            explanations.push(`Score Sentiment: ${res3[0]}`);
+            explanations.push(`Peso do Score Sentiment: ${res3[1]}`);
             indexCount += res3[1];
           }
           callback(null, [res1[0], res2[0], res3[0]]);
@@ -144,14 +200,16 @@ module.exports = (screenName, config, index = {
     },
   ],
   //  This function is the final one and occurs when all indexes get calculated
-  (err, results) => {
+  async (err, results) => {
     if (err) {
       if (cb) cb(err, null);
       reject(err);
       return err;
     }
+
+    explanations.push('\nCálculo do resultado final\n');
+
     // Save all results in the correct variable
-    const user = results[0][1];
     let userScore = results[0][0];
     let friendsScore = (results[1] + (results[2] * 1.5)) / (2 * 1.5);
     let temporalScore = results[3][0];
@@ -166,10 +224,21 @@ module.exports = (screenName, config, index = {
     if (!isNumber(networkScore)) networkScore = null;
     if (!isNumber(sentimentScore)) sentimentScore = null;
 
+    explanations.push(`Score User: ${userScore}`);
+    explanations.push(`Score Friend (Ignorado): ${friendsScore}`);
+    explanations.push(`Score Temporal: ${temporalScore}`);
+    explanations.push(`Score Netword: ${networkScore}`);
+    explanations.push(`Score Sentiment: ${sentimentScore}`);
+
     const scoreSum = userScore + friendsScore + temporalScore + networkScore + sentimentScore;
 
     // Adjustment for not getting any score more than 0.99 in the final result
     const total = Math.min(scoreSum / indexCount, 0.99);
+
+    explanations.push(`Somamos todos os ${indexCount} scores que temos: ${userScore} + ${friendsScore} + ${temporalScore} + ${networkScore} + ${sentimentScore} = ${scoreSum}`);
+    explanations.push('Dividimos a soma pela quantidade de scores e limitamos o resultado a 0.99');
+    explanations.push(`Fica: ${scoreSum} / ${indexCount} = ${total}`);
+    explanations.push(`Total: ${total}`);
 
     if (networkScore > 1) {
       networkScore /= 2;
@@ -188,7 +257,7 @@ module.exports = (screenName, config, index = {
       metadata: {
         count: 1,
       },
-      profiles: new Array({
+      profiles: [{
         username: param.screen_name,
         url: `https://twitter.com/${param.screen_name}`,
         avatar: user.profile_image_url,
@@ -205,29 +274,68 @@ module.exports = (screenName, config, index = {
         },
         bot_probability: {
           all: total,
+          // info: ,
         },
         user_profile_language: user.lang,
-      }),
+      }],
     };
 
-    // add data from twitter to return
+    const details = await document.getExtraDetails(extraDetails);
+    // console.log("==========================================================");
+    // console.log(details);
+    // console.log("==========================================================");
+    if (verbose) object.profiles[0].bot_probability.info = library.getLoggingtext(explanations);
+    if (wantDocument) object.profiles[0].bot_probability.extraDetails = details;
+
+    // add data from twitter to complement return (if getDate is true) and save to database
+    const data = {};
+
+    data.created_at = user.created_at;
+    data.user_id = user.id_str;
+    data.user_name = user.name;
+    data.following = user.friends_count;
+    data.followers = user.followers_count;
+    data.number_tweets = user.statuses_count;
+
+    data.hashtags = hashtagsUsed;
+    data.mentions = mentionsUsed;
+
     if (getData) {
-      const data = {};
-      const userData = timeline[0].user;
-
-      data.created_at = userData.created_at;
-      data.user_id = userData.id_str;
-      data.user_name = userData.name;
-      data.following = userData.friends_count;
-      data.followers = userData.followers_count;
-      data.number_tweets = userData.statuses_count;
-
-      data.hashtags = hashtagsUsed;
-      data.mentions = mentionsUsed;
-
       object.twitter_data = data;
       object.rate_limit = timeline.rateLimit;
     }
+
+    // save Analysis Data on database
+    const { id: newAnalysisID } = await Analysis.create({
+      fullResponse: object,
+      total,
+      user: userScore,
+      friend: friendsScore,
+      sentiment: sentimentScore,
+      temporal: temporalScore,
+      network: networkScore,
+      explanations,
+      details,
+    }).then((res) => res.dataValues);
+
+    // save User Data on database
+    const { id: newUserDataID } = await UserData.create({
+      username: data.user_name,
+      twitterID: data.user_id,
+      profileCreatedAt: data.created_at,
+      followingCount: data.following,
+      followersCount: data.followers,
+      statusesCount: data.number_tweets,
+      hashtagsUsed: data.hashtags,
+      mentionsUsed: data.mentions,
+    }).then((res) => res.dataValues);
+
+    // update request
+    newRequest.analysisID = newAnalysisID;
+    newRequest.userDataID = newUserDataID;
+    newRequest.save();
+
+    if (newAnalysisID) object.analysis_id = newAnalysisID;
 
     if (cb) cb(null, object);
     resolve(object);

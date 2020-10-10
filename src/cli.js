@@ -2,6 +2,7 @@
 import 'dotenv/config';
 import analyze from './analyze';
 
+const defaultCacheInterval = process.env.DEFAULT_CACHE_INTERVAL;
 const config = {
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
   consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
@@ -18,7 +19,7 @@ if (!screenName) {
 (async () => {
   console.log(`Starting user ${screenName} analysis...`);
   try {
-    const info = await analyze(screenName, config, { friend: false });
+    const info = await analyze(screenName, config, { friend: false }, 'pt', true, defaultCacheInterval, true, 'cli');
 
     const userScore = Math.round(info.profiles[0].language_independent.user * 100);
     const friendsScore = Math.round(info.profiles[0].language_independent.friend * 100);

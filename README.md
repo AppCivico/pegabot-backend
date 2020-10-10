@@ -147,6 +147,29 @@ The return value is an object that contains
 }
 ```
 
+##### PSQL database
+
+Pegabot uses a cache system to avoid remaking an analysis on the same user.
+This cache system uses a PostgreSQL database.
+
+How to set-up the PostgreSQL database:
+
+1. Install and set PSQL on your machine
+2. Create a database for pegabots. If you want, you can create a new user with a password to own this database, or just use the default postgres user.
+3. Fill up the database data on the .env file. Example:
+
+```
+DATABASE_HOST="127.0.0.1"
+DATABASE_USER="postgres"
+DATABASE_PASSWORD=""
+DATABASE_NAME="pegabot"
+```
+
+4. Install the npm module `sequelize-cli`
+5. Run migrations with `sequelize-cli db:migrate`
+
+
+
 **spottingbot is a project inspired by [Botometer](https://botometer.iuni.iu.edu/#!/), an [OSoMe](https://osome.iuni.iu.edu/) project.**
 
 **This project is part of the [PegaBot](http://www.pegabot.com.br) initiative.**
