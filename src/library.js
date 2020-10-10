@@ -539,10 +539,12 @@ export default {
 
     });
 
-    const tweetNeutral = extraDetails.TWEET_EXAMPLE.neutral;
-    const tweetPositive = extraDetails.TWEET_EXAMPLE.positive;
-    const tweetNegative = extraDetails.TWEET_EXAMPLE.negative;
-
+    // const tweetNeutral = extraDetails.TWEET_EXAMPLE.neutral;
+    // const tweetPositive = extraDetails.TWEET_EXAMPLE.positive;
+    // const tweetNegative = extraDetails.TWEET_EXAMPLE.negative;
+    // console.log(tweetNeutral);
+    // console.log(tweetPositive);
+    // console.log(tweetNegative);
     ret.root.emotions.analyses.push(
       {
         title: undefined,
