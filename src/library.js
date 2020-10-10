@@ -310,8 +310,8 @@ export default {
     const calcBuffer = puppetterSecret + "\n" 
     + 'u=' + '' + extraDetails.TWITTER_LINK + "\n"
     + 'w=960' + "\n"
-    + 'rwidth=480' + "\n"
-    + 'h=520' + "\n";
+    + 'h=520' + "\n"
+    + 'rw=480' + "\n";
 
     const calcSecret = md5Hex(calcBuffer);    
 
@@ -323,11 +323,10 @@ export default {
             u: '' + extraDetails.TWITTER_LINK,
             w: 960,
             h: 520,
-            rwidth: 480,
+            rw: 480,
             a: calcSecret,
           });
               
-        // console.log(res);
         return res.request.url;
       } catch (err) {
         console.error(err);
@@ -342,7 +341,6 @@ export default {
           link: extraDetails.TWITTER_LINK,
           description: 'Caso você tenha dúvidas ou discorde do resultado, você pode informar AQUI. Caso você queira analisar nosso código e sugerir melhorias, você pode acessar o respositório no GITHUB.',
           figure: pictureUrl,
-          chart: {},
           analyses: []
         },
 
@@ -542,7 +540,7 @@ export default {
       }
 
     });
-    // console.log(extraDetails);
+
     ret.root.emotions.analyses.push(
       {
         title: undefined,
@@ -560,8 +558,6 @@ export default {
         // }
       }
     )
-
-    // console.log(extraDetails);
 
     return ret;
   },
