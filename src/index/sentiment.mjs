@@ -25,7 +25,7 @@ export default async (data, defaultLanguage = 'pt', explanations = [], extraDeta
   explanations.push('Usamos esse score para calcular quantos tweets tem um score neutro, ou seja, igual a zero.');
   let savedRes = false;
 
-  let tweetExemplo = null;
+  let tweetExemplo = {};
   let emojiCount = 0;
   let happyCount = 0;
   let sadCount = 0;
@@ -54,10 +54,19 @@ export default async (data, defaultLanguage = 'pt', explanations = [], extraDeta
       const { negative } = res;
       const { positive } = res;
 
-      if (!tweetExemplo && (negative.length || positive.length)) {
-        tweetExemplo = current;
-        tweetExemplo.positive = res.positive;
-        tweetExemplo.negative = res.negative;
+      // Saving positive tweet sample
+      if (!tweetExemplo.positive && res.positive) {
+        tweetExemplo.positive = current;
+      }
+
+      // Saving negative tweet sample
+      if (!tweetExemplo.negative && res.negative) {
+        tweetExemplo.negative = current;
+      }
+
+      // Saving neutral tweet sample
+      if (!tweetExemplo.neutral && res.comparative === 0) {
+        tweetExemplo.neutral = current;
       }
 
       if (res.comparative === 0) sentimentNeutralSum += 1;
@@ -83,6 +92,9 @@ export default async (data, defaultLanguage = 'pt', explanations = [], extraDeta
 
   extraDetails.SENTIMENT_ANALYSIS = `o perfil tem pontuação de ${scoreSentiment}, classificando-se como ${classificacao}.`;
   extraDetails.SENTIMENT_SCORE = scoreSentiment;
+  console.log("======================================================");
+  console.log(tweetExemplo);
+  console.log("======================================================");
   extraDetails.SENTIMENT_EXAMPLE = tweetExemplo;
 
   extraDetails.SENTIMENT_TOTAL_EMOJIS = emojiCount;
