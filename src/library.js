@@ -466,70 +466,81 @@ export default {
       // }
     ];
 
+    // Profile block root->profile
     profileData.forEach( async function(section) {
-      ret.root.profile.analyses.push(
-        {
-          title:       section.title,
-          description: section.description,
-          summary:     `<p>${extraDetails[section.summary_key]}</p>`,
-          conclusion:  parseFloat(extraDetails[section.score_key]).toFixed(3)
-        }
-      );
 
-      if ( section.title === 'NÚMERO DE TWEETS' ) {
-        // Preparing the tweet array to be used on a line chart, divided by day.
-        // I'm gonna treat this here instead of doing it when the array is filled, because I don't want to touch that legacy code
-        const chartLabels = [];
-        const chartData   = [];
-    
-        const sortedList = extraDetails.TWEET_MOMENT.sort();
-    
-        sortedList.forEach( async function(tweet) {
-          const tweetStr = tweet.toString();
-          const ymd      = tweetStr.substring(0, 10);
-    
-          if (chartLabels.indexOf(ymd) === -1) {
-            chartLabels.push(ymd);
+      // Verifying if index exists, only push to array if it does.
+      if (typeof extraDetails[section.summary_key] != "undefined") {
+        ret.root.profile.analyses.push(
+          {
+            title:       section.title,
+            description: section.description,
+            summary:     typeof extraDetails[section.summary_key] != "undefined" ? `<p>${extraDetails[section.summary_key]}</p>` : undefined,
+            conclusion:  parseFloat(extraDetails[section.score_key]).toFixed(3)
           }
-    
-          const ymdIndex = chartLabels.indexOf(ymd);
-          chartData[ymdIndex] = chartData[ymdIndex] + 1 || 1;
-    
-        });
-    
-        const analysisKey = ret.root.profile.analyses.length - 1;
+        );
 
-        ret.root.profile.analyses[analysisKey].chart = {};
-        ret.root.profile.analyses[analysisKey].chart.labels = chartLabels;
-        ret.root.profile.analyses[analysisKey].chart.data   = chartData;
+        if ( section.title === 'NÚMERO DE TWEETS' ) {
+          // Preparing the tweet array to be used on a line chart, divided by day.
+          // I'm gonna treat this here instead of doing it when the array is filled, because I don't want to touch that legacy code
+          const chartLabels = [];
+          const chartData   = [];
+      
+          const sortedList = extraDetails.TWEET_MOMENT.sort();
+      
+          sortedList.forEach( async function(tweet) {
+            const tweetStr = tweet.toString();
+            const ymd      = tweetStr.substring(0, 10);
+      
+            if (chartLabels.indexOf(ymd) === -1) {
+              chartLabels.push(ymd);
+            }
+      
+            const ymdIndex = chartLabels.indexOf(ymd);
+            chartData[ymdIndex] = chartData[ymdIndex] + 1 || 1;
+      
+          });
+      
+          const analysisKey = ret.root.profile.analyses.length - 1;
 
-      }
-    });
+          ret.root.profile.analyses[analysisKey].chart = {};
+          ret.root.profile.analyses[analysisKey].chart.labels = chartLabels;
+          ret.root.profile.analyses[analysisKey].chart.data   = chartData;
 
-    networkData.forEach( async function(section) {
-      ret.root.network.analyses.push(
-        {
-          title:       section.title,
-          description: section.description,
-          summary:     `<p>${extraDetails[section.summary_key]}</p>`,
-          conclusion:  parseFloat(extraDetails[section.score_key]).toFixed(3)
         }
-      );
-
-      const analysisKey = ret.root.network.analyses.length - 1;
-      if (section.title === 'DISTRIBUIÇÃO DAS HASHTAGS') {
-        ret.root.network.analyses[analysisKey].hashtags = [];
-        ret.root.network.analyses[analysisKey].hashtags = extraDetails.HASHTAGS.slice(0, 100);
-      }
-      else if (section.title === 'DISTRIBUIÇÃO DAS MENÇÕES') {
-        const list = extraDetails.MENTIONS.slice(0, 100);
-        list.forEach( function(v) { delete v.id; delete v.id_str; delete v.indices } );
-
-        ret.root.network.analyses[analysisKey].mentions = [];
-        ret.root.network.analyses[analysisKey].mentions = list;
       }
     });
 
+    // Network block root->network
+    networkData.forEach( async function(section) {
+
+      // Verifying if index exists, only push to array if it does.
+      if (typeof extraDetails[section.summary_key] != "undefined") {
+        ret.root.network.analyses.push(
+          {
+            title:       section.title,
+            description: section.description,
+            summary:     typeof extraDetails[section.summary_key] != "undefined" ? `<p>${extraDetails[section.summary_key]}</p>` : undefined,
+            conclusion:  parseFloat(extraDetails[section.score_key]).toFixed(3)
+          }
+        );
+  
+        const analysisKey = ret.root.network.analyses.length - 1;
+        if (section.title === 'DISTRIBUIÇÃO DAS HASHTAGS') {
+          ret.root.network.analyses[analysisKey].hashtags = [];
+          ret.root.network.analyses[analysisKey].hashtags = extraDetails.HASHTAGS.slice(0, 100);
+        }
+        else if (section.title === 'DISTRIBUIÇÃO DAS MENÇÕES') {
+          const list = extraDetails.MENTIONS.slice(0, 100);
+          list.forEach( function(v) { delete v.id; delete v.id_str; delete v.indices } );
+  
+          ret.root.network.analyses[analysisKey].mentions = [];
+          ret.root.network.analyses[analysisKey].mentions = list;
+        }
+      }
+
+    });
+    // console.log(extraDetails);
     ret.root.emotions.analyses.push(
       {
         title: undefined,
