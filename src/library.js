@@ -309,9 +309,8 @@ export default {
 
     const calcBuffer = puppetterSecret + "\n" 
     + 'u=' + '' + extraDetails.TWITTER_LINK + "\n"
-    + 'w=960' + "\n"
-    + 'h=520' + "\n"
-    + 'rw=480' + "\n";
+    + 'w=480' + "\n"
+    + 'h=520' + "\n";
 
     const calcSecret = md5Hex(calcBuffer);    
 
@@ -321,9 +320,8 @@ export default {
           .get(puppetterUrl)
           .query({
             u: '' + extraDetails.TWITTER_LINK,
-            w: 960,
+            w: 480,
             h: 520,
-            rw: 480,
             a: calcSecret,
           });
               
@@ -540,6 +538,10 @@ export default {
       }
 
     });
+
+    const tweetNeutral = extraDetails.TWEET_EXAMPLE.neutral;
+    const tweetPositive = extraDetails.TWEET_EXAMPLE.positive;
+    const tweetNegative = extraDetails.TWEET_EXAMPLE.negative;
 
     ret.root.emotions.analyses.push(
       {
