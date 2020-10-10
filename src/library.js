@@ -310,6 +310,7 @@ export default {
     const calcBuffer = puppetterSecret + "\n" 
     + 'u=' + '' + extraDetails.TWITTER_LINK + "\n"
     + 'w=960' + "\n"
+    + 'rwidth=480' + "\n"
     + 'h=520' + "\n";
 
     const calcSecret = md5Hex(calcBuffer);    
@@ -322,6 +323,7 @@ export default {
             u: '' + extraDetails.TWITTER_LINK,
             w: 960,
             h: 520,
+            rwidth: 480,
             a: calcSecret,
           });
               
@@ -558,6 +560,8 @@ export default {
         // }
       }
     )
+
+    // console.log(extraDetails);
 
     return ret;
   },
