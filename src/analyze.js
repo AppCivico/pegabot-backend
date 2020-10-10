@@ -281,9 +281,6 @@ module.exports = (screenName, config, index = {
     };
 
     const details = await document.getExtraDetails(extraDetails);
-    // console.log("==========================================================");
-    // console.log(details);
-    // console.log("==========================================================");
     if (verbose) object.profiles[0].bot_probability.info = library.getLoggingtext(explanations);
     if (wantDocument) object.profiles[0].bot_probability.extraDetails = details;
 
