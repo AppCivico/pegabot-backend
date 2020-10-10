@@ -56,16 +56,19 @@ export default async (data, defaultLanguage = 'pt', explanations = [], extraDeta
 
       // Saving positive tweet sample
       if (!tweetExemplo.positive && res.positive) {
+        current.url = extraDetails.TWITTER_LINK + '/status/' + current.id_str;
         tweetExemplo.positive = current;
       }
 
       // Saving negative tweet sample
       if (!tweetExemplo.negative && res.negative) {
+        current.url = extraDetails.TWITTER_LINK + '/status/' + current.id_str;
         tweetExemplo.negative = current;
       }
 
       // Saving neutral tweet sample
       if (!tweetExemplo.neutral && res.comparative === 0) {
+        current.url = extraDetails.TWITTER_LINK + '/status/' + current.id_str;
         tweetExemplo.neutral = current;
       }
 

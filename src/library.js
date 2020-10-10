@@ -539,27 +539,115 @@ export default {
 
     });
 
-    // const tweetNeutral = extraDetails.TWEET_EXAMPLE.neutral;
-    // const tweetPositive = extraDetails.TWEET_EXAMPLE.positive;
-    // const tweetNegative = extraDetails.TWEET_EXAMPLE.negative;
-    // console.log(tweetNeutral);
-    // console.log(tweetPositive);
-    // console.log(tweetNegative);
+    const tweetNeutral = extraDetails.SENTIMENT_EXAMPLE.neutral;
+    const tweetPositive = extraDetails.SENTIMENT_EXAMPLE.positive;
+    const tweetNegative = extraDetails.SENTIMENT_EXAMPLE.negative;
+
+    const tweetSamples = [];
+
+    if (typeof(tweetNeutral) != 'undefined') {
+      const calcBuffer = puppetterSecret + "\n" 
+        + 'u=' + '' + tweetNeutral.url + "\n"
+        + 'w=480' + "\n"
+        + 'h=520' + "\n";
+
+      const calcSecret = md5Hex(calcBuffer);    
+
+      const pictureUrl = await (async () => {
+        try {
+          const res = await superagent
+            .get(puppetterUrl)
+            .query({
+              u: '' + tweetNeutral.url,
+              w: 480,
+              h: 520,
+              a: calcSecret,
+            });
+                
+          return res.request.url;
+        } catch (err) {
+          console.error(err);
+        }
+      })();
+
+      tweetSamples.push({
+        caption: "Exemplo de tweet neutro",
+        capture: pictureUrl
+      });
+    }
+
+    if (typeof(tweetPositive) != 'undefined') {
+      const calcBuffer = puppetterSecret + "\n" 
+        + 'u=' + '' + tweetPositive.url + "\n"
+        + 'w=480' + "\n"
+        + 'h=520' + "\n";
+
+      const calcSecret = md5Hex(calcBuffer);    
+
+      const pictureUrl = await (async () => {
+        try {
+          const res = await superagent
+            .get(puppetterUrl)
+            .query({
+              u: '' + tweetPositive.url,
+              w: 480,
+              h: 520,
+              a: calcSecret,
+            });
+                
+          return res.request.url;
+        } catch (err) {
+          console.error(err);
+        }
+      })();
+
+      tweetSamples.push({
+        caption: "Exemplo de tweet positivo",
+        capture: pictureUrl
+      });
+    }
+
+    if (typeof(tweetNegative) != 'undefined') {
+      const calcBuffer = puppetterSecret + "\n" 
+        + 'u=' + '' + tweetNegative.url + "\n"
+        + 'w=480' + "\n"
+        + 'h=520' + "\n";
+
+      const calcSecret = md5Hex(calcBuffer);    
+
+      const pictureUrl = await (async () => {
+        try {
+          const res = await superagent
+            .get(puppetterUrl)
+            .query({
+              u: '' + tweetNegative.url,
+              w: 480,
+              h: 520,
+              a: calcSecret,
+            });
+                
+          return res.request.url;
+        } catch (err) {
+          console.error(err);
+        }
+      })();
+
+      tweetSamples.push({
+        caption: "Exemplo de tweet negativo",
+        capture: pictureUrl
+      });
+    }
+
     ret.root.emotions.analyses.push(
       {
         title: undefined,
         description: undefined,
         summary: `<p>${extraDetails.SENTIMENT_ANALYSIS}</p>`,
         conclusion: extraDetails.SENTIMENT_SCORE,
-        // samples: {
-        //   title: 'VEJA AQUI O EXEMPLO DE 3 TWEETS DO USUÁRIO',
-        //   list: [
-        //     {
-        //       caption: '',
-        //       capture: ''
-        //     }
-        //   ]
-        // }
+        samples: {
+          title: 'VEJA AQUI O EXEMPLO DE 3 TWEETS DO USUÁRIO',
+          list: tweetSamples
+        }
       }
     )
 
