@@ -92,9 +92,6 @@ export default async (data, defaultLanguage = 'pt', explanations = [], extraDeta
 
   extraDetails.SENTIMENT_ANALYSIS = `o perfil tem pontuação de ${scoreSentiment}, classificando-se como ${classificacao}.`;
   extraDetails.SENTIMENT_SCORE = scoreSentiment;
-  console.log("======================================================");
-  console.log(tweetExemplo);
-  console.log("======================================================");
   extraDetails.SENTIMENT_EXAMPLE = tweetExemplo;
 
   extraDetails.SENTIMENT_TOTAL_EMOJIS = emojiCount;
