@@ -519,14 +519,14 @@ export default {
       const analysisKey = ret.root.network.analyses.length - 1;
       if (section.title === 'DISTRIBUIÇÃO DAS HASHTAGS') {
         ret.root.network.analyses[analysisKey].hashtags = [];
-        ret.root.network.analyses[analysisKey].hashtags = extraDetails.HASHTAGS;
+        ret.root.network.analyses[analysisKey].hashtags = extraDetails.HASHTAGS.slice(0, 100);
       }
       else if (section.title === 'DISTRIBUIÇÃO DAS MENÇÕES') {
-        const list = extraDetails.MENTIONS;
+        const list = extraDetails.MENTIONS.slice(0, 100);
         list.forEach( function(v) { delete v.id; delete v.id_str; delete v.indices } );
 
         ret.root.network.analyses[analysisKey].mentions = [];
-        ret.root.network.analyses[analysisKey].mentions = extraDetails.MENTIONS;
+        ret.root.network.analyses[analysisKey].mentions = list;
       }
     });
 
