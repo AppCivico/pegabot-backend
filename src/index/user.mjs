@@ -14,11 +14,7 @@ export default async (data, explanations = [], extraDetails = {}) => {
     extraDetails.VERIFIED_ANALYSIS = 'Usuário verificado';
     extraDetails.VERIFIED_SCORE = '0 (Total do usuário)';
 
-    ret.score = 0;
-    ret.weight = 0;
-    ret.details.verified_user = 1;
-
-    return ret;
+    return [score, weight];
   }
 
   extraDetails.VERIFIED_ANALYSIS = 'Usuário não verificado';
@@ -230,9 +226,5 @@ export default async (data, explanations = [], extraDetails = {}) => {
   userScore = Math.min(1, Math.max(0, userScore));
   explanations.push('O score final ficará limitado entre 0 e 1');
 
-  // Build return object
-  ret.score  = userScore;
-  ret.weight = 1;
-
-  return ret;
+  return [userScore, 1];
 };
