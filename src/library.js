@@ -337,7 +337,7 @@ export default {
         profile: {
           handle: extraDetails.TWITTER_HANDLE,
           link: extraDetails.TWITTER_LINK,
-          description: 'Caso você tenha dúvidas ou discorde do resultado, você pode informar AQUI. Caso você queira analisar nosso código e sugerir melhorias, você pode acessar o respositório no GITHUB.',
+          description: '<p>Caso você tenha dúvidas ou discorde do resultado, você pode informar <a href="" target="_blank">AQUI</a>. Caso você queira analisar nosso código e sugerir melhorias, você pode acessar o respositório no <a href="https://github.com/AppCivico/pegabot-backend" target="_blank">GITHUB</a>.</p>',
           figure: pictureUrl,
           analyses: []
         },
