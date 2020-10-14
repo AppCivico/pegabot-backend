@@ -18,6 +18,9 @@ import {
 
 const useCache = process.env.USE_CACHE;
 
+// Object that will save the weights values;
+const weights = {};
+
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
 }, sentimentLang, getData, cacheInterval, verbose, origin, wantDocument, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
@@ -122,6 +125,7 @@ module.exports = (screenName, config, index = {
           const res = await userIndex(data, explanations, extraDetails);
           explanations.push(`Score User: ${res[0]}`);
           explanations.push(`Peso do Score Network: ${res[1]}`);
+          weights.USER_INDEX_WEIGHT = res[1]; 
           indexCount += res[1];
           callback(null, res[0], data);
         }
@@ -176,12 +180,15 @@ module.exports = (screenName, config, index = {
             res1 = await temporalIndex(data, user, explanations, extraDetails);
             explanations.push(`Score Temporal: ${res1[0]}`);
             explanations.push(`Peso do Score Temporal: ${res1[1]}`);
+            weights.TEMPORAL_INDEX_WEIGHT = res1[1]; 
+
             indexCount += res1[1];
           }
           if (index.network !== false) {
             res2 = await networkIndex(data, explanations, extraDetails);
             explanations.push(`Score Network: ${res2[0]}`);
             explanations.push(`Peso do Score Network: ${res2[1]}`);
+            weights.NETWORK_INDEX_WEIGHT = res2[1]; 
             hashtagsUsed = res2[2]; // eslint-disable-line prefer-destructuring
             mentionsUsed = res2[3]; // eslint-disable-line prefer-destructuring
             indexCount += res2[1];
@@ -190,6 +197,7 @@ module.exports = (screenName, config, index = {
             res3 = await sentimentIndex(data, sentimentLang, explanations, extraDetails);
             explanations.push(`Score Sentiment: ${res3[0]}`);
             explanations.push(`Peso do Score Sentiment: ${res3[1]}`);
+            weights.SENTIMENT_INDEX_WEIGHT = res3[1]; 
             indexCount += res3[1];
           }
           callback(null, [res1[0], res2[0], res3[0]]);
@@ -252,6 +260,33 @@ module.exports = (screenName, config, index = {
       temporalScore = 1;
     }
 
+    // Sorting weights
+    const sortedWeights = {};
+    var keys = Object.keys(weights);
+
+    keys.sort(function(a, b) {
+        return weights[b] - weights[a]   //inverted comparison
+    }).forEach(function(k) {
+      sortedWeights[k] = weights[k];
+    });
+
+    // Using the first key of weights to build the info
+    const weightKey = Object.keys(sortedWeights)[0];
+    let info;
+
+    if (weightKey === 'USER_INDEX_WEIGHT') {
+      info = 'Um dos critiérios que mais teve peso na analise foi o índice de Perfil';
+    }
+    else if ( weightKey === 'NETWORK_INDEX_WEIGHT:' ) {
+      info = 'Um dos critiérios que mais teve peso na analise foi o índice de Rede';
+    }
+    else if ( weightKey === 'TEMPORAL_INDEX_WEIGHT' ) {
+      info = 'Um dos critiérios que mais teve peso na analise foi o índice Temporal';
+    }
+    else {
+      info = 'Um dos critiérios que mais teve peso na analise foi o índice de Sentimento';
+    }
+
     // Create the response object
     const object = {
       metadata: {
@@ -274,7 +309,7 @@ module.exports = (screenName, config, index = {
         },
         bot_probability: {
           all: total,
-          // info: ,
+          info: info,
         },
         user_profile_language: user.lang,
       }],
