@@ -337,18 +337,21 @@ export default {
         profile: {
           handle: extraDetails.TWITTER_HANDLE,
           link: extraDetails.TWITTER_LINK,
-          description: '<p>Caso você tenha dúvidas ou discorde do resultado, você pode informar <a href="" target="_blank">AQUI</a>. Caso você queira analisar nosso código e sugerir melhorias, você pode acessar o respositório no <a href="https://github.com/AppCivico/pegabot-backend" target="_blank">GITHUB</a>.</p>',
+          label: 'Perfil',
+          description: '<p>Caso você tenha dúvidas ou discorde do resultado, você pode informar <a href="https://itsrio2.typeform.com/to/uGFw4zDc" target="_blank">AQUI</a>. Caso você queira analisar nosso código e sugerir melhorias, você pode acessar o respositório no <a href="https://github.com/AppCivico/pegabot-backend" target="_blank">GITHUB</a>.</p>',
           figure: pictureUrl,
           analyses: []
         },
 
         network: {
           description: 'Lorem Ipsum',
+          label: 'Rede',
           analyses: [],
         },
 
         emotions: {
           description: 'Aṕos coletar os dados, os algoritmos do PEGABOT fornecem uma pontuação, em uma escada de -5 a 5m de cada uma das palavras dos tweets coletados. A classificação se baseia em uma biblioteca, onde, cada uma das palavras possui uma pontuação, sendo considerada mais ou menos negativa, positiva ou neutra. Assim, ao final da classificação, calcula-se a pontuação média para a quantidade de palavras positivas, negativas e neutras utilizadas pelo usuário.',
+          label: 'Sentimentos',
           analyses: []
         },
 
