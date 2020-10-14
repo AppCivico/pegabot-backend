@@ -538,6 +538,36 @@ export default {
           ret.root.network.analyses[analysisKey].mentions = [];
           ret.root.network.analyses[analysisKey].mentions = list;
         }
+        else {
+          
+          ret.root.network.analyses[analysisKey].stats = [
+            {
+              title: "Replies (respostas)",
+              value: `${extraDetails.COUNT_REPLIES}/${extraDetails.TWEET_ANALIZED_COUNT}`,
+            },
+            {
+              title: 'Tweets com @menções',
+              value: `${extraDetails.COUNT_MENTIONS}/${extraDetails.TWEET_ANALIZED_COUNT}`
+            },
+            {
+              title: 'Tweets com #hashtags',
+              value: `${extraDetails.COUNT_HASHTAGS}/${extraDetails.TWEET_ANALIZED_COUNT}`
+            },
+            {
+              title: 'Retweets',
+              value: `${extraDetails.COUNT_RETWEET}/${extraDetails.TWEET_ANALIZED_COUNT}`
+            },
+            {
+              title: 'Tweets com links',
+              value: `${extraDetails.COUNT_LINKS}/${extraDetails.TWEET_ANALIZED_COUNT}`
+            },
+            {
+              title: 'Tweets com mídia',
+              value: `${extraDetails.COUNT_MEDIA}/${extraDetails.TWEET_ANALIZED_COUNT}`
+            }
+          ];
+
+        }
       }
 
     });

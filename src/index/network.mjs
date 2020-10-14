@@ -1,6 +1,14 @@
 export default async (data, explanations = [], extraDetails = {}) => {
   explanations.push('\n-Análise do Score Rede:\n');
 
+  // Initiating vars that will give stats data to the front.
+  let countReplies      = 0;
+  let countRetweet      = 0;
+  let countLinks        = 0;
+  let countMedia        = 0;
+  let countStatHashtags = 0;
+  let countStatMentions = 0;
+
   let countHashtags = 0;
   let countMentions = 0;
   const distributionHashtags = [];
@@ -14,6 +22,13 @@ export default async (data, explanations = [], extraDetails = {}) => {
   explanations.push('Para cada tweet, conte quantas hashtags existem no total e salve quantas hashtags únicas existem em um array.');
   explanations.push('Para cada tweet, conte quantas menções existem no total e salve quantas menções únicas existem em um array. Ignoramos as menções que estão na resposta de um tweet.');
   data.forEach((current) => {
+    if (current.in_reply_to_status_id)             {countReplies      = countReplies + 1};
+    if (current.retweeted_status)                  {countRetweet      = countRetweet + 1};
+    if (current.entities.media)                    {countMedia        = countMedia + 1};
+    if (current.entities.urls.length > 0)          {countLinks        = countLinks + 1};
+    if (current.entities.hashtags.length > 0)      {countStatHashtags = countStatHashtags + 1};
+    if (current.entities.user_mentions.length > 0) {countStatMentions = countStatMentions + 1};
+
     // Add the count of hashtags and mentions for each tweets to the total
     countHashtags += current.entities.hashtags.length;
     countMentions += current.entities.user_mentions.length;
@@ -108,6 +123,13 @@ export default async (data, explanations = [], extraDetails = {}) => {
 
   extraDetails.HASHTAGS = distributionHashtags;
   extraDetails.MENTIONS = mentionsDetails;
+
+  extraDetails.COUNT_REPLIES  = countReplies;
+  extraDetails.COUNT_RETWEET  = countRetweet;
+  extraDetails.COUNT_LINKS    = countLinks;
+  extraDetails.COUNT_MEDIA    = countMedia;
+  extraDetails.COUNT_HASHTAGS = countStatHashtags;
+  extraDetails.COUNT_MENTIONS = countStatMentions;
 
   return [scoreNetwork, weight, distributionHashtags, distributionUserMentions];
 };
