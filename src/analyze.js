@@ -275,16 +275,16 @@ module.exports = (screenName, config, index = {
     let info;
 
     if (weightKey === 'USER_INDEX_WEIGHT') {
-      info = 'Um dos critiérios que mais teve peso na analise foi o índice de Perfil';
+      info = 'Um dos critérios que mais teve peso na análise foi o índice de Perfil';
     }
     else if ( weightKey === 'NETWORK_INDEX_WEIGHT:' ) {
-      info = 'Um dos critiérios que mais teve peso na analise foi o índice de Rede';
+      info = 'Um dos critérios que mais teve peso na análise foi o índice de Rede';
     }
     else if ( weightKey === 'TEMPORAL_INDEX_WEIGHT' ) {
-      info = 'Um dos critiérios que mais teve peso na analise foi o índice Temporal';
+      info = 'Um dos critérios que mais teve peso na análise foi o índice Temporal';
     }
     else {
-      info = 'Um dos critiérios que mais teve peso na analise foi o índice de Sentimento';
+      info = 'Um dos critérios que mais teve peso na análise foi o índice de Sentimento';
     }
 
     // Create the response object
