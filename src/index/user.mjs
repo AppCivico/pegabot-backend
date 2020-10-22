@@ -132,7 +132,7 @@ export default async (data, explanations = [], extraDetails = {}) => {
   const descriptionLength = data.description.length;
   explanations.push(`A descrição: ${data.description}`);
   explanations.push(`O tamanho da descrição: ${descriptionLength}`);
-  extraDetails.LENGHT_DESCRIPTION_ANALYSIS = 'A descrição tem menos que 10 caracteres.';
+  extraDetails.LENGHT_DESCRIPTION_ANALYSIS = `A descrição tem ${descriptionLength} caracteres.`;
 
   if (descriptionLength < 10) {
     descriptionLengthScore = 1 - (descriptionLength * 0.1);
@@ -140,7 +140,6 @@ export default async (data, explanations = [], extraDetails = {}) => {
     explanations.push(`Fica: ${descriptionLength} * 0.1 = ${descriptionLengthScore}`);
     explanations.push('O resultado não será menor que 0');
     descriptionLengthScore = Math.max(descriptionLengthScore, 0);
-    extraDetails.LENGHT_DESCRIPTION_ANALYSIS = `A descrição tem ${descriptionLength} caracteres.`;
   }
 
   explanations.push(`Resultado: ${descriptionLengthScore}`);
