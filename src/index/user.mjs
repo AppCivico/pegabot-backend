@@ -190,7 +190,7 @@ export default async (data, explanations = [], extraDetails = {}) => {
   explanations.push(`Fica: ${data.statuses_count} / ${age} = ${ratioTweetsDay}`);
   const ratioTweetScore = ratioTweetsDay * 0.05;
   explanations.push(`Para calcular o score usamos esse resultado e multiplicamos por 0.05: ${ratioTweetsDay} * 0.05 = ${ratioTweetScore}`);
-  extraDetails.TWEET_NUMBER_ANALYSIS = `A média de tweets é ${library.formatPercentage(ratioTweetsDay)} tuites por dia`;
+  extraDetails.TWEET_NUMBER_ANALYSIS = `A média de tweets é ${parseFloat(ratioTweetsDay).toFixed(2)} tuites por dia`;
 
   explanations.push(`Resultado: ${ratioTweetScore}`);
   extraDetails.TWEET_NUMBER_SCORE = ratioTweetScore;
