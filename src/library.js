@@ -477,7 +477,7 @@ export default {
             title:       section.title,
             description: section.description,
             summary:     typeof extraDetails[section.summary_key] != "undefined" ? `<p>${extraDetails[section.summary_key]}</p>` : undefined,
-            conclusion:  typeof extraDetails[section.score_key] === "number" ? parseFloat(extraDetails[section.score_key]).toFixed(3) : 0.00
+            conclusion:  typeof extraDetails[section.score_key] === "number" ? parseFloat(extraDetails[section.score_key]).toFixed(2) : 0.00
           }
         );
 
@@ -522,7 +522,7 @@ export default {
             title:       section.title,
             description: section.description,
             summary:     typeof extraDetails[section.summary_key] != "undefined" ? `<p>${extraDetails[section.summary_key]}</p>` : undefined,
-            conclusion:  parseFloat(extraDetails[section.score_key]).toFixed(3)
+            conclusion:  parseFloat(extraDetails[section.score_key]).toFixed(2)
           }
         );
   
