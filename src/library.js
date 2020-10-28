@@ -344,7 +344,7 @@ export default {
         },
 
         network: {
-          description: 'Lorem Ipsum',
+          description: 'O algoritmo do PegaBot coleta uma amostra da linha do tempo do usuário, identificando hashtags utilizadas e menções ao perfil para realizar suas análises. O objetivo é identificar características de distribuição de informação na rede da conta analisada.',
           label: 'Rede',
           analyses: [],
         },
