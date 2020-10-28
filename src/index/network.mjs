@@ -120,7 +120,7 @@ export default async (data, explanations = [], extraDetails = {}) => {
     explanations.push(`Se o score de rede for zero, configuramos o peso em ${weight}`);
   }
 
-  extraDetails.NETWORK_ANALYSIS = `Calculamos o score distríbuido (${parseFloat(scoreDistrib).toFixed(2)}) e o tamanho da rede (${parseFloat(averageNetwork).toFixed(2)})`;
+  extraDetails.NETWORK_ANALYSIS = `Calculamos o score distríbuido (${scoreDistrib}) e o tamanho da rede (${averageNetwork})`;
   extraDetails.NETWORK_SCORE = scoreNetwork;
 
   extraDetails.HASHTAGS = distributionHashtags;
