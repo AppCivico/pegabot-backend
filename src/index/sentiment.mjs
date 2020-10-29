@@ -54,22 +54,32 @@ export default async (data, defaultLanguage = 'pt', explanations = [], extraDeta
       const { negative } = res;
       const { positive } = res;
 
+      // Creating flag that will signify when the tweet has alredy been used for screencap sampling.
+      // Thus, there will never be a repeated tweet between the negative, positive and neutral samples.
+      let usedForSampling = 0;
+
       // Saving positive tweet sample
       if (!tweetExemplo.positive && res.positive) {
         current.url = extraDetails.TWITTER_LINK + '/status/' + current.id_str;
         tweetExemplo.positive = current;
+
+        usedForSampling = 1;
       }
 
       // Saving negative tweet sample
-      if (!tweetExemplo.negative && res.negative) {
+      if (!tweetExemplo.negative && res.negative && usedForSampling === 0) {
         current.url = extraDetails.TWITTER_LINK + '/status/' + current.id_str;
         tweetExemplo.negative = current;
+
+        usedForSampling = 1;
       }
 
       // Saving neutral tweet sample
-      if (!tweetExemplo.neutral && res.comparative === 0) {
+      if (!tweetExemplo.neutral && res.comparative === 0 && usedForSampling === 0) {
         current.url = extraDetails.TWITTER_LINK + '/status/' + current.id_str;
         tweetExemplo.neutral = current;
+
+        usedForSampling = 1;
       }
 
       if (res.comparative === 0) sentimentNeutralSum += 1;
