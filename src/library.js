@@ -222,6 +222,7 @@ export default {
       data.usedCache = true;
       res.twitter_data = data;
       res.rate_limit = {};
+      res.usedCache = true;
     }
 
     return res;
