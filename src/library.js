@@ -338,7 +338,7 @@ export default {
           handle: extraDetails.TWITTER_HANDLE,
           link: extraDetails.TWITTER_LINK,
           label: 'Perfil',
-          description: '<p>Caso você tenha dúvidas ou discorde do resultado, você pode informar <a href="https://itsrio2.typeform.com/to/uGFw4zDc" target="_blank">AQUI</a>. Caso você queira analisar nosso código e sugerir melhorias, você pode acessar o respositório no <a href="https://github.com/AppCivico/pegabot-backend" target="_blank">GITHUB</a>.</p>',
+          description: '<p>Algumas das informações públicas dos perfis consideradas na análise do PEGABOT são o nome do perfil do usuário, e quantos caracteres ele possui, quantidade de perfis seguidos (following) e seguidores (followers), texto da descrição do perfil, número de postagens (tweets) e favoritos. Após coletar as informações, os algoritmos do PEGABOT processam e transformam os dados recebidos em variáveis que compõem o cálculo final de probabilidade.</p>',
           figure: pictureUrl,
           analyses: []
         },
