@@ -345,7 +345,7 @@ export default {
         },
 
         network: {
-          description: '<p>O algoritmo do PegaBot coleta uma amostra da linha do tempo do usuário, identificando hashtags utilizadas e menções ao perfil para realizar suas análises. O objetivo é identificar características de distribuição de informação na rede da conta analisada.</p>',
+          description: '<p>O algoritmo do PegaBot coleta uma amostra da linha do tempo do usuário, identificando hashtags utilizadas e menções ao perfil para realizar suas análises. O objetivo é identificar características de distribuição de informação na rede da conta analisada.<br>O índice calcula se o perfil está spammando alguma hashtag ou usuário. Quanto mais hashtags/menções ele tem, maior será a pontuação, a razão normal para hashtags/menções por tweet é considerada como dois. Mais que isso, a pontuação começará a aumentar. No caso de um bot de spams, geralmente se usam as mesmas hashtags/menções, é isso que esse índice pega. Por exemplo, se 50 hashtags são usadas e são 50 hashtags diferentes, não é suspeito, mas se só uma hastag é usada 100% das vezes, então é muito suspeito.</p>',
           label: 'Rede',
           analyses: [],
         },
@@ -428,7 +428,7 @@ export default {
         title: 'DISTRIBUIÇÃO DAS HASHTAGS',
         summary_key: 'HASHTAGS_ANALYSIS',
         score_key: 'HASHTAGS_SCORE',
-        description: 'Calcula o tamanho da distribuição dessas hashtags na rede. Ou seja, O subíndice calcula se o perfil está realizando spam de alguma hashtag. Quanto mais hashtags ele tem, maior será a pontuação, a razão normal para hashtags por tweet é considerada como dois. Mais que isso, a pontuação começará a aumentar. No caso de um bot de spams, geralmente se usam as mesmas hashtags, é isso que esse índice pega. Se 50 hashtags são usadas e são 50 hashtags diferentes, não é suspeito, mas se só uma hastag é usada 100% das vezes, então é muito suspeito.'
+        description: 'Calcula o tamanho da distribuição dessas hashtags na rede'
       },
       {
         title: 'DISTRIBUIÇÃO DAS MENÇÕES',
