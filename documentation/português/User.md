@@ -2,7 +2,7 @@
 Este módulo análisa os dados que referem-se ao usuário em si. Ou seja, é abstraído de suas interações e sua rede, e analisado enquanto usuário, apenas.
 
 # Endpoint da API do Twitter utilizado para coleta de dados
-* /users/show**
+* /statuses/user_timeline
 
 # Dados coletados para análise
 * Nome

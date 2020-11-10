@@ -1,7 +1,7 @@
 Este módulo analisa a dinâmica entre o perfil informado e seus amigos.
 
 # Endpoint da API do Twitter utilizado para coleta de dados
-* friends/list
+* statuses/user_timeline
 
 # Dados coletados para análise
 * Todas as hashtags usadas na amostra da timeline

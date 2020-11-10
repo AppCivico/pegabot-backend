@@ -1,7 +1,7 @@
 Este módulo analisa o tempo de atividade da conta.
 
 # Endpoint da API do Twitter utilizado para coleta de dados
-* friends/list
+* statuses/user_timeline
 
 # Dados coletados para a análise
 * A data de todos os tweets postados na amostra da timeline
