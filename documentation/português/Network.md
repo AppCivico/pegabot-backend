@@ -38,15 +38,15 @@ O índice de rede avalia se o perfil possui uma frequência alta de repetições
 # Fórmula utilizada para cáculo do índice
 
 #### Variáveis:
-* Total de hashtags: 
+* <b>`Total de hashtags`</b>: 
 * * Contagem de todas as hashtags utilizadas, em todos os tweets analisados para o perfil
-* Total de menções: 
+* <b>`Total de menções`</b>: 
 * * Contagem de todas as menções utilizadas, em todos os tweets analisados para o perfil
-* Tamanho da amostra:
+* <b>`Tamanho da amostra`</b>:
 * * Contagem do tamanho da array de resposta da API do Twitter
-* Número de diferentes hashtags usados:
+* <b>`Número de diferentes hashtags usados`</b>:
 * * Contagem de hashtags únicas, ou seja, distintas
-* Número de diferentes menções usadas
+* <b>`Número de diferentes menções usadas`</b>:
 * * Contagem de menções únicas, ou seja, distintas
 
 #### Fórmula:
@@ -56,4 +56,4 @@ O índice de rede avalia se o perfil possui uma frequência alta de repetições
 * Ao calcular o score distríbuido (`Total de hashtags + Total de menções / Tamanho da amostra * 2`)
 * * Caso o resultado seja maior que 2, o resultado, desse trecho da equação, deve ser divido por 2
 * * Caso o resultado seja igual a 1, o resultado, desse trecho da equação,deve ser 1
-* Caso uma menção seja feita em um tweet de resposta, não é contabilizada na contagem "*Total de menções*"
+* Caso uma menção seja feita em um tweet de resposta, não é contabilizada na contagem "`Total de menções`"
