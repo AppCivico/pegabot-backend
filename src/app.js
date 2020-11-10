@@ -102,6 +102,8 @@ async function getTokenUrl(req, searchFor, profile, limit) {
 }
 
 app.get('/botometer', async (req, res) => {
+  console.log(req.headers);
+
   const target = req.query.search_for;
   const { profile } = req.query;
   let { limit } = req.query;
