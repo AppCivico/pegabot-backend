@@ -121,7 +121,8 @@ export default async (data, explanations = [], extraDetails = {}) => {
   extraDetails.NETWORK_ANALYSIS = `Calculamos o score distríbuido (${parseFloat(scoreDistrib).toFixed(2)}) e o tamanho da rede (${parseFloat(averageNetwork).toFixed(2)})`;
   
   if (weight === 2) {
-    extraDetails.NETWORK_SCORE = scoreNetwork /= 2;
+    extraDetails.NETWORK_SCORE = scoreNetwork;
+    extraDetails.NETWORK_SCORE /= 2;
   }
   else {
     extraDetails.NETWORK_SCORE = scoreNetwork;
@@ -144,7 +145,7 @@ export default async (data, explanations = [], extraDetails = {}) => {
   console.log('averageNetwork: ' + averageNetwork);
   console.log('scoreDistrib: ' + scoreDistrib);
   console.log('scoreNetwork: ' + scoreNetwork);
-  console.log(extraDetails);
+  console.log('weiweight: ' +weight);
   console.log('=================log-network==========================');
 
   return [scoreNetwork, weight, distributionHashtags, distributionUserMentions];
