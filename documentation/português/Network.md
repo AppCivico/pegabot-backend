@@ -1,7 +1,7 @@
 Este módulo analisa a dinâmica entre o perfil informado e seus amigos.
 
 # Endpoint da API do Twitter utilizado para coleta de dados
-* friends/list
+* statuses/user_timeline
 
 # Dados coletados para análise
 * Todas as hashtags usadas na amostra da timeline
@@ -31,12 +31,29 @@ Fazemos o mesmo com as menções e removemos ambas as pontuações de 1.
 
 Depois, calculamos a média das duas pontuações e somamos-as a pontuação média da rede.
 
-<<<<<<< HEAD
-**Pontuação = ((Total de hashtags + menções) / (Quantidade de dado * 2)) + ((1 - (número de diferentes hashtags usados / total de hashtags)) + (1 -(número de diferentes menções usadas / total de menções / 2 )))**
-=======
-Pontuação = ((Total de hashtags + menções) / (Quantidade de dado * 2)) + ((1 - (número de diferentes hashtags usados / total de hashtags)) + (1 -(número de diferentes menções usadas / total de menções / 2 )))
->>>>>>> develop
+O algoritmo do PegaBot coleta uma amostra da linha do tempo do usuário, identificando hashtags utilizadas e menções ao perfil para realizar suas análises. O objetivo é identificar características de distribuição de informação na rede da conta analisada.
 
-O índice calcula se o perfil está spammando alguma hashtag ou usuário. Quanto mais hashtags/menções ele tem, maior será a pontuação, a razão normal para hashtags/menções por tweet é considerada como dois. Mais que isso, a pontuação começará a aumentar.
+O índice de rede avalia se o perfil possui uma frequência alta de repetições de menções e hashtags. No caso de um bot de spams, geralmente se usam as mesmas hashtags/menções, e é isso que esse índice observa. Por exemplo, se 50 hashtags são usadas e são 50 hashtags diferentes, não é suspeito, mas se só uma hashtag é usada 100% das vezes, então é muito suspeito.
 
-No caso de um bot de spams, geralmente se usam as mesmas hashtags/menções, é isso que esse índice pega. Se 50 hashtags são usadas e são 50 hashtags diferentes, não é suspeito, mas se só uma hastag é usada 100% das vezes, então é muito suspeito.
+# Fórmula utilizada para cáculo do índice
+
+#### Variáveis:
+* <b>`Total de hashtags`</b>: 
+* * Contagem de todas as hashtags utilizadas, em todos os tweets analisados para o perfil
+* <b>`Total de menções`</b>: 
+* * Contagem de todas as menções utilizadas, em todos os tweets analisados para o perfil
+* <b>`Tamanho da amostra`</b>:
+* * Contagem do tamanho da array de resposta da API do Twitter
+* <b>`Número de diferentes hashtags usados`</b>:
+* * Contagem de hashtags únicas, ou seja, distintas
+* <b>`Número de diferentes menções usadas`</b>:
+* * Contagem de menções únicas, ou seja, distintas
+
+#### Fórmula:
+**Pontuação = ( (Total de hashtags + Total de menções) / ((Tamanho da amostra * 2) ) + ( (1 - (Número de diferentes hashtags usados / Total de hashtags)) + (1 -(Número de diferentes menções usadas / Total de menções )) ) / 2)**
+
+#### Fatores que podem influenciar as variáveis:
+* Ao calcular o score distríbuido (`Total de hashtags + Total de menções / Tamanho da amostra * 2`)
+* * Caso o resultado seja maior que 2, o resultado, desse trecho da equação, deve ser divido por 2
+* * Caso o resultado seja igual a 1, o resultado, desse trecho da equação,deve ser 1
+* Caso uma menção seja feita em um tweet de resposta, não é contabilizada na contagem "`Total de menções`"

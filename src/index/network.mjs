@@ -144,6 +144,7 @@ export default async (data, explanations = [], extraDetails = {}) => {
   console.log('averageNetwork: ' + averageNetwork);
   console.log('scoreDistrib: ' + scoreDistrib);
   console.log('scoreNetwork: ' + scoreNetwork);
+  console.log(extraDetails);
   console.log('=================log-network==========================');
 
   return [scoreNetwork, weight, distributionHashtags, distributionUserMentions];
