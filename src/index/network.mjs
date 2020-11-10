@@ -131,5 +131,14 @@ export default async (data, explanations = [], extraDetails = {}) => {
   extraDetails.COUNT_HASHTAGS = countStatHashtags;
   extraDetails.COUNT_MENTIONS = countStatMentions;
 
+  console.log('=================log-network==========================');
+  console.log('countNetwork: ' + countNetwork);
+  console.log('scoreHashtags: ' + scoreHashtags);
+  console.log('scoreMentions: ' + scoreMentions);
+  console.log('averageNetwork: ' + averageNetwork);
+  console.log('scoreDistrib: ' + scoreDistrib);
+  console.log('scoreNetwork: ' + scoreNetwork);
+  console.log('=================log-network==========================');
+
   return [scoreNetwork, weight, distributionHashtags, distributionUserMentions];
 };
