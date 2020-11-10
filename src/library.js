@@ -345,7 +345,7 @@ export default {
         },
 
         network: {
-          description: '<p>O algoritmo do PegaBot coleta uma amostra da linha do tempo do usuário, identificando hashtags utilizadas e menções ao perfil para realizar suas análises. O objetivo é identificar características de distribuição de informação na rede da conta analisada.</p><p>O índice calcula se o perfil está spammando alguma hashtag ou usuário. Quanto mais hashtags/menções ele tem, maior será a pontuação, a razão normal para hashtags/menções por tweet é considerada como dois.</p><p>Mais que isso, a pontuação começará a aumentar. No caso de um bot de spams, geralmente se usam as mesmas hashtags/menções, é isso que esse índice pega. Por exemplo, se 50 hashtags são usadas e são 50 hashtags diferentes, não é suspeito, mas se só uma hastag é usada 100% das vezes, então é muito suspeito.</p>',
+          description: '<p>O algoritmo do PegaBot coleta uma amostra da linha do tempo do usuário, identificando hashtags utilizadas e menções ao perfil para realizar suas análises. O objetivo é identificar características de distribuição de informação na rede da conta analisada.</p>O índice de rede avalia se o perfil possui uma frequência alta de repetições de menções e hashtags. No caso de um bot de spams, geralmente se usam as mesmas hashtags/menções, e é isso que esse índice observa. Por exemplo, se 50 hashtags são usadas e são 50 hashtags diferentes, não é suspeito, mas se só uma hashtag é usada 100% das vezes, então é muito suspeito.</p>',
           label: 'Rede',
           analyses: [],
         },
@@ -428,19 +428,19 @@ export default {
         title: 'DISTRIBUIÇÃO DAS HASHTAGS',
         summary_key: 'HASHTAGS_ANALYSIS',
         score_key: 'HASHTAGS_SCORE',
-        description: 'Calcula o tamanho da distribuição dessas hashtags na rede'
+        description: '<p>Calcula o tamanho da distribuição dessas hashtags na rede. Ou seja, avalia se a utilização de hashtags do perfil apresenta uma frequência anormal.</p><p>Quanto mais próximo de 0% menor a probabilidade de ser um comportamento de bot.</p>'
       },
       {
         title: 'DISTRIBUIÇÃO DAS MENÇÕES',
         summary_key: 'MENTIONS_ANALYSIS',
         score_key: 'MENTIONS_SCORE',
-        description: 'Calcula o tamanho da distribuição de menções ao perfil do usuário na rede. Usuários que apresentam resultado x recebem maior pontuação'
+        description: '<p>Calcula o tamanho da distribuição de menções ao perfil do usuário na rede. Ou seja, avalia as menções realizadas pelo perfil com base em sua frequência.</p><p>Quanto mais próximo de 0% menor a probabilidade de ser um comportamento de bot.</p>'
       },
       {
         title: 'HASHTAGS E MENÇÕES',
         summary_key: 'NETWORK_ANALYSIS',
         score_key: 'NETWORK_SCORE',
-        description: 'Encontra a quantidade de hashtags utilizadas e quantidade de menções realizadas ao perfil do usuário dentro da amostra coletada'
+        description: 'Com os scores das hashtag e das menções descobertos, enfim é calculado o valor final do índice de rede. A partir da soma entre a média entre os scores de hashtag e de menções (score distribuído) e da média da rede (somatória de todas hashtags e menções, dividido pelo tamanho da amostra de tweets multiplicado por 2)'
       },
     ];
 
