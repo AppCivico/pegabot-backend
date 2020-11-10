@@ -428,7 +428,7 @@ export default {
         title: 'DISTRIBUIÇÃO DAS HASHTAGS',
         summary_key: 'HASHTAGS_ANALYSIS',
         score_key: 'HASHTAGS_SCORE',
-        description: 'Calcula o tamanho da distribuição dessas hashtags na rede'
+        description: 'Calcula o tamanho da distribuição dessas hashtags na rede. Ou seja, O subíndice calcula se o perfil está realizando spam de alguma hashtag. Quanto mais hashtags ele tem, maior será a pontuação, a razão normal para hashtags por tweet é considerada como dois. Mais que isso, a pontuação começará a aumentar. No caso de um bot de spams, geralmente se usam as mesmas hashtags, é isso que esse índice pega. Se 50 hashtags são usadas e são 50 hashtags diferentes, não é suspeito, mas se só uma hastag é usada 100% das vezes, então é muito suspeito.'
       },
       {
         title: 'DISTRIBUIÇÃO DAS MENÇÕES',
