@@ -140,7 +140,22 @@ app.get('/botometer', async (req, res) => {
         let toSend = result;
         if (result.errors) toSend = result.errors;
 
-        res.status(404).json({ metadata: { error: toSend } });
+        // Use first error to determine message
+        const firstError = result.errors[0];
+        console.log(firstError);
+
+        let errorMessage;
+        if ( firstError.code === 34 ) {
+          errorMessage = 'Esse usuário não existe'
+        }
+        else if ( firstError.message === 'Not authorized.' ) {
+          errorMessage = 'Sem permissão para acessar. Usuário pode estar bloqueado/suspendido.'
+        }
+        else {
+          errorMessage = 'Erro ao procurar pelo perfil'
+        }
+
+        res.status(400).json({ metadata: { error: toSend }, message: errorMessage });
         return;
       }
 
