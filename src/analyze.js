@@ -37,6 +37,10 @@ module.exports = (screenName, config, index = {
     return error;
   }
 
+  const extraDetails = {};
+  extraDetails.TWITTER_HANDLE = screenName;
+  extraDetails.TWITTER_LINK = `https://twitter.com/${screenName}`;
+
   // check if we have a saved analysis of that user withing the desired time interval
   if (useCache === '1') {
     let cachedResult = await library.getCachedRequest(screenName, cacheInterval);
@@ -108,10 +112,6 @@ module.exports = (screenName, config, index = {
 
   const explanations = [`Análise do usuário: ${screenName}`];
   explanations.push('Carregou a timeline com o endpoint "statuses/user_timeline"');
-
-  const extraDetails = {};
-  extraDetails.TWITTER_HANDLE = screenName;
-  extraDetails.TWITTER_LINK = `https://twitter.com/${screenName}`;
 
   // All the following functions will be executing at the same time and then call the final one
   async.parallel([
