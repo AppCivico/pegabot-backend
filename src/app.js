@@ -146,15 +146,17 @@ app.get('/botometer', async (req, res) => {
         let toSend = result;
         if (result.errors) toSend = result.errors;
 
+        // The error format varies according to the error
+        // Not all of them will have an error code
         // Use first error to determine message
-        const firstError = result.errors[0];
+        const firstError = result.errors ? result.errors[0] : result;
         console.log(firstError);
 
         let errorMessage;
         if ( firstError.code === 34 ) {
           errorMessage = 'Esse usuário não existe'
         }
-        else if ( firstError.message === 'Not authorized.' ) {
+        else if ( firstError.error === 'Not authorized.' ) {
           errorMessage = 'Sem permissão para acessar. Usuário pode estar bloqueado/suspendido.'
         }
         else {
