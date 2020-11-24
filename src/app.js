@@ -258,6 +258,7 @@ app.get('/analyze', async (req, res) => {
   const cacheInterval     = req.query.cache_duration;
   const key               = `${target}:${profile}`;
   const cachedKey         = mcache.get(key);
+  const fullAnalysisCache = 0;
 
   const verbose           = req.query.verbose || req.query.logging;
   const isAdmin           = req.query.is_admin;
@@ -280,7 +281,7 @@ app.get('/analyze', async (req, res) => {
   } else if (target === 'profile') {
     try {
       const result = await spottingbot(profile, config, { friend: false },
-        sentimentLang, getData, cacheInterval, verbose, origin, wantsDocument).catch((err) => err);
+        sentimentLang, getData, cacheInterval, verbose, origin, wantsDocument, fullAnalysisCache).catch((err) => err);
 
       if (!result || result.errors || result.error) {
         let toSend = result;
