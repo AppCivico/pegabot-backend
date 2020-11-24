@@ -16,14 +16,17 @@ import {
   Request, Analysis, UserData, ApiData, CachedRequest,
 } from './infra/database/index';
 
-const useCache = process.env.USE_CACHE;
 
 // Object that will save the weights values;
 const weights = {};
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
-}, sentimentLang, getData, cacheInterval, verbose, origin, wantDocument, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
+}, sentimentLang, getData, cacheInterval, verbose, origin, wantDocument, fullAnalysisCache, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
+  
+  let useCache = process.env.USE_CACHE;
+  if ( typeof fullAnalysisCache != 'undefined' && fullAnalysisCache === 0 ) useCache = 0;
+
   if (!screenName || !config) {
     const error = 'You need to provide an username to analyze and a config for twitter app';
     if (cb) cb(error, null);
