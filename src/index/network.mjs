@@ -119,15 +119,15 @@ export default async (data, explanations = [], extraDetails = {}) => {
   }
 
   extraDetails.NETWORK_ANALYSIS = `Calculamos o score distríbuido (${parseFloat(scoreDistrib).toFixed(2)}) e o tamanho da rede (${parseFloat(averageNetwork).toFixed(2)})`;
+  extraDetails.NETWORK_SCORE    = scoreNetwork;
   
   if (scoreNetwork > 1) {
-    extraDetails.NETWORK_SCORE = scoreNetwork;
     extraDetails.NETWORK_SCORE /= 2;
   }
   else if (scoreNetwork > 2) {
     extraDetails.NETWORK_SCORE = 1;
   }
-
+  
   extraDetails.HASHTAGS = distributionHashtags;
   extraDetails.MENTIONS = mentionsDetails;
 
