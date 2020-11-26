@@ -52,6 +52,12 @@ Observações:
 * O resultado, ou seja o retorno, varia entre 0 e 1.
 * Valor base de cada subíndice: 0,15.
 
+## Fórmula do índice
+
+`Soma de todos os subíndices / 9`
+
+Caso o valor deste cálculo seja maior que `1`, seu valor final deve ser igual a `1`.
+
 ## Subíndices
 ### `Similaridade entre nome e nome de usuário`
 
@@ -182,13 +188,6 @@ terem muito seguidores em troca e serem mais influentes. As vezes, os bots são 
 por todos os outros bots em uma mesma rede. Um usuário humano normal geralmente tem um número de seguidores
 próximo do número de amigos. Quanto mais a razão estiver longe de 1, mais a conta é considerada bot. -->
 <br />
-
-## Fórmula do índice
-
-`Soma de todos os subíndices / 9`
-
-Caso o valor deste cálculo seja maior que `1`, seu valor final deve ser igual a `1`.
-
 
 # Testes / Exempos:
 
