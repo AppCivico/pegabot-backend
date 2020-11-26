@@ -31,6 +31,7 @@ Este módulo análisa os dados que referem-se ao usuário em si. Ou seja, é abs
 
 # Lista de subíndices
 
+- Selo de verificação do Twitter
 - Similaridade entre nome e nome de usuário
 - Número de dígitos no nome de usuário
 - Tamanho do nome
@@ -47,66 +48,133 @@ Este módulo análisa os dados que referem-se ao usuário em si. Ou seja, é abs
 Os resultados dos cálculos listados abaixo são atribuidos a variáveis que serão utilizadas no final do módulo para obter uma pontuação média.
 
 Observações:
+* <b>Caso o perfil possua o selo de verificação do Twitter, a análise desse índice é finalizada sem calcular os demais subíndices, com o seu resultado sendo `0` e com `peso 3`, ou seja, menor probabilidade de ser um robô.</b>
 * O resultado, ou seja o retorno, varia entre 0 e 1.
-* Se a conta foi verificada pelo Twitter, o resultado final, ou seja o retorno, sempre será 0.
 * Valor base de cada subíndice: 0,15.
 
-Cálculos:
-- Pontuação de similaridade é calculada compartando o número de letras e cada letra em comum entre o nome e o nome de usuário,
-a variação é entre 0 e 1. Se o nome ou nome de usuário contêm a subpalavra "bot", esse valor será 1.
-- Número de digitos: Se tem mais que dois dígitos, o número de dígitos é multiplicado por 0.12, máximo é 1.
-Se não, o valor base é mantido.
-- Tamanho do nome: se tiver mais que 15 caracteres, o tamanho é multiplicado por 0.009, máximo é 1.
-Se não, o valor base é mantido.
-- Tamanho do nome de usuário: se tiver mais que 10 caracteres, o tamanho é multiplicado por 0,012, máximo é 1.
-Se não, o valor base é mantido.
-- Tamanho da descrição: se tiver menos que 10 caracteres, o tamanho é multiplicado por 0.1 e removido de 1 (mínimo é 0).
-Se não, o valor base é mantido.
-- Idade: Se for mais que 90 dias (3 meses), a idade é multiplicada por 0.001 e removida de 1 (mínimo é 0)
-Se não, o 1.
-- Pontuação da Imagem: Se não tiver foto de perfil, pontuação é 1. Se tem imagem, usa valor base.
-- Tweets por dia: Número de tweets por dia multiplicados por 0.05 (sem limite máximo).
-- Pontuação de Favoritos: O número de favoritos é multiplicado por 0.01 e removido de 1, minímo de 0.
+## Subíndices
+### `Similaridade entre nome e nome de usuário`
 
-Então, uma média de todos os subíndices é calculada e usada como pontuação do usuário.
+Calculado comparando o número de letras em comum entre o nome e o nome de usuário (handle/arroba). Para fazer isso é calculada a [distância de Levenshtein](https://pt.wikipedia.org/wiki/Dist%C3%A2ncia_Levenshtein).
 
+Fórmula: `1 - distância de Levenshtein {nome e handle}` 
+
+Observações:
+ - Se o nome ou nome de usuário contêm a subpalavra "bot", o subíndice <b>obrigatoriamente</b> será 1.
+ - É removido qualquer espaço do nome do usuário, para fazer a comparação com a handle/arroba.
+ - O valor deste subíndice varia entre 0 e 1.
+### `Número de dígitos no nome do usuário`
+
+Calculado utilizando a quantidade de dígitos da handle/arroba.
+
+Fórmula: `Número de dígitos do arroba/handle * 0.12`
+
+Observações:
+  - <b>Caso o número de dígitos seja menor, ou igual, a `2`. O valor do subíndice sempre será `0.15`</b>
+  - Como o valor do subíndice deve ser tratado como porcentagem, caso o resultado da fórmula seja maior que `1`, o valor será sempre `1`.
+<br />
+<br />
+
+### `Tamanho do nome`
+
+Calculado medindo o nome do usuário.
+
+Fórmula: `Comprimento do nome * 0.009`
+
+Observações:
+  - <b>Caso o comprimento do nome seja menor, ou igual, a `15`. O valor do subíndice sempre será `0.15`</b>
+  - Como o valor do subíndice deve ser tratado como porcentagem, caso o resultado da fórmula seja maior que `1`, o valor será sempre `1`.
+<br />
+<br />
+
+### `Tamanho do nome de usuário`
+
+Calculado medindo a handle/arroba.
+
+Fórmula: `Comprimento da handle/arroba * 0.012`
+
+Observações:
+  - <b>Caso o comprimento do nome seja menor, ou igual, a `10`. O valor do subíndice sempre será `0.15`</b>
+  - Como o valor do subíndice deve ser tratado como porcentagem, caso o resultado da fórmula seja maior que `1`, o valor será sempre `1`.
+<br />
+<br />
+
+### `Tamanho da descrição`
+Calculado medindo o comprimento descrição.
+
+Fórmula: `1 - (Comprimento da descrição * 0.1)`
+
+Observações:
+  - <b>Caso o comprimento do nome seja menor, ou igual, a `10`. O valor do subíndice sempre será `0.15`</b>
+  - Como o valor do subíndice deve ser tratado como porcentagem, caso o resultado da fórmula seja maior que `1`, o valor será sempre `1`.
+<br />
+<br />
+
+### `Idade`
+
+Calculado utilizando a quantidade de dias desde a data de criação da conta.
+
+Fórmula: `1 - (Idade da conta * 0.001) `
+
+Observações:
+  - <b>Caso a conta tenha uma idade menor, ou igual, a `90 dias`. O valor do subíndice sempre será `1`</b>
+  - Como o valor do subíndice deve ser tratado como porcentagem, caso o resultado da fórmula seja maior que `1`, o valor será sempre `1`.
+  - O valor mínimo do subíndice, é `0`.
+<br />
+<br />
+
+### `Pontuação da Imagem`
+
+Calculado verificando a existência de uma foto de perfil. <b>Caso a conta possua uma foto de perfil, o valor do subíndice será `0.15`, caso contrário, `1`</b>.
+<br />
+<br />
+
+### `Tweets por dia`
+
+Calculado utilizando o total de tweets, da amostra, da conta e a data de criação da conta.
+
+Fórmula: `(Total de tweets / Quantidade de dias desde a criação) * 0.05`
+
+Observações:
+  - Este subíndice pode ter um valor maior que 1.
+<br />
+<br />
+
+### `Pontuação de Favoritos`
+
+Calculado utilizando a contagem de tweets favoritados pela conta.
+
+Fórmula: `1 - (Quantidade de favoritos * 0.01)`
+<br />
+<br />
+
+## Comentários sobre subíndices
 ## Contas verificadas 
-Uma conta de twitter verificada (etiqueta azul), significa que a conta foi verificada por um agente humano,
-que confirmou que a conta é autêntica. A conta teve que prover muita informação e valida-la com um número de 
-telefone. Podemos presumir que um perito em avaliar contas sempre será melhor que um algoritmo, então
-nós confiamos nele.
+Uma conta de twitter verificada (etiqueta azul), significa que a conta foi verificada por um agente humano, que confirmou que a conta é autêntica. A conta teve que prover muita informação e valida-la com um número de telefone para receber esse selo. Podemos presumir que um perito em avaliar contas sempre será melhor que um algoritmo, então nós confiamos nele.
 
 ## Valor base de 0,15
-O valor base poderia ser 0, mas significaria que começamos considerando todos os perfis como humanos. Essa não é a melhor escolha.
-Poderia ser 1, então começaríamos presumindo que todas as contas verificadas são bots, o que é pior.
-O número oficial do twitter é que 15% das contas são bots. Então usamos esse valor base (0,15) para nossos calculos.
+O valor base poderia ser 0, mas significaria que começamos considerando todos os perfis como humanos. Essa não é a melhor escolha. Caso fosse 1, então começaríamos presumindo que todas as contas verificadas são bots, o que é pior. <b>O número oficial do twitter é que 15% das contas são bots</b>. Então usamos esse valor base (0,15) para nossos cálculos.
 
 ## Comparação entre o nome e o "@"/screen name
-Na maior parte do tempo, humanos criam um nome de usuário similar com seu proprio nome. Um bot pode, as vezes,
-gerar dois nomes completamente diferentes também. Existem alguns bots oficiais que colocam "bot" nos seus nomes.
-Se isso acontecer, a pontuação de similiaridade será 1. 
+Na maior parte do tempo, humanos criam um nome de usuário similar com seu próprio nome. Um bot pode, as vezes, gerar dois nomes completamente diferentes também. Existem alguns bots oficiais que colocam "bot" nos seus nomes. Se isso acontecer, a pontuação de similiaridade será 1. 
 
 ## Tamanho do nome, "@"/screen name e descrição
-Um nome ou nome de usuário longos são suspeitos, os nomes de humanos geralmente não usam muitos caracteres.
-Mas se um bot gera um nome aleatório, pode ser maior que o normal.
+Um nome ou nome de usuário longos são suspeitos, os nomes de humanos geralmente não usam muitos caracteres. Mas se um bot gera um nome aleatório, pode ser maior que o normal.
 
 Para a descrição, é o oposto, um bot tem mais chances de ter uma descrição vazia, ou uma muito
 curta, ao invés de uma longa.
 
-O número normal de dígitos (se houver) em um nome, é geralmente dois para um humano, que pode representar os dois 
-primeiros números de um código postal, a idade do usuário, ou o ano de nascimento do usuário. Mais que dois se torna
-suspeito, e pode ser um indício que o nome foi gerado aleatoriamente.
+O número normal de dígitos (se houver) em um nome, é geralmente dois para um humano, que pode representar os dois  primeiros números de um código postal, a idade do usuário, ou o ano de nascimento do usuário. Mais que dois se torna suspeito, e pode ser um indício que o nome foi gerado aleatoriamente.
 
 ## Idade da conta
-Se você precisa checar uma conta nova do Twitter (mais nova que 3 meses) podemos considerar a conta suspeita.
-Então usamos o valor de 1 para a média. Depois de 3 meses, a pontuação passa a decrescer, com um mínimo de 0,
-para cada dia desde que a conta foi criada. 
+Se você precisa checar uma conta nova do Twitter (mais nova que 3 meses) podemos considerar a conta suspeita. Então usamos o valor de 1 para a média. Depois de 3 meses, a pontuação passa a decrescer, com um mínimo de 0, para cada dia desde que a conta foi criada. 
 
 ## Tweets por dia
-Tweets por dia é a única pontuaçãio que não tem um valor máximo, se um usuário pode postar mais de 5000 tweets
-em um dia, quase com certeza é um bot, então a pontuação máxima não é limitada na sua influência na média. 
+
+Tweets por dia é a única pontuaçãio que não tem um valor máximo, se um usuário pode postar mais de 5000 tweets em um dia, quase com certeza é um bot, então a pontuação máxima não é limitada na sua influência na média. 
 
 ## Foto de perfil
+
 A maioria dos bots não tem uma foto de perfil, então o valor de 1 é usado se não tiver imagem de perfil.
 
 <!--  Existem muitos tipos de bots, as vezes eles trabalham sozinho e só tentam seguir muitas pessoas para 
@@ -114,7 +182,13 @@ terem muito seguidores em troca e serem mais influentes. As vezes, os bots são 
 por todos os outros bots em uma mesma rede. Um usuário humano normal geralmente tem um número de seguidores
 próximo do número de amigos. Quanto mais a razão estiver longe de 1, mais a conta é considerada bot. -->
 <br />
-<br />
+
+## Fórmula do índice
+
+`Soma de todos os subíndices / 9`
+
+Caso o valor deste cálculo seja maior que `1`, seu valor final deve ser igual a `1`.
+
 
 # Testes / Exempos:
 
