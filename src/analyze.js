@@ -23,7 +23,7 @@ const weights = {};
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
 }, sentimentLang, getData, cacheInterval, verbose, origin, wantDocument, fullAnalysisCache, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
-  
+
   let useCache = process.env.USE_CACHE;
   if ( typeof fullAnalysisCache != 'undefined' && fullAnalysisCache === 0 ) useCache = 0;
 
@@ -49,6 +49,8 @@ module.exports = (screenName, config, index = {
     let cachedResult = await library.getCachedRequest(screenName, cacheInterval);
 
     if (cachedResult) {
+      const analysisId = cachedResult['analysis.id'];
+
       const { id: cachedResultID } = cachedResult; // use the original result to add an entry in the CachedRequest table
       const { id: cachedRequestID } = await CachedRequest.create({ cachedResultID }).then((res) => res.dataValues);
       // save the current request but link it with the CachedRequest we just created
@@ -60,6 +62,8 @@ module.exports = (screenName, config, index = {
 
       if (cb) cb(null, cachedResult);
       console.log(JSON.stringify(cachedResult, null, 2));
+
+      cachedResult.analysis_id = analysisId;
 
       resolve(cachedResult);
       return cachedResult;
@@ -128,7 +132,7 @@ module.exports = (screenName, config, index = {
           const res = await userIndex(data, explanations, extraDetails);
           explanations.push(`Score User: ${res[0]}`);
           explanations.push(`Peso do Score Network: ${res[1]}`);
-          weights.USER_INDEX_WEIGHT = res[1]; 
+          weights.USER_INDEX_WEIGHT = res[1];
           indexCount += res[1];
           callback(null, res[0], data);
         }
@@ -183,7 +187,7 @@ module.exports = (screenName, config, index = {
             res1 = await temporalIndex(data, user, explanations, extraDetails);
             explanations.push(`Score Temporal: ${res1[0]}`);
             explanations.push(`Peso do Score Temporal: ${res1[1]}`);
-            weights.TEMPORAL_INDEX_WEIGHT = res1[1]; 
+            weights.TEMPORAL_INDEX_WEIGHT = res1[1];
 
             indexCount += res1[1];
           }
@@ -191,7 +195,7 @@ module.exports = (screenName, config, index = {
             res2 = await networkIndex(data, explanations, extraDetails);
             explanations.push(`Score Network: ${res2[0]}`);
             explanations.push(`Peso do Score Network: ${res2[1]}`);
-            weights.NETWORK_INDEX_WEIGHT = res2[1]; 
+            weights.NETWORK_INDEX_WEIGHT = res2[1];
             hashtagsUsed = res2[2]; // eslint-disable-line prefer-destructuring
             mentionsUsed = res2[3]; // eslint-disable-line prefer-destructuring
             indexCount += res2[1];
@@ -200,7 +204,7 @@ module.exports = (screenName, config, index = {
             res3 = await sentimentIndex(data, sentimentLang, explanations, extraDetails);
             explanations.push(`Score Sentiment: ${res3[0]}`);
             explanations.push(`Peso do Score Sentiment: ${res3[1]}`);
-            weights.SENTIMENT_INDEX_WEIGHT = res3[1]; 
+            weights.SENTIMENT_INDEX_WEIGHT = res3[1];
             indexCount += res3[1];
           }
           callback(null, [res1[0], res2[0], res3[0]]);
