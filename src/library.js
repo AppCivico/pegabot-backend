@@ -189,7 +189,7 @@ export default {
     const cached = await Request.findOne({
       where: {
         screenName,
-        createdAt: { [Op.between]: [endDate, startDate] },
+        // createdAt: { [Op.between]: [endDate, startDate] },
         cachedRequestID: null, // cant be a request that used another cached request
       },
       order: [['createdAt', 'DESC']], // select the newest entry
@@ -308,12 +308,12 @@ export default {
     const puppetterUrl = process.env.PUPPETER_SERVICE_ROOT_URL;
     const puppetterSecret = process.env.PUPPETER_SECRET_TOKEN;
 
-    const calcBuffer = puppetterSecret + "\n" 
+    const calcBuffer = puppetterSecret + "\n"
     + 'u=' + '' + extraDetails.TWITTER_LINK + "\n"
     + 'w=480' + "\n"
     + 'h=520' + "\n";
 
-    const calcSecret = md5Hex(calcBuffer);    
+    const calcSecret = md5Hex(calcBuffer);
 
     const pictureUrl = await (async () => {
       try {
@@ -325,7 +325,7 @@ export default {
             h: 520,
             a: calcSecret,
           });
-              
+
         return res.request.url;
       } catch (err) {
         console.error(err);
@@ -412,7 +412,7 @@ export default {
       {
         title: 'NÚMERO DE TWEETS',
         summary_key: 'TWEET_NUMBER_ANALYSIS',
-        score_key: 'TWEET_NUMBER_SCORE',        
+        score_key: 'TWEET_NUMBER_SCORE',
         description: 'Perfis que tuitam muito em um curto intervalo de tempo recebem uma pontuação maior.',
       },
       {
@@ -487,22 +487,22 @@ export default {
           // I'm gonna treat this here instead of doing it when the array is filled, because I don't want to touch that legacy code
           const chartLabels = [];
           const chartData   = [];
-      
+
           const sortedList = extraDetails.TWEET_MOMENT.sort();
-      
+
           sortedList.forEach( async function(tweet) {
             const tweetStr = tweet.toString();
             const ymd      = tweetStr.substring(0, 10);
-      
+
             if (chartLabels.indexOf(ymd) === -1) {
               chartLabels.push(ymd);
             }
-      
+
             const ymdIndex = chartLabels.indexOf(ymd);
             chartData[ymdIndex] = chartData[ymdIndex] + 1 || 1;
-      
+
           });
-      
+
           const analysisKey = ret.root.profile.analyses.length - 1;
 
           ret.root.profile.analyses[analysisKey].chart = {};
@@ -526,7 +526,7 @@ export default {
             conclusion:  parseFloat(extraDetails[section.score_key]).toFixed(2)
           }
         );
-  
+
         const analysisKey = ret.root.network.analyses.length - 1;
         if (section.title === 'DISTRIBUIÇÃO DAS HASHTAGS') {
           ret.root.network.analyses[analysisKey].hashtags = [];
@@ -535,12 +535,12 @@ export default {
         else if (section.title === 'DISTRIBUIÇÃO DAS MENÇÕES') {
           const list = extraDetails.MENTIONS.slice(0, 100);
           list.forEach( function(v) { delete v.id; delete v.id_str; delete v.indices } );
-  
+
           ret.root.network.analyses[analysisKey].mentions = [];
           ret.root.network.analyses[analysisKey].mentions = list;
         }
         else {
-          
+
           ret.root.network.analyses[analysisKey].stats = [
             {
               title: "Replies (respostas)",
@@ -580,12 +580,12 @@ export default {
     const tweetSamples = [];
 
     if (typeof(tweetNeutral) != 'undefined') {
-      const calcBuffer = puppetterSecret + "\n" 
+      const calcBuffer = puppetterSecret + "\n"
         + 'u=' + '' + tweetNeutral.url + "\n"
         + 'w=480' + "\n"
         + 'h=520' + "\n";
 
-      const calcSecret = md5Hex(calcBuffer);    
+      const calcSecret = md5Hex(calcBuffer);
 
       const pictureUrl = await (async () => {
         try {
@@ -597,7 +597,7 @@ export default {
               h: 520,
               a: calcSecret,
             });
-                
+
           return res.request.url;
         } catch (err) {
           console.error(err);
@@ -611,12 +611,12 @@ export default {
     }
 
     if (typeof(tweetPositive) != 'undefined') {
-      const calcBuffer = puppetterSecret + "\n" 
+      const calcBuffer = puppetterSecret + "\n"
         + 'u=' + '' + tweetPositive.url + "\n"
         + 'w=480' + "\n"
         + 'h=520' + "\n";
 
-      const calcSecret = md5Hex(calcBuffer);    
+      const calcSecret = md5Hex(calcBuffer);
 
       const pictureUrl = await (async () => {
         try {
@@ -628,7 +628,7 @@ export default {
               h: 520,
               a: calcSecret,
             });
-                
+
           return res.request.url;
         } catch (err) {
           console.error(err);
@@ -642,12 +642,12 @@ export default {
     }
 
     if (typeof(tweetNegative) != 'undefined') {
-      const calcBuffer = puppetterSecret + "\n" 
+      const calcBuffer = puppetterSecret + "\n"
         + 'u=' + '' + tweetNegative.url + "\n"
         + 'w=480' + "\n"
         + 'h=520' + "\n";
 
-      const calcSecret = md5Hex(calcBuffer);    
+      const calcSecret = md5Hex(calcBuffer);
 
       const pictureUrl = await (async () => {
         try {
@@ -659,7 +659,7 @@ export default {
               h: 520,
               a: calcSecret,
             });
-                
+
           return res.request.url;
         } catch (err) {
           console.error(err);
