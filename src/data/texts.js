@@ -74,11 +74,11 @@ export default {
             },
 
             HASHTAG_LIST: {
-                TITLE: ''
+                TITLE: 'HASHTAGS MAIS UTILIZADAS'
             },
 
             MENTIONS_LIST: {
-                TITLE: ''
+                TITLE: '@MENÇÕES'
             }
         },
         EMOTIONS: {
@@ -146,26 +146,26 @@ export default {
             DESCRIPTION: '<p>El algoritmo de AtrapaBot recopila una muestra de línea del tiempo, identificando hasgtags utilizados y menciones al perfil, para realizar sus análisis. El objetivo es identificar caracteristicas de distribución en la red de la cuenta analizada. </p>El índice de red evalua se el perfil pose una alta frecuencia de repeticiones de menciones y hashtags. En el caso de un bot de spams, generalmente se utilizan las mismas hashtags/menciones, y es justo eso lo que ese índice observa. Por ejemplo, si se utilizan 50 hastags diferentes, no hay mucha sospecha, pero, si sólo se utiliza una misma hastag en 100% de los casos, hay mucha sospecha.</p>',
             
             HASHTAGS_ANALYSIS: {
-                TITLE: '',
-                DESCRIPTION: ''
+                TITLE: 'DISTRIBUCIÓN DE LOS HASHTAGS',
+                DESCRIPTION: '<p>Calcula el tamaño de la distribución de los hashtags en la red. O sea, evalua si la utilización de los hashtags del perfil presenta una frequencia anormal. </p><p>Cuanto más se acerca a 0%, menor la probabilidad de ser un comportamiento de bot.</p>'
             },
 
             MENTIONS_ANALYSIS: {
-                TITLE: '',
-                DESCRIPTION: ''
+                TITLE: 'DISTRIBUCIÓN DE LAS MENCIONES',
+                DESCRIPTION: '<p>Calcula el tamaño de la distribución de las menciones al perfil del usuario en la red. O sea, evalua las menciones realizadas por el perfil basado en su frecuencia. </p><p>Cuanto más se acerca a 0%, menor la probabilidad de ser un comportamiento de bot.</p>'
             },
 
             NETWORK_ANALYSIS: {
-                TITLE: '',
-                DESCRIPTION: ''
+                TITLE: 'HASHTAGS Y MENCIONES',
+                DESCRIPTION: 'Con los scores de los hashtags y de las menciones descobiertos, por fin se calcula el valor final del índice de la red. A partir de la suma de la media entre las calificaciones de hashtags y de menciones (calificaciones distribuidas) y de la media de la red (suma de todos los hashtags y menciones, dividido por el tamaño de la muestra de tuits y multiplicado por 2)'
             },
 
             HASHTAG_LIST: {
-                TITLE: ''
+                TITLE: 'HASHTAGS MÁS UTILIZADOS'
             },
 
             MENTIONS_LIST: {
-                TITLE: ''
+                TITLE: '@MENCIONES'
             }
         },
         EMOTIONS: {
