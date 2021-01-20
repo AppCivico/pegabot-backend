@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import TwitterLite from 'twitter-lite';
 import { getExtraDetails } from './document';
 import { Request, Feedback } from './infra/database/index';
+import Texts from './data/texts';
 const superagent = require('superagent');
 const md5Hex = require('md5-hex');
 
@@ -303,7 +304,16 @@ export default {
 //   return $my_url . '';
 // }
 
-  buildAnalyzeReturn: async (extraDetails) => {
+  buildAnalyzeReturn: async (extraDetails, lang) => {
+    // Setting text file
+    let texts;
+    if (/es-mx/.test(lang)) {
+        texts = Texts.FULL_ANALYSIS_ESMX;
+    }
+    else {
+        texts = Texts.FULL_ANALYSIS_PTBR;
+    }
+
     // Getting screenshots
     const puppetterUrl = process.env.PUPPETER_SERVICE_ROOT_URL;
     const puppetterSecret = process.env.PUPPETER_SECRET_TOKEN;
@@ -338,21 +348,21 @@ export default {
         profile: {
           handle: extraDetails.TWITTER_HANDLE,
           link: extraDetails.TWITTER_LINK,
-          label: 'Perfil',
-          description: '<p>Algumas das informações públicas dos perfis consideradas na análise do PEGABOT são o nome do perfil do usuário, e quantos caracteres ele possui, quantidade de perfis seguidos (following) e seguidores (followers), texto da descrição do perfil, número de postagens (tweets) e favoritos. Após coletar as informações, os algoritmos do PEGABOT processam e transformam os dados recebidos em variáveis que compõem o cálculo final de probabilidade.</p>',
+          label: texts.PROFILE.LABEL,
+          description: texts.PROFILE.DESCRIPTION,
           figure: pictureUrl,
           analyses: []
         },
 
         network: {
-          description: '<p>O algoritmo do PegaBot coleta uma amostra da linha do tempo do usuário, identificando hashtags utilizadas e menções ao perfil para realizar suas análises. O objetivo é identificar características de distribuição de informação na rede da conta analisada.</p>O índice de rede avalia se o perfil possui uma frequência alta de repetições de menções e hashtags. No caso de um bot de spams, geralmente se usam as mesmas hashtags/menções, e é isso que esse índice observa. Por exemplo, se 50 hashtags são usadas e são 50 hashtags diferentes, não é suspeito, mas se só uma hashtag é usada 100% das vezes, então é muito suspeito.</p>',
-          label: 'Rede',
+          description: texts.NETWORK.DESCRIPTION,
+          label: texts.NETWORK.LABEL,
           analyses: [],
         },
 
         emotions: {
-          description: '<p>Após coletar os dados, os algoritmos do PEGABOT fornecem uma pontuação, em uma escada de -5 a 5m de cada uma das palavras dos tweets coletados. A classificação se baseia em uma biblioteca, onde, cada uma das palavras possui uma pontuação, sendo considerada mais ou menos negativa, positiva ou neutra. Assim, ao final da classificação, calcula-se a pontuação média para a quantidade de palavras positivas, negativas e neutras utilizadas pelo usuário.</p>',
-          label: 'Sentimentos',
+          description: texts.EMOTIONS.DESCRIPTION,
+          label: texts.EMOTIONS.LABEL,
           analyses: []
         },
 
@@ -362,85 +372,85 @@ export default {
 
     const profileData = [
       {
-        title: 'SELO DE VERIFICAÇÃO',
+        title: texts.PROFILE.VERIFIED_ANALYSIS.TITLE,
         summary_key: 'VERIFIED_ANALYSIS',
         score_key:   'VERIFIED_SCORE',
-        description: 'A presença do selo de verificação oferecido pelo Twitter influencia positivamente nos resultados, uma vez que a plataforma possui um procedimento manual para validar a identidade desses usuários.'
+        description: texts.PROFILE.VERIFIED_ANALYSIS.DESCRIPTION
       },
       {
-        title: 'SEMELHANÇA DE NOME DO USUÁRIO E NOME DO PERFIL',
+        title: texts.PROFILE.SIMILARITY_ANALYSIS.TITLE,
         summary_key: 'SIMILARITY_ANALYSIS',
         score_key: 'SIMILARITY_SCORE',
-        description: 'Compara cada uma das letras que compõe o nome do usuário (arroba/handle) e o nome que aparece no perfil. Caso exista a palavra "bot", um peso maior será adicionado.'
+        description: texts.PROFILE.SIMILARITY_ANALYSIS.DESCRIPTION
       },
       {
-        title: 'NÚMERO DE DÍGITOS NO NOME DO USUÁRIO',
+        title: texts.PROFILE.DIGIT_ANALYSIS.TITLE,
         summary_key: 'DIGIT_ANALYSIS',
         score_key: 'DIGIT_SCORE',
-        description: 'Busca por uma composição de nome de perfil que contenha lertas e números. Caso exista uma quantidade superior a dois dígitos na composição, um peso maior é adicionado.'
+        description: texts.PROFILE.DIGIT_ANALYSIS.DESCRIPTION
       },
       {
-        title: 'COMPRIMENTO DO NOME DO PERFIL',
+        title: texts.PROFILE.LENGHT_PROFILE_ANALYSIS.TITLE,
         summary_key: 'LENGHT_PROFILE_ANALYSIS',
         score_key: 'LENGHT_PROFILE_SCORE',
-        description: 'Pesos maiores são adicionados em nomes que possuem uma quantidade superior a 15 caracteres.'
+        description: texts.PROFILE.LENGHT_PROFILE_ANALYSIS.DESCRIPTION
       },
       {
-        title: 'COMPRIMENTO DO NOME DO USUÁRIO (OU ARROBA)',
+        title: texts.PROFILE.LENGHT_HANDLE_ANALYSIS.TITLE,
         summary_key: 'LENGHT_HANDLE_ANALYSIS',
         score_key: 'LENGHT_HANDLE_SCORE',
-        description: 'Pesos maiores são adicionados em nomes de usuários que possuem uma quantidade superior a 10 caracteres.'
+        description: texts.PROFILE.LENGHT_HANDLE_ANALYSIS.DESCRIPTION
       },
       {
-        title: 'COMPRIMENTO DA DESCRIÇÃO',
+        title: texts.PROFILE.LENGHT_DESCRIPTION_ANALYSIS.TITLE,
         summary_key: 'LENGHT_DESCRIPTION_ANALYSIS',
         score_key: 'LENGHT_DESCRIPTION_SCORE',
-        description: 'Pesos maiores são adicionados em descrições que possuem uma quantidade inferior a 10 caracteres.'
+        description: texts.PROFILE.LENGHT_DESCRIPTION_ANALYSIS.DESCRIPTION
       },
       {
-        title: 'IDADE DO PERFIL',
+        title: texts.PROFILE.AGE_ANALYSIS.TITLE,
         summary_key: 'AGE_ANALYSIS',
         score_key: 'AGE_SCORE',
-        description: 'Perfis com uma data de criação inferior a 3 meses (90 dias) ganham uma pontuação maior.'
+        description: texts.PROFILE.AGE_ANALYSIS.DESCRIPTION
       },
       {
-        title: 'FOTO DO PERFIL',
+        title: texts.PROFILE.PROFILE_PIC_ANALYSIS.TITLE,
         summary_key: 'PROFILE_PIC_ANALYSIS',
         score_key: 'PROFILE_PIC_SCORE',
-        description: 'Verificamos a existência de uma foto de perfil. Perfis que não possuem, recebem uma pontuação maior.',
+        description: texts.PROFILE.PROFILE_PIC_ANALYSIS.DESCRIPTION
       },
       {
-        title: 'NÚMERO DE TWEETS',
+        title: texts.PROFILE.TWEET_NUMBER_ANALYSIS.TITLE,
         summary_key: 'TWEET_NUMBER_ANALYSIS',
         score_key: 'TWEET_NUMBER_SCORE',
-        description: 'Perfis que tuitam muito em um curto intervalo de tempo recebem uma pontuação maior.',
+        description: texts.PROFILE.TWEET_NUMBER_ANALYSIS.DESCRIPTION
       },
       {
-        title: 'FAVORITOS',
+        title: texts.PROFILE.FAVORITES_ANALYSIS.TITLE,
         summary_key: 'FAVORITES_ANALYSIS',
         score_key: 'FAVORITES_SCORE',
-        description: 'A quantidade de favoritos de um perfil também é considerada. Perfis com maior quantidade de favoritos recebem uma pontuação maior.'
+        description: texts.PROFILE.FAVORITES_ANALYSIS.DESCRIPTION
       },
     ];
 
     const networkData = [
       {
-        title: 'DISTRIBUIÇÃO DAS HASHTAGS',
+        title: texts.NETWORK.HASHTAGS_ANALYSIS.TITLE,
         summary_key: 'HASHTAGS_ANALYSIS',
         score_key: 'HASHTAGS_SCORE',
-        description: '<p>Calcula o tamanho da distribuição dessas hashtags na rede. Ou seja, avalia se a utilização de hashtags do perfil apresenta uma frequência anormal.</p><p>Quanto mais próximo de 0% menor a probabilidade de ser um comportamento de bot.</p>'
+        description: texts.NETWORK.HASHTAGS_ANALYSIS.DESCRIPTION
       },
       {
-        title: 'DISTRIBUIÇÃO DAS MENÇÕES',
+        title: texts.NETWORK.MENTIONS_ANALYSIS.TITLE,
         summary_key: 'MENTIONS_ANALYSIS',
         score_key: 'MENTIONS_SCORE',
-        description: '<p>Calcula o tamanho da distribuição de menções ao perfil do usuário na rede. Ou seja, avalia as menções realizadas pelo perfil com base em sua frequência.</p><p>Quanto mais próximo de 0% menor a probabilidade de ser um comportamento de bot.</p>'
+        description: texts.NETWORK.MENTIONS_ANALYSIS.DESCRIPTION
       },
       {
-        title: 'HASHTAGS E MENÇÕES',
+        title: texts.NETWORK.NETWORK_ANALYSIS.TITLE,
         summary_key: 'NETWORK_ANALYSIS',
         score_key: 'NETWORK_SCORE',
-        description: 'Com os scores das hashtag e das menções descobertos, enfim é calculado o valor final do índice de rede. A partir da soma entre a média entre os scores de hashtag e de menções (score distribuído) e da média da rede (somatória de todas hashtags e menções, dividido pelo tamanho da amostra de tweets multiplicado por 2)'
+        description: texts.NETWORK.NETWORK_ANALYSIS.TITLE
       },
     ];
 
@@ -456,11 +466,11 @@ export default {
       // },
       {
         key: 'HASHTAGS',
-        title: 'HASHTAGS MAIS UTILIZADAS'
+        title: texts.NETWORK.HASHTAG_LIST
       },
       {
         key: 'MENTIONS',
-        title: '@MENÇÕES'
+        title: texts.NETWORK.MENTIONS_LIST
       },
       // {
       //   key: 'SENTIMENT_EXAMPLE',
