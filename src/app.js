@@ -108,7 +108,6 @@ app.all('/', function(req, res, next) {
  });
 
 app.get('/botometer', async (req, res) => {
-  console.log(req.headers);
 
   const target = req.query.search_for;
   const { profile } = req.query;
@@ -121,6 +120,7 @@ app.get('/botometer', async (req, res) => {
   const isAdmin = req.query.is_admin;
   const origin = isAdmin ? 'admin' : 'website';
   const wantsDocument = req.query.documento;
+  const lang = req.headers["accept-language"];
 
   const referer = req.get('referer');
   const sentimentLang = library.getDefaultLanguage(referer);
@@ -138,7 +138,7 @@ app.get('/botometer', async (req, res) => {
   } else if (target === 'profile') {
     try {
       const result = await spottingbot(profile, config, { friend: false },
-        sentimentLang, getData, cacheInterval, verbose, origin, wantsDocument).catch((err) => err);
+        sentimentLang, getData, cacheInterval, verbose, origin, wantsDocument, lang).catch((err) => err);
 
       if (result && result.profiles && result.profiles[0]) console.log(result.profiles[0]);
 
@@ -268,6 +268,8 @@ app.get('/analyze', async (req, res) => {
   const referer = req.get('referer');
   const sentimentLang = library.getDefaultLanguage(referer);
 
+  const lang = req.headers["accept-language"];
+
   const { getData } = req.query;
 
   console.log('profile', profile);
@@ -291,7 +293,7 @@ app.get('/analyze', async (req, res) => {
         return;
       }
       
-      res.send(await library.buildAnalyzeReturn(result.profiles[0].bot_probability.extraDetails));
+      res.send(await library.buildAnalyzeReturn(result.profiles[0].bot_probability.extraDetails, lang));
 
     } catch (error) {
       console.log('error', error);
