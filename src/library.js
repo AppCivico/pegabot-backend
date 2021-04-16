@@ -277,41 +277,41 @@ export default {
   },
 
 
-// sub puppetter_signed_url {
-//   my %config = @_;
+  // sub puppetter_signed_url {
+  //   my %config = @_;
 
-//   my $secret = $ENV{PUPPETER_SECRET_TOKEN};
-//   my $host   = $ENV{PUPPETER_SERVICE_ROOT_URL};
+  //   my $secret = $ENV{PUPPETER_SECRET_TOKEN};
+  //   my $host   = $ENV{PUPPETER_SERVICE_ROOT_URL};
 
-//   die 'missing PUPPETER_SECRET_TOKEN'     if !$secret;
-//   die 'missing PUPPETER_SERVICE_ROOT_URL' if !$host;
-//   die 'invalid width'                     if $config{w} !~ /^\d+$/a;
-//   die 'invalid height'                    if exists $config{h} && $config{h} !~ /^\d+$/a;
-//   die 'invalid resize width'              if exists $config{rw} && $config{rw} !~ /^\d+$/a;
-//   die 'invalid url' if $config{u} !~ /^http/i;
+  //   die 'missing PUPPETER_SECRET_TOKEN'     if !$secret;
+  //   die 'missing PUPPETER_SERVICE_ROOT_URL' if !$host;
+  //   die 'invalid width'                     if $config{w} !~ /^\d+$/a;
+  //   die 'invalid height'                    if exists $config{h} && $config{h} !~ /^\d+$/a;
+  //   die 'invalid resize width'              if exists $config{rw} && $config{rw} !~ /^\d+$/a;
+  //   die 'invalid url' if $config{u} !~ /^http/i;
 
-//   my $my_url = Mojo::URL->new($host);
+  //   my $my_url = Mojo::URL->new($host);
 
-//   my $calcBuffer = $secret . "\n";
-//   for my $field (keys %config) {
-//       $calcBuffer .= $field . '=' . $config{$field} . "\n";
-//       $my_url->query->merge($field, $config{$field});
-//   }
+  //   my $calcBuffer = $secret . "\n";
+  //   for my $field (keys %config) {
+  //       $calcBuffer .= $field . '=' . $config{$field} . "\n";
+  //       $my_url->query->merge($field, $config{$field});
+  //   }
 
-//   my $calcSecret = md5_hex($calcBuffer);
-//   $my_url->query->merge('a', $calcSecret);
+  //   my $calcSecret = md5_hex($calcBuffer);
+  //   $my_url->query->merge('a', $calcSecret);
 
-//   return $my_url . '';
-// }
+  //   return $my_url . '';
+  // }
 
   buildAnalyzeReturn: async (extraDetails, lang) => {
     // Setting text file
     let texts;
     if (/es-mx/.test(lang)) {
-        texts = Texts.FULL_ANALYSIS_ESMX;
+      texts = Texts.FULL_ANALYSIS_ESMX;
     }
     else {
-        texts = Texts.FULL_ANALYSIS_PTBR;
+      texts = Texts.FULL_ANALYSIS_PTBR;
     }
 
     // Getting screenshots
@@ -319,28 +319,20 @@ export default {
     const puppetterSecret = process.env.PUPPETER_SECRET_TOKEN;
 
     const calcBuffer = puppetterSecret + "\n"
-    + 'u=' + '' + extraDetails.TWITTER_LINK + "\n"
-    + 'w=480' + "\n"
-    + 'h=520' + "\n";
+      + 'u=' + '' + extraDetails.TWITTER_LINK + "\n"
+      + 'w=480' + "\n"
+      + 'h=520' + "\n";
 
     const calcSecret = md5Hex(calcBuffer);
 
-    const pictureUrl = await (async () => {
-      try {
-        const res = await superagent
-          .get(puppetterUrl)
-          .query({
-            u: '' + extraDetails.TWITTER_LINK,
-            w: 480,
-            h: 520,
-            a: calcSecret,
-          });
-
-        return res.request.url;
-      } catch (err) {
-        console.error(err);
-      }
-    })();
+    const opts = {
+      u: '' + extraDetails.TWITTER_LINK,
+      w: 480,
+      h: 520,
+      a: calcSecret,
+    };
+    const queryString = new URLSearchParams(opts).toString();
+    const pictureUrl = `${puppetterUrl}?${queryString}`;
 
     // Preparing the JSON that's going to be used on the return for /analyze
     const ret = {
@@ -374,7 +366,7 @@ export default {
       {
         title: texts.PROFILE.VERIFIED_ANALYSIS.TITLE,
         summary_key: 'VERIFIED_ANALYSIS',
-        score_key:   'VERIFIED_SCORE',
+        score_key: 'VERIFIED_SCORE',
         description: texts.PROFILE.VERIFIED_ANALYSIS.DESCRIPTION
       },
       {
@@ -479,30 +471,30 @@ export default {
     ];
 
     // Profile block root->profile
-    profileData.forEach( async function(section) {
+    profileData.forEach(async function (section) {
 
       // Verifying if index exists, only push to array if it does.
       if (typeof extraDetails[section.summary_key] != "undefined") {
         ret.root.profile.analyses.push(
           {
-            title:       section.title,
+            title: section.title,
             description: section.description,
-            summary:     typeof extraDetails[section.summary_key] != "undefined" ? `<p>${extraDetails[section.summary_key]}</p>` : undefined,
-            conclusion:  typeof extraDetails[section.score_key] === "number" ? parseFloat(extraDetails[section.score_key]).toFixed(2) : 0.00
+            summary: typeof extraDetails[section.summary_key] != "undefined" ? `<p>${extraDetails[section.summary_key]}</p>` : undefined,
+            conclusion: typeof extraDetails[section.score_key] === "number" ? parseFloat(extraDetails[section.score_key]).toFixed(2) : 0.00
           }
         );
 
-        if ( section.title === 'NÚMERO DE TWEETS' ) {
+        if (section.title === 'NÚMERO DE TWEETS') {
           // Preparing the tweet array to be used on a line chart, divided by day.
           // I'm gonna treat this here instead of doing it when the array is filled, because I don't want to touch that legacy code
           const chartLabels = [];
-          const chartData   = [];
+          const chartData = [];
 
           const sortedList = extraDetails.TWEET_MOMENT.sort();
 
-          sortedList.forEach( async function(tweet) {
+          sortedList.forEach(async function (tweet) {
             const tweetStr = tweet.toString();
-            const ymd      = tweetStr.substring(0, 10);
+            const ymd = tweetStr.substring(0, 10);
 
             if (chartLabels.indexOf(ymd) === -1) {
               chartLabels.push(ymd);
@@ -517,23 +509,23 @@ export default {
 
           ret.root.profile.analyses[analysisKey].chart = {};
           ret.root.profile.analyses[analysisKey].chart.labels = chartLabels;
-          ret.root.profile.analyses[analysisKey].chart.data   = chartData;
+          ret.root.profile.analyses[analysisKey].chart.data = chartData;
 
         }
       }
     });
 
     // Network block root->network
-    networkData.forEach( async function(section) {
+    networkData.forEach(async function (section) {
 
       // Verifying if index exists, only push to array if it does.
       if (typeof extraDetails[section.summary_key] != "undefined") {
         ret.root.network.analyses.push(
           {
-            title:       section.title,
+            title: section.title,
             description: section.description,
-            summary:     typeof extraDetails[section.summary_key] != "undefined" ? `<p>${extraDetails[section.summary_key]}</p>` : undefined,
-            conclusion:  parseFloat(extraDetails[section.score_key]).toFixed(2)
+            summary: typeof extraDetails[section.summary_key] != "undefined" ? `<p>${extraDetails[section.summary_key]}</p>` : undefined,
+            conclusion: parseFloat(extraDetails[section.score_key]).toFixed(2)
           }
         );
 
@@ -544,7 +536,7 @@ export default {
         }
         else if (section.title === 'DISTRIBUIÇÃO DAS MENÇÕES') {
           const list = extraDetails.MENTIONS.slice(0, 100);
-          list.forEach( function(v) { delete v.id; delete v.id_str; delete v.indices } );
+          list.forEach(function (v) { delete v.id; delete v.id_str; delete v.indices });
 
           ret.root.network.analyses[analysisKey].mentions = [];
           ret.root.network.analyses[analysisKey].mentions = list;
@@ -589,7 +581,7 @@ export default {
 
     const tweetSamples = [];
 
-    if (typeof(tweetNeutral) != 'undefined') {
+    if (typeof (tweetNeutral) != 'undefined') {
       const calcBuffer = puppetterSecret + "\n"
         + 'u=' + '' + tweetNeutral.url + "\n"
         + 'w=480' + "\n"
@@ -620,7 +612,7 @@ export default {
       });
     }
 
-    if (typeof(tweetPositive) != 'undefined') {
+    if (typeof (tweetPositive) != 'undefined') {
       const calcBuffer = puppetterSecret + "\n"
         + 'u=' + '' + tweetPositive.url + "\n"
         + 'w=480' + "\n"
@@ -651,7 +643,7 @@ export default {
       });
     }
 
-    if (typeof(tweetNegative) != 'undefined') {
+    if (typeof (tweetNegative) != 'undefined') {
       const calcBuffer = puppetterSecret + "\n"
         + 'u=' + '' + tweetNegative.url + "\n"
         + 'w=480' + "\n"
