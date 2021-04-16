@@ -323,7 +323,34 @@ export default {
     });
   },
 
-  buildAnalyzeReturn: async (extraDetails, lang, analysis_id) => {
+  // sub puppetter_signed_url {
+  //   my %config = @_;
+
+  //   my $secret = $ENV{PUPPETER_SECRET_TOKEN};
+  //   my $host   = $ENV{PUPPETER_SERVICE_ROOT_URL};
+
+  //   die 'missing PUPPETER_SECRET_TOKEN'     if !$secret;
+  //   die 'missing PUPPETER_SERVICE_ROOT_URL' if !$host;
+  //   die 'invalid width'                     if $config{w} !~ /^\d+$/a;
+  //   die 'invalid height'                    if exists $config{h} && $config{h} !~ /^\d+$/a;
+  //   die 'invalid resize width'              if exists $config{rw} && $config{rw} !~ /^\d+$/a;
+  //   die 'invalid url' if $config{u} !~ /^http/i;
+
+  //   my $my_url = Mojo::URL->new($host);
+
+  //   my $calcBuffer = $secret . "\n";
+  //   for my $field (keys %config) {
+  //       $calcBuffer .= $field . '=' . $config{$field} . "\n";
+  //       $my_url->query->merge($field, $config{$field});
+  //   }
+
+  //   my $calcSecret = md5_hex($calcBuffer);
+  //   $my_url->query->merge('a', $calcSecret);
+
+  //   return $my_url . '';
+  // }
+
+  buildAnalyzeReturn: async (extraDetails, lang) => {
     // Setting text file
     let texts;
     if (/es-mx/.test(lang)) {
