@@ -40,30 +40,6 @@ export default class Analysis extends Model {
             details: {
                 allowNull: true,
                 type: DataTypes.JSON,
-            },
-            twitter_user_id: {
-                allowNull: true,
-                type: DataTypes.BIGINT,
-            },
-            twitter_handle: {
-                allowNull: true,
-                type: DataTypes.STRING,
-            },
-            twitter_created_at: {
-                allowNull: true,
-                type: DataTypes.DATE,
-            },
-            twitter_following_count: {
-                allowNull: true,
-                type: DataTypes.INTEGER,
-            },
-            twitter_followers_count: {
-                allowNull: true,
-                type: DataTypes.INTEGER,
-            },
-            twitter_status_count: {
-                allowNull: true,
-                type: DataTypes.INTEGER,
             }
         }, {
             sequelize,
