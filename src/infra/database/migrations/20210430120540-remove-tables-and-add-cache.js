@@ -39,6 +39,12 @@ module.exports = {
         allowNull: true,
         type: Sequelize.DATE,
       },
+
+      times_served: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        defaultValue: 0
+      },
     });
   },
 

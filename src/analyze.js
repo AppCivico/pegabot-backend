@@ -88,7 +88,7 @@ module.exports = (screenName, config, index = {
     const cacheInterval = library.getCacheInterval();
 
     const cachedResponse = await Cache.findOne({
-      attributes: ['simple_analysis', 'full_analysis'],
+      attributes: ['simple_analysis', 'full_analysis', 'times_served', 'id'],
       where: {
         '$analysis.twitter_user_id$': user.id,
         '$analysis.createdAt$': { [Op.between]: [cacheInterval, new Date()] },
@@ -97,6 +97,8 @@ module.exports = (screenName, config, index = {
     })
 
     if (cachedResponse) {
+      const currentTimesServed = cachedResponse['times_served'];
+      console.log(currentTimesServed);
       const responseToUse = isFullAnalysis ? cachedResponse['full_analysis'] : cachedResponse['simple_analysis'];
       if (responseToUse) {
         const cachedJSON = JSON.parse(responseToUse);
@@ -106,6 +108,9 @@ module.exports = (screenName, config, index = {
           resolve(fullAnalysisRet);
           return fullAnalysisRet;
         }
+
+        cachedResponse.times_served = currentTimesServed + 1;
+        await cachedResponse.save();
 
         resolve(cachedJSON);
         return cachedJSON;

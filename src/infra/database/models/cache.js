@@ -21,7 +21,12 @@ const CacheModel = class Cache extends Model {
       full_analysis: {
         allowNull: true,
         type: DataTypes.TEXT,
-      }
+      },
+      times_served: {
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+      },
     }, {
       sequelize,
       modelName: 'cache',
