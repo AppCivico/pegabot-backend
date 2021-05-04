@@ -127,7 +127,6 @@ app.get('/botometer', async (req, res) => {
 
   const { getData } = req.query;
 
-  console.log('profile', profile);
   if (!limit || limit > 200) {
     limit = 200;
   }
@@ -139,8 +138,6 @@ app.get('/botometer', async (req, res) => {
     try {
       const result = await spottingbot(profile, config, { friend: false },
         sentimentLang, getData, cacheInterval, verbose, origin, wantsDocument, lang).catch((err) => err);
-
-      if (result && result.profiles && result.profiles[0]) console.log(result.profiles[0]);
 
       if (!result || result.errors || result.error) {
         let toSend = result;
@@ -273,7 +270,6 @@ app.get('/analyze', async (req, res) => {
 
   const { getData } = req.query;
 
-  console.log('profile', profile);
   if (!limit || limit > 200) {
     limit = 200;
   }
@@ -337,7 +333,7 @@ app.get('/botometer-bulk', async (req, res) => {
   if (!apiKey || apiKey != process.env.BULK_API_KEY) return res.status(403).send('forbidden');
 
 
-  const { profiles, is_admin, twitter_api_consumer_key, twitter_api_consumer_secret } = req.body;
+  const { profiles, is_admin, twitter_api_consumer_key, twitter_api_consumer_secret, cache_interval } = req.body;
   if (profiles.length > 50) return res.status(400).json({ message: 'max profiles size is 50' });
 
   if (twitter_api_consumer_key && twitter_api_consumer_secret) {
@@ -347,14 +343,16 @@ app.get('/botometer-bulk', async (req, res) => {
     };
   }
 
+  const verbose = false;
   const getData = true;
+  const origin = 'admin';
+  const cacheInterval = cache_interval;
   const referer = req.get('referer');
-  const origin = is_admin ? 'admin' : 'website';
 
   const profiles_results = profiles.map(profile => {
 
     return spottingbot(
-      profile, config, { friend: false }, library.getDefaultLanguage(referer), getData, origin
+      profile, config, { friend: false }, library.getDefaultLanguage(referer), getData, cacheInterval, verbose, origin
     ).then((result) => {
       return {
         twitter_user_data: {
