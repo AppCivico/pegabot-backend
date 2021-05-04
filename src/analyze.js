@@ -94,12 +94,12 @@ module.exports = (screenName, config, index = {
         '$analysis.createdAt$': { [Op.between]: [cacheInterval, new Date()] },
       },
       include: 'analysis'
-    })
+    });
 
     if (cachedResponse) {
       const currentTimesServed = cachedResponse['times_served'];
-      console.log(currentTimesServed);
       const responseToUse = isFullAnalysis ? cachedResponse['full_analysis'] : cachedResponse['simple_analysis'];
+
       if (responseToUse) {
         const cachedJSON = JSON.parse(responseToUse);
 
@@ -352,7 +352,7 @@ module.exports = (screenName, config, index = {
         sentiment: sentimentScore,
         temporal: temporalScore,
         network: networkScore,
-        twitter_user_id: data.user_id,
+        twitter_user_id: user.id,
         twitter_handle: param.screen_name,
         twitter_created_at: data.created_at,
         twitter_following_count: data.following,
