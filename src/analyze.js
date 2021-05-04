@@ -90,7 +90,7 @@ module.exports = (screenName, config, index = {
     const cachedResponse = await Cache.findOne({
       attributes: ['simple_analysis', 'full_analysis', 'times_served', 'id'],
       where: {
-        '$analysis.twitter_user_id$': user.id,
+        '$analysis.twitter_user_id$': user.id_str,
         '$analysis.createdAt$': { [Op.between]: [cacheInterval, new Date()] },
       },
       include: 'analysis'
@@ -352,7 +352,7 @@ module.exports = (screenName, config, index = {
         sentiment: sentimentScore,
         temporal: temporalScore,
         network: networkScore,
-        twitter_user_id: user.id,
+        twitter_user_id: user.id_str,
         twitter_handle: param.screen_name,
         twitter_created_at: data.created_at,
         twitter_following_count: data.following,
