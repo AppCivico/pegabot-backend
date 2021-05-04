@@ -4,7 +4,7 @@
   "description": "Analyzing profile on Twitter for detect behavior of spamming bot",
   "homepage": "https://github.com/AppCivico/spottingbot#readme",
   "scripts": {
-    "start": "babel-node src/index.js",
+    "start": "npx babel src -d build; node build/index.js",
     "dev": "nodemon src/index.js --exec babel-node",
     "lint": "eslint . --ext .js",
     "cli": "babel-node src/cli.js",
