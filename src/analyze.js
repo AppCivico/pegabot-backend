@@ -357,7 +357,7 @@ module.exports = (screenName, config, index = {
         twitter_created_at: data.created_at,
         twitter_following_count: data.following,
         twitter_followers_count: data.followers,
-        twitter_status_count: data.number_tweets,
+        twitter_tweets_count: data.number_tweets,
         origin: origin
       }).then((res) => res.dataValues);
 

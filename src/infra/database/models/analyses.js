@@ -53,7 +53,7 @@ export default class Analysis extends Model {
         allowNull: true,
         type: DataTypes.INTEGER,
       },
-      twitter_status_count: {
+      twitter_tweets_count: {
         allowNull: true,
         type: DataTypes.INTEGER,
       },
