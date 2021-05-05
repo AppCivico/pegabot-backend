@@ -10,10 +10,11 @@ import networkIndex from './index/network';
 import sentimentIndex from './index/sentiment';
 import library from './library';
 import document from './document';
+import { Op } from 'sequelize';
 
 // Import DB modules
 import {
-  Request, Analysis, UserData, ApiData, CachedRequest,
+  Request, Analysis, UserData, ApiData, CachedRequest, Cache
 } from './infra/database/index';
 
 
@@ -22,7 +23,7 @@ const weights = {};
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
-}, sentimentLang, getData, cacheInterval, verbose, origin, wantDocument, fullAnalysisCache, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
+}, sentimentLang, getData, cacheInterval, verbose, origin, wantDocument, isFullAnalysis, fullAnalysisCache, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
 
   let useCache = process.env.USE_CACHE;
   if (typeof fullAnalysisCache != 'undefined' && fullAnalysisCache === 0) useCache = 0;
@@ -44,37 +45,6 @@ module.exports = (screenName, config, index = {
   extraDetails.TWITTER_HANDLE = screenName;
   extraDetails.TWITTER_LINK = `https://twitter.com/${screenName}`;
 
-  // check if we have a saved analysis of that user withing the desired time interval
-  if (useCache === '1') {
-    // let analysisForHandle = await library.getTwitterIDForHandle(screenName);
-    // let twitter_user_id = analysisForHandle[0].dataValues.twitter_user_id;
-
-    // let cachedAnalysis = await library.getCachedAnalysis(twitter_user_id);
-    // console.log(cachedAnalysis);
-
-    let cachedResult = await library.getCachedRequest(screenName, cacheInterval);
-
-    if (cachedResult) {
-      const analysisId = cachedResult['analysis.id'];
-
-      const { id: cachedResultID } = cachedResult; // use the original result to add an entry in the CachedRequest table
-      const { id: cachedRequestID } = await CachedRequest.create({ cachedResultID }).then((res) => res.dataValues);
-      // save the current request but link it with the CachedRequest we just created
-      await Request.create({ screenName, gitHead: await library.getGitHead(), cachedRequestID });
-
-      // format and return the cached result
-      cachedResult = library.formatCached(cachedResult, getData);
-      if (!verbose) delete cachedResult.profiles[0].bot_probability.info;
-
-      if (cb) cb(null, cachedResult);
-      console.log(JSON.stringify(cachedResult, null, 2));
-
-      cachedResult.analysis_id = analysisId;
-
-      resolve(cachedResult);
-      return cachedResult;
-    }
-  }
 
   const twitterParams = config;
   // Create Twitter client
@@ -97,16 +67,14 @@ module.exports = (screenName, config, index = {
   let indexCount = 0;
 
   // store new client request and get request instance
-  const newRequest = await Request.create({ screenName, gitHead: await library.getGitHead(), origin });
+  // const newRequest = await Request.create({ screenName, gitHead: await library.getGitHead(), origin });
 
   // get tweets timeline. We will use it for both the user and sentiment/temporal/network calculations
   const apiAnswer = await client.get('statuses/user_timeline', param).catch((err) => err);
 
   // if there's an error, save the api response as is and update the new request entry with it
   if (!apiAnswer || apiAnswer.error || apiAnswer.errors || apiAnswer.length === 0) {
-    const { id: apiDataID } = await ApiData.create({ statusesUserTimeline: apiAnswer, params: param });
-    newRequest.apiDataID = apiDataID;
-    newRequest.save();
+    // TODO: Salvar erro
     if (cb) cb(apiAnswer, null);
     reject(apiAnswer);
     return apiAnswer;
@@ -115,13 +83,43 @@ module.exports = (screenName, config, index = {
   // format api answer
   const { timeline, user } = library.getTimelineUser(apiAnswer);
 
+  // check if we have a saved analysis of that user withing the desired time interval
+  if (useCache === '1') {
+    const cacheInterval = library.getCacheInterval();
+
+    const cachedResponse = await Cache.findOne({
+      attributes: ['simple_analysis', 'full_analysis', 'times_served', 'id'],
+      where: {
+        '$analysis.twitter_user_id$': user.id_str,
+        '$analysis.createdAt$': { [Op.between]: [cacheInterval, new Date()] },
+      },
+      include: 'analysis'
+    });
+
+    if (cachedResponse) {
+      const currentTimesServed = cachedResponse['times_served'];
+      const responseToUse = isFullAnalysis ? cachedResponse['full_analysis'] : cachedResponse['simple_analysis'];
+
+      if (responseToUse) {
+        const cachedJSON = JSON.parse(responseToUse);
+
+        if (isFullAnalysis) {
+          const fullAnalysisRet = await library.buildAnalyzeReturn(cachedJSON);
+          resolve(fullAnalysisRet);
+          return fullAnalysisRet;
+        }
+
+        cachedResponse.times_served = currentTimesServed + 1;
+        await cachedResponse.save();
+
+        resolve(cachedJSON);
+        return cachedJSON;
+      }
+    }
+  }
+
   // get and store rate limits
   if (getData && timeline) timeline.rateLimit = await library.getRateStatus(timeline);
-
-  // store formated api response
-  const { id: apiDataID } = await ApiData.create({ statusesUserTimeline: { user, timeline }, params: param });
-  newRequest.apiDataID = apiDataID;
-  newRequest.save();
 
   const explanations = [`Análise do usuário: ${screenName}`];
   explanations.push('Carregou a timeline com o endpoint "statuses/user_timeline"');
@@ -328,10 +326,6 @@ module.exports = (screenName, config, index = {
         }],
       };
 
-      const details = await document.getExtraDetails(extraDetails);
-      if (verbose) object.profiles[0].bot_probability.info = library.getLoggingtext(explanations);
-      if (wantDocument) object.profiles[0].bot_probability.extraDetails = details;
-
       // add data from twitter to complement return (if getDate is true) and save to database
       const data = {};
 
@@ -352,38 +346,50 @@ module.exports = (screenName, config, index = {
 
       // save Analysis Data on database
       const { id: newAnalysisID } = await Analysis.create({
-        fullResponse: object,
         total,
         user: userScore,
         friend: friendsScore,
         sentiment: sentimentScore,
         temporal: temporalScore,
         network: networkScore,
-        // twitter_user_id: data.user_id,
-        // twitter_handle: param.screen_name,
-        // twitter_created_at: data.created_at,
-        // twitter_following_count: data.following,
-        // twitter_followers_count: data.followers,
-        // twitter_status_count: data.number_tweets,
-        details,
+        twitter_user_id: user.id_str,
+        twitter_handle: param.screen_name,
+        twitter_created_at: data.created_at,
+        twitter_following_count: data.following,
+        twitter_followers_count: data.followers,
+        twitter_tweets_count: data.number_tweets,
+        origin: origin
       }).then((res) => res.dataValues);
+
+      // Saving cache
+      const details = await document.getExtraDetails(extraDetails);
+      const detailsAsString = JSON.stringify(details);
+      await Cache.create({
+        analysis_id: newAnalysisID,
+        simple_analysis: JSON.stringify(object),
+        full_analysis: detailsAsString,
+        updatedAt: null
+      });
 
       // save User Data on database
-      const { id: newUserDataID } = await UserData.create({
-        username: data.user_name,
-        twitterID: data.user_id,
-        profileCreatedAt: data.created_at,
-        followingCount: data.following,
-        followersCount: data.followers,
-        statusesCount: data.number_tweets,
-        hashtagsUsed: data.hashtags,
-        mentionsUsed: data.mentions,
-      }).then((res) => res.dataValues);
+      // const { id: newUserDataID } = await UserData.create({
+      //   username: data.user_name,
+      //   twitterID: data.user_id,
+      //   profileCreatedAt: data.created_at,
+      //   followingCount: data.following,
+      //   followersCount: data.followers,
+      //   statusesCount: data.number_tweets,
+      //   hashtagsUsed: data.hashtags,
+      //   mentionsUsed: data.mentions,
+      // }).then((res) => res.dataValues);
 
       // update request
-      newRequest.analysisID = newAnalysisID;
-      newRequest.userDataID = newUserDataID;
-      newRequest.save();
+      // newRequest.analysisID = newAnalysisID;
+      // newRequest.userDataID = newUserDataID;
+      // newRequest.save();
+
+      if (verbose) object.profiles[0].bot_probability.info = library.getLoggingtext(explanations);
+      if (wantDocument) object.profiles[0].bot_probability.extraDetails = details;
 
       if (newAnalysisID) object.analysis_id = newAnalysisID;
 

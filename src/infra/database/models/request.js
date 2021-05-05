@@ -52,10 +52,6 @@ requestModel.associate = (models) => {
   requestModel.hasOne(models.UserData, {
     as: 'userdata', foreignKey: 'id', sourceKey: 'userDataID', onDelete: 'CASCADE', onUpdate: 'CASCADE',
   });
-
-  requestModel.hasOne(models.ApiData, {
-    as: 'apidata', foreignKey: 'id', sourceKey: 'apiDataID', onDelete: 'CASCADE', onUpdate: 'CASCADE',
-  });
 };
 
 export default requestModel;
