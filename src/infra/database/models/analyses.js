@@ -9,10 +9,6 @@ export default class Analysis extends Model {
         primaryKey: true,
         type: DataTypes.INTEGER,
       },
-      fullResponse: {
-        allowNull: false,
-        type: DataTypes.JSON,
-      },
       total: {
         allowNull: true,
         type: DataTypes.STRING,
@@ -37,14 +33,34 @@ export default class Analysis extends Model {
         allowNull: true,
         type: DataTypes.STRING,
       },
-      explanations: {
+      twitter_user_id: {
         allowNull: true,
-        type: DataTypes.JSON,
+        type: DataTypes.BIGINT,
       },
-      details: {
+      twitter_handle: {
         allowNull: true,
-        type: DataTypes.JSON,
+        type: DataTypes.STRING,
       },
+      twitter_created_at: {
+        allowNull: true,
+        type: DataTypes.DATE,
+      },
+      twitter_following_count: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
+      },
+      twitter_followers_count: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
+      },
+      twitter_tweets_count: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
+      },
+      origin: {
+        allowNull: true,
+        type: DataTypes.STRING
+      }
     }, {
       sequelize,
       modelName: 'Analyses',

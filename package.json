@@ -4,7 +4,7 @@
   "description": "Analyzing profile on Twitter for detect behavior of spamming bot",
   "homepage": "https://github.com/AppCivico/spottingbot#readme",
   "scripts": {
-    "start": "babel-node src/index.js",
+    "start": "npx babel src -d build; node build/index.js",
     "dev": "nodemon src/index.js --exec babel-node",
     "lint": "eslint . --ext .js",
     "cli": "babel-node src/cli.js",
@@ -35,13 +35,12 @@
     "@babel/node": "^7.10.5",
     "@babel/plugin-transform-runtime": "^7.11.0",
     "@babel/preset-env": "^7.11.0",
-    "async": "^2.6.1",
+    "async": "^3.2.0",
     "body-parser": "^1.18.2",
     "dotenv": "^8.2.0",
     "express": "^4.16.3",
     "md5-hex": "^3.0.1",
     "memory-cache": "^0.2.0",
-    "multilang-sentiment": "^1.1.6",
     "pg": "^8.3.0",
     "pg-hstore": "^2.3.3",
     "redis": "^3.0.2",
@@ -56,6 +55,7 @@
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.20.2",
     "mocha": "^7.1.2",
+    "multilang-sentiment": "^1.2.0",
     "nodemon": "^2.0.3",
     "supertest": "^4.0.2"
   }

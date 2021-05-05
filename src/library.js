@@ -2,7 +2,7 @@ import { execSync } from 'child_process';
 import { Op } from 'sequelize';
 import TwitterLite from 'twitter-lite';
 import { getExtraDetails } from './document';
-import { Request, Feedback } from './infra/database/index';
+import { Request, Feedback, Analysis, Cache, UserData } from './infra/database/index';
 import Texts from './data/texts';
 const superagent = require('superagent');
 const md5Hex = require('md5-hex');
@@ -109,6 +109,22 @@ const editDistance = (string1, string2) => {
 };
 
 export default {
+  getCacheInterval: (interval) => {
+    let newInterval = interval || process.env.DEFAULT_CACHE_INTERVAL;
+    if (!newInterval || !newInterval.match(/[0-9]{1,}_(days|hours|minutes|seconds)/i)) newInterval = '1_days';
+    const splitStr = newInterval.split('_');
+
+    const value = splitStr[0];
+    const time = splitStr[1];
+    const date = new Date();
+
+    if (time === 'days') date.setDate(date.getDate() - value);
+    if (time === 'hours') date.setHours(date.getHours() - value);
+    if (time === 'minutes') date.setMinutes(date.getMinutes() - value);
+    if (time === 'seconds') date.setSeconds(date.getSeconds() - value);
+
+    return date;
+  },
 
   getLoggingtext: (explanations) => {
     if (!explanations || Array.isArray(explanations) === false) return '';
@@ -229,6 +245,26 @@ export default {
     return res;
   },
 
+  getTwitterIDForHandle: async (twitter_handle) => {
+    return await Analysis.findAll({
+      attributes: ['twitter_user_id'],
+      where: { twitter_handle },
+      order: [['createdAt', 'DESC']],
+      limit: 1,
+    });
+  },
+
+  getCachedAnalysis: async (twitter_user_id) => {
+    return await Analysis.findOne({
+      where: {
+        twitter_user_id,
+        createdAt: { [Op.between]: [getCacheInterval(process.env.DEFAULT_CACHE_INTERVAL), new Date()] },
+      },
+      order: [['createdAt', 'DESC']], // select the newest entry
+      raw: true,
+    });
+  },
+
   getRateLimits,
   saveFeedback: async (analysisID, opinion) => {
     try {
@@ -276,6 +312,16 @@ export default {
     return result;
   },
 
+  userDataUpsert: async (twitterUserId, twitterUserHandle, twitterUserName, twitterCreatedAt) => {
+    return await UserData.findOrCreate({
+      where: {
+        username: twitterUserName,
+        twitterID: twitterUserId,
+        profileCreatedAt: twitterCreatedAt,
+        twitter_handle: twitterUserHandle
+      }
+    });
+  },
 
   buildAnalyzeReturn: async (extraDetails, lang) => {
     // Setting text file

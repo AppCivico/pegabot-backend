@@ -101,11 +101,11 @@ async function getTokenUrl(req, searchFor, profile, limit) {
   }
 }
 
-app.all('/', function(req, res, next) {
+app.all('/', function (req, res, next) {
   res.header("Access-Control-Allow-Origin", '"$http_origin" always');
   res.header("Access-Control-Allow-Headers", "X-Requested-With, Origin, Accept");
   next();
- });
+});
 
 app.get('/botometer', async (req, res) => {
 
@@ -127,7 +127,6 @@ app.get('/botometer', async (req, res) => {
 
   const { getData } = req.query;
 
-  console.log('profile', profile);
   if (!limit || limit > 200) {
     limit = 200;
   }
@@ -140,8 +139,6 @@ app.get('/botometer', async (req, res) => {
       const result = await spottingbot(profile, config, { friend: false },
         sentimentLang, getData, cacheInterval, verbose, origin, wantsDocument, lang).catch((err) => err);
 
-      if (result && result.profiles && result.profiles[0]) console.log(result.profiles[0]);
-
       if (!result || result.errors || result.error) {
         let toSend = result;
         if (result.errors) toSend = result.errors;
@@ -153,10 +150,10 @@ app.get('/botometer', async (req, res) => {
         console.log(firstError);
 
         let errorMessage;
-        if ( firstError.code === 34 ) {
+        if (firstError.code === 34) {
           errorMessage = 'Esse usuário não existe'
         }
-        else if ( firstError.error === 'Not authorized.' ) {
+        else if (firstError.error === 'Not authorized.') {
           errorMessage = 'Sem permissão para acessar. Usuário pode estar bloqueado/suspendido.'
         }
         else {
@@ -249,19 +246,20 @@ app.get('/status', (req, res) => {
 });
 
 app.get('/analyze', async (req, res) => {
-  const target            = req.query.search_for;
+  const target = req.query.search_for;
 
-  const { profile }       = req.query;
-  let { limit }           = req.query;
+  const { profile } = req.query;
+  let { limit } = req.query;
   const { authenticated } = req.query;
 
-  const cacheInterval     = req.query.cache_duration;
-  const key               = `${target}:${profile}`;
-  const cachedKey         = mcache.get(key);
-  const fullAnalysisCache = 0;
+  const cacheInterval = req.query.cache_duration;
+  const key = `${target}:${profile}`;
+  const cachedKey = mcache.get(key);
+  const fullAnalysisCache = 1;
+  const isFullAnalysis = 1;
 
-  const verbose           = req.query.verbose || req.query.logging;
-  const isAdmin           = req.query.is_admin;
+  const verbose = req.query.verbose || req.query.logging;
+  const isAdmin = req.query.is_admin;
   const origin = isAdmin ? 'admin' : 'website';
   const wantsDocument = 1;
 
@@ -272,7 +270,6 @@ app.get('/analyze', async (req, res) => {
 
   const { getData } = req.query;
 
-  console.log('profile', profile);
   if (!limit || limit > 200) {
     limit = 200;
   }
@@ -283,7 +280,7 @@ app.get('/analyze', async (req, res) => {
   } else if (target === 'profile') {
     try {
       const result = await spottingbot(profile, config, { friend: false },
-        sentimentLang, getData, cacheInterval, verbose, origin, wantsDocument, fullAnalysisCache).catch((err) => err);
+        sentimentLang, getData, cacheInterval, verbose, origin, wantsDocument, fullAnalysisCache, isFullAnalysis).catch((err) => err);
 
       if (!result || result.errors || result.error) {
         let toSend = result;
@@ -292,8 +289,8 @@ app.get('/analyze', async (req, res) => {
         res.status(404).json({ metadata: { error: toSend } });
         return;
       }
-      
-      res.send(await library.buildAnalyzeReturn(result.profiles[0].bot_probability.extraDetails, lang));
+
+      res.send(result);
 
     } catch (error) {
       console.log('error', error);
@@ -329,6 +326,92 @@ app.get('/analyze', async (req, res) => {
   } else {
     res.status(400).send('search_for is wrong');
   }
-}); 
+});
+
+app.get('/botometer-bulk', async (req, res) => {
+  const apiKey = req.headers["x-api-key"];
+  if (!apiKey || apiKey != process.env.BULK_API_KEY) return res.status(403).send('forbidden');
+
+
+  const { profiles, is_admin, twitter_api_consumer_key, twitter_api_consumer_secret, cache_interval } = req.body;
+  if (profiles.length > 50) return res.status(400).json({ message: 'max profiles size is 50' });
+
+  if (twitter_api_consumer_key && twitter_api_consumer_secret) {
+    config = {
+      consumer_key: twitter_api_consumer_key,
+      consumer_secret: twitter_api_consumer_secret,
+    };
+  }
+
+  const verbose = false;
+  const getData = true;
+  const origin = 'admin';
+  const cacheInterval = cache_interval;
+  const referer = req.get('referer');
+
+  const profiles_results = profiles.map(profile => {
+
+    return spottingbot(
+      profile, config, { friend: false }, library.getDefaultLanguage(referer), getData, cacheInterval, verbose, origin
+    ).then((result) => {
+      return {
+        twitter_user_data: {
+          id: result.twitter_data.user_id,
+          handle: '@' + result.profiles[0].username,
+          user_name: result.twitter_data.user_name,
+          url: result.profiles[0].url,
+          avatar: result.profiles[0].avatar,
+          created_at: result.twitter_data.created_at,
+        },
+        twitter_user_meta_data: {
+          tweet_count: result.twitter_data.number_tweets,
+          follower_count: result.twitter_data.followers,
+          following_count: result.twitter_data.following,
+          hashtags: result.twitter_data.hashtags,
+          mentions: result.twitter_data.mentions,
+        },
+        pegabot_analysis: {
+          user_index: result.profiles[0].language_independent.user,
+          temporal_index: result.profiles[0].language_independent.temporal,
+          network_index: result.profiles[0].language_independent.network,
+          sentiment_index: result.profiles[0].language_dependent.sentiment.value,
+          bot_probability: result.profiles[0].bot_probability.all,
+        },
+        metadata: {
+          used_cache: result.twitter_data.usedCache
+        }
+      }
+    }).catch((err) => {
+      const firstError = err.errors ? err.errors[0] : err;
+
+      let errorMessage;
+      if (firstError.code === 34) {
+        errorMessage = 'Esse usuário não existe'
+      }
+      else if (firstError.error === 'Not authorized.') {
+        errorMessage = 'Sem permissão para acessar. Usuário pode estar bloqueado/suspendido.'
+      }
+      else {
+        errorMessage = 'Erro ao procurar pelo perfil'
+      }
+
+      return {
+        twitter_user_data: {
+          user_handle: profile,
+        },
+        metadata: {
+          error: errorMessage
+        }
+      }
+    });
+
+  });
+
+  Promise.all(profiles_results).then(function (results) {
+    res.status(200).json({ analyses_count: results.length, analyses: results });
+    return;
+  });
+
+});
 
 export default app;

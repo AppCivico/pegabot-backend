@@ -1,5 +1,6 @@
 import sentiment from 'multilang-sentiment';
 import library from '../library';
+import async from "async";
 
 export default async (data, defaultLanguage = 'pt', explanations = [], extraDetails = {}) => {
   explanations.push('\n-Análise do Score Sentimento:\n');
@@ -30,66 +31,60 @@ export default async (data, defaultLanguage = 'pt', explanations = [], extraDeta
   let happyCount = 0;
   let sadCount = 0;
 
-  tweets.forEach((current) => {
-    let { lang } = current;
-    const { text } = current;
-    try {
-      let res = {};
+  async.each(tweets, (tweet) => {
+    let { lang } = tweet;
+    const { text } = tweet;
 
-      // sets default language
-      if (!lang || ['und', 'in'].includes(lang)) lang = defaultLanguage;
+    let res = {};
 
-      // get sentiment score for tweet text
-      res = sentiment(text, lang);
-      if (!savedRes) {
-        explanations.push(`Exemplo do score do tweet: ${res.comparative}`);
-        savedRes = true;
-      }
+    // sets default language
+    if (!lang || ['und', 'in'].includes(lang)) lang = defaultLanguage;
 
-      const emoji = library.getEmojiOnString(text);
-      if (emoji.happy || emoji.sad) emojiCount += 1;
-      if (emoji.happy) happyCount += 1;
-      if (emoji.sad) sadCount += 1;
-
-      const { negative } = res;
-      const { positive } = res;
-
-      // Creating flag that will signify when the tweet has alredy been used for screencap sampling.
-      // Thus, there will never be a repeated tweet between the negative, positive and neutral samples.
-      let usedForSampling = 0;
-
-      // Saving positive tweet sample
-      if (!tweetExemplo.positive && res.positive) {
-        current.url = extraDetails.TWITTER_LINK + '/status/' + current.id_str;
-        tweetExemplo.positive = current;
-
-        usedForSampling = 1;
-      }
-
-      // Saving negative tweet sample
-      if (!tweetExemplo.negative && res.negative && usedForSampling === 0) {
-        current.url = extraDetails.TWITTER_LINK + '/status/' + current.id_str;
-        tweetExemplo.negative = current;
-
-        usedForSampling = 1;
-      }
-
-      // Saving neutral tweet sample
-      if (!tweetExemplo.neutral && res.comparative === 0 && usedForSampling === 0) {
-        current.url = extraDetails.TWITTER_LINK + '/status/' + current.id_str;
-        tweetExemplo.neutral = current;
-
-        usedForSampling = 1;
-      }
-
-      if (res.comparative === 0) sentimentNeutralSum += 1;
-    } catch (error) {
-      console.log('Error trying to analyse sentiment');
-      console.log('text', text);
-      console.log('lang', lang);
-      console.log(error);
+    // get sentiment score for tweet text
+    res = sentiment(text, lang);
+    if (!savedRes) {
+      explanations.push(`Exemplo do score do tweet: ${res.comparative}`);
+      savedRes = true;
     }
-  });
+
+    const emoji = library.getEmojiOnString(text);
+    if (emoji.happy || emoji.sad) emojiCount += 1;
+    if (emoji.happy) happyCount += 1;
+    if (emoji.sad) sadCount += 1;
+
+    const { negative } = res;
+    const { positive } = res;
+
+    // Creating flag that will signify when the tweet has alredy been used for screencap sampling.
+    // Thus, there will never be a repeated tweet between the negative, positive and neutral samples.
+    let usedForSampling = 0;
+
+    // Saving positive tweet sample
+    if (!tweetExemplo.positive && res.positive) {
+      tweet.url = extraDetails.TWITTER_LINK + '/status/' + tweet.id_str;
+      tweetExemplo.positive = tweet;
+
+      usedForSampling = 1;
+    }
+
+    // Saving negative tweet sample
+    if (!tweetExemplo.negative && res.negative && usedForSampling === 0) {
+      tweet.url = extraDetails.TWITTER_LINK + '/status/' + tweet.id_str;
+      tweetExemplo.negative = tweet;
+
+      usedForSampling = 1;
+    }
+
+    // Saving neutral tweet sample
+    if (!tweetExemplo.neutral && res.comparative === 0 && usedForSampling === 0) {
+      tweet.url = extraDetails.TWITTER_LINK + '/status/' + tweet.id_str;
+      tweetExemplo.neutral = tweet;
+
+      usedForSampling = 1;
+    }
+
+    if (res.comparative === 0) sentimentNeutralSum += 1;
+  }, (err) => { });
 
   explanations.push(`Temos ${sentimentNeutralSum} tweet(s) neutros`);
 

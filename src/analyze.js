@@ -10,10 +10,11 @@ import networkIndex from './index/network';
 import sentimentIndex from './index/sentiment';
 import library from './library';
 import document from './document';
+import { Op } from 'sequelize';
 
 // Import DB modules
 import {
-  Request, Analysis, UserData, ApiData, CachedRequest,
+  Request, Analysis, UserData, ApiData, CachedRequest, Cache
 } from './infra/database/index';
 
 
@@ -22,10 +23,10 @@ const weights = {};
 
 module.exports = (screenName, config, index = {
   user: true, friend: true, network: true, temporal: true, sentiment: true,
-}, sentimentLang, getData, cacheInterval, verbose, origin, wantDocument, fullAnalysisCache, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
+}, sentimentLang, getData, cacheInterval, verbose, origin, wantDocument, isFullAnalysis, fullAnalysisCache, cb) => new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
 
   let useCache = process.env.USE_CACHE;
-  if ( typeof fullAnalysisCache != 'undefined' && fullAnalysisCache === 0 ) useCache = 0;
+  if (typeof fullAnalysisCache != 'undefined' && fullAnalysisCache === 0) useCache = 0;
 
   if (!screenName || !config) {
     const error = 'You need to provide an username to analyze and a config for twitter app';
@@ -44,31 +45,6 @@ module.exports = (screenName, config, index = {
   extraDetails.TWITTER_HANDLE = screenName;
   extraDetails.TWITTER_LINK = `https://twitter.com/${screenName}`;
 
-  // check if we have a saved analysis of that user withing the desired time interval
-  if (useCache === '1') {
-    let cachedResult = await library.getCachedRequest(screenName, cacheInterval);
-
-    if (cachedResult) {
-      const analysisId = cachedResult['analysis.id'];
-
-      const { id: cachedResultID } = cachedResult; // use the original result to add an entry in the CachedRequest table
-      const { id: cachedRequestID } = await CachedRequest.create({ cachedResultID }).then((res) => res.dataValues);
-      // save the current request but link it with the CachedRequest we just created
-      await Request.create({ screenName, gitHead: await library.getGitHead(), cachedRequestID });
-
-      // format and return the cached result
-      cachedResult = library.formatCached(cachedResult, getData);
-      if (!verbose) delete cachedResult.profiles[0].bot_probability.info;
-
-      if (cb) cb(null, cachedResult);
-      console.log(JSON.stringify(cachedResult, null, 2));
-
-      cachedResult.analysis_id = analysisId;
-
-      resolve(cachedResult);
-      return cachedResult;
-    }
-  }
 
   const twitterParams = config;
   // Create Twitter client
@@ -91,16 +67,14 @@ module.exports = (screenName, config, index = {
   let indexCount = 0;
 
   // store new client request and get request instance
-  const newRequest = await Request.create({ screenName, gitHead: await library.getGitHead(), origin });
+  // const newRequest = await Request.create({ screenName, gitHead: await library.getGitHead(), origin });
 
   // get tweets timeline. We will use it for both the user and sentiment/temporal/network calculations
   const apiAnswer = await client.get('statuses/user_timeline', param).catch((err) => err);
 
   // if there's an error, save the api response as is and update the new request entry with it
   if (!apiAnswer || apiAnswer.error || apiAnswer.errors || apiAnswer.length === 0) {
-    const { id: apiDataID } = await ApiData.create({ statusesUserTimeline: apiAnswer, params: param });
-    newRequest.apiDataID = apiDataID;
-    newRequest.save();
+    // TODO: Salvar erro
     if (cb) cb(apiAnswer, null);
     reject(apiAnswer);
     return apiAnswer;
@@ -109,13 +83,43 @@ module.exports = (screenName, config, index = {
   // format api answer
   const { timeline, user } = library.getTimelineUser(apiAnswer);
 
+  // check if we have a saved analysis of that user withing the desired time interval
+  if (useCache === '1') {
+    const cacheInterval = library.getCacheInterval();
+
+    const cachedResponse = await Cache.findOne({
+      attributes: ['simple_analysis', 'full_analysis', 'times_served', 'id'],
+      where: {
+        '$analysis.twitter_user_id$': user.id_str,
+        '$analysis.createdAt$': { [Op.between]: [cacheInterval, new Date()] },
+      },
+      include: 'analysis'
+    });
+
+    if (cachedResponse) {
+      const currentTimesServed = cachedResponse['times_served'];
+      const responseToUse = isFullAnalysis ? cachedResponse['full_analysis'] : cachedResponse['simple_analysis'];
+
+      if (responseToUse) {
+        const cachedJSON = JSON.parse(responseToUse);
+
+        if (isFullAnalysis) {
+          const fullAnalysisRet = await library.buildAnalyzeReturn(cachedJSON);
+          resolve(fullAnalysisRet);
+          return fullAnalysisRet;
+        }
+
+        cachedResponse.times_served = currentTimesServed + 1;
+        await cachedResponse.save();
+
+        resolve(cachedJSON);
+        return cachedJSON;
+      }
+    }
+  }
+
   // get and store rate limits
   if (getData && timeline) timeline.rateLimit = await library.getRateStatus(timeline);
-
-  // store formated api response
-  const { id: apiDataID } = await ApiData.create({ statusesUserTimeline: { user, timeline }, params: param });
-  newRequest.apiDataID = apiDataID;
-  newRequest.save();
 
   const explanations = [`Análise do usuário: ${screenName}`];
   explanations.push('Carregou a timeline com o endpoint "statuses/user_timeline"');
@@ -214,171 +218,184 @@ module.exports = (screenName, config, index = {
       }
     },
   ],
-  //  This function is the final one and occurs when all indexes get calculated
-  async (err, results) => {
-    if (err) {
-      if (cb) cb(err, null);
-      reject(err);
-      return err;
-    }
+    //  This function is the final one and occurs when all indexes get calculated
+    async (err, results) => {
+      if (err) {
+        if (cb) cb(err, null);
+        reject(err);
+        return err;
+      }
 
-    explanations.push('\nCálculo do resultado final\n');
+      explanations.push('\nCálculo do resultado final\n');
 
-    // Save all results in the correct variable
-    let userScore = results[0][0];
-    let friendsScore = (results[1] + (results[2] * 1.5)) / (2 * 1.5);
-    let temporalScore = results[3][0];
-    let networkScore = results[3][1];
-    let sentimentScore = results[3][2];
+      // Save all results in the correct variable
+      let userScore = results[0][0];
+      let friendsScore = (results[1] + (results[2] * 1.5)) / (2 * 1.5);
+      let temporalScore = results[3][0];
+      let networkScore = results[3][1];
+      let sentimentScore = results[3][2];
 
-    // If any scores is not calculated, null is set for avoid error during the final calculation
-    const isNumber = (value) => !Number.isNaN(Number(value));
-    if (!isNumber(userScore)) userScore = null;
-    if (!isNumber(friendsScore)) friendsScore = null;
-    if (!isNumber(temporalScore)) temporalScore = null;
-    if (!isNumber(networkScore)) networkScore = null;
-    if (!isNumber(sentimentScore)) sentimentScore = null;
+      // If any scores is not calculated, null is set for avoid error during the final calculation
+      const isNumber = (value) => !Number.isNaN(Number(value));
+      if (!isNumber(userScore)) userScore = null;
+      if (!isNumber(friendsScore)) friendsScore = null;
+      if (!isNumber(temporalScore)) temporalScore = null;
+      if (!isNumber(networkScore)) networkScore = null;
+      if (!isNumber(sentimentScore)) sentimentScore = null;
 
-    explanations.push(`Score User: ${userScore}`);
-    explanations.push(`Score Friend (Ignorado): ${friendsScore}`);
-    explanations.push(`Score Temporal: ${temporalScore}`);
-    explanations.push(`Score Netword: ${networkScore}`);
-    explanations.push(`Score Sentiment: ${sentimentScore}`);
+      explanations.push(`Score User: ${userScore}`);
+      explanations.push(`Score Friend (Ignorado): ${friendsScore}`);
+      explanations.push(`Score Temporal: ${temporalScore}`);
+      explanations.push(`Score Netword: ${networkScore}`);
+      explanations.push(`Score Sentiment: ${sentimentScore}`);
 
-    const scoreSum = userScore + friendsScore + temporalScore + networkScore + sentimentScore;
+      const scoreSum = userScore + friendsScore + temporalScore + networkScore + sentimentScore;
 
-    // Adjustment for not getting any score more than 0.99 in the final result
-    const total = Math.min(scoreSum / indexCount, 0.99);
+      // Adjustment for not getting any score more than 0.99 in the final result
+      const total = Math.min(scoreSum / indexCount, 0.99);
 
-    explanations.push(`Somamos todos os ${indexCount} scores que temos: ${userScore} + ${friendsScore} + ${temporalScore} + ${networkScore} + ${sentimentScore} = ${scoreSum}`);
-    explanations.push('Dividimos a soma pela quantidade de scores e limitamos o resultado a 0.99');
-    explanations.push(`Fica: ${scoreSum} / ${indexCount} = ${total}`);
-    explanations.push(`Total: ${total}`);
+      explanations.push(`Somamos todos os ${indexCount} scores que temos: ${userScore} + ${friendsScore} + ${temporalScore} + ${networkScore} + ${sentimentScore} = ${scoreSum}`);
+      explanations.push('Dividimos a soma pela quantidade de scores e limitamos o resultado a 0.99');
+      explanations.push(`Fica: ${scoreSum} / ${indexCount} = ${total}`);
+      explanations.push(`Total: ${total}`);
 
-    if (networkScore > 1) {
-      networkScore /= 2;
-    } else if (networkScore > 2) {
-      networkScore = 1;
-    }
+      if (networkScore > 1) {
+        networkScore /= 2;
+      } else if (networkScore > 2) {
+        networkScore = 1;
+      }
 
-    if (temporalScore > 1) {
-      temporalScore /= 2;
-    } else if (temporalScore > 2) {
-      temporalScore = 1;
-    }
+      if (temporalScore > 1) {
+        temporalScore /= 2;
+      } else if (temporalScore > 2) {
+        temporalScore = 1;
+      }
 
-    // Sorting weights
-    const sortedWeights = {};
-    var keys = Object.keys(weights);
+      // Sorting weights
+      const sortedWeights = {};
+      var keys = Object.keys(weights);
 
-    keys.sort(function(a, b) {
+      keys.sort(function (a, b) {
         return weights[b] - weights[a]   //inverted comparison
-    }).forEach(function(k) {
-      sortedWeights[k] = weights[k];
-    });
+      }).forEach(function (k) {
+        sortedWeights[k] = weights[k];
+      });
 
-    // Using the first key of weights to build the info
-    const weightKey = Object.keys(sortedWeights)[0];
-    let info;
+      // Using the first key of weights to build the info
+      const weightKey = Object.keys(sortedWeights)[0];
+      let info;
 
-    if (weightKey === 'USER_INDEX_WEIGHT') {
-      info = '<p>Um dos critérios que mais teve peso na análise foi o índice de Perfil</p>';
-    }
-    else if ( weightKey === 'NETWORK_INDEX_WEIGHT:' ) {
-      info = '<p>Um dos critérios que mais teve peso na análise foi o índice de Rede</p>';
-    }
-    else if ( weightKey === 'TEMPORAL_INDEX_WEIGHT' ) {
-      info = '<p>Um dos critérios que mais teve peso na análise foi o índice Temporal</p>';
-    }
-    else {
-      info = '<p>Um dos critérios que mais teve peso na análise foi o índice de Sentimento</p>';
-    }
+      if (weightKey === 'USER_INDEX_WEIGHT') {
+        info = '<p>Um dos critérios que mais teve peso na análise foi o índice de Perfil</p>';
+      }
+      else if (weightKey === 'NETWORK_INDEX_WEIGHT:') {
+        info = '<p>Um dos critérios que mais teve peso na análise foi o índice de Rede</p>';
+      }
+      else if (weightKey === 'TEMPORAL_INDEX_WEIGHT') {
+        info = '<p>Um dos critérios que mais teve peso na análise foi o índice Temporal</p>';
+      }
+      else {
+        info = '<p>Um dos critérios que mais teve peso na análise foi o índice de Sentimento</p>';
+      }
 
-    // Create the response object
-    const object = {
-      metadata: {
-        count: 1,
-      },
-      profiles: [{
-        username: param.screen_name,
-        url: `https://twitter.com/${param.screen_name}`,
-        avatar: user.profile_image_url,
-        language_dependent: {
-          sentiment: {
-            value: sentimentScore,
+      // Create the response object
+      const object = {
+        metadata: {
+          count: 1,
+        },
+        profiles: [{
+          username: param.screen_name,
+          url: `https://twitter.com/${param.screen_name}`,
+          avatar: user.profile_image_url,
+          language_dependent: {
+            sentiment: {
+              value: sentimentScore,
+            },
           },
-        },
-        language_independent: {
-          friend: friendsScore,
-          temporal: temporalScore,
-          network: networkScore,
-          user: userScore,
-        },
-        bot_probability: {
-          all: total,
-          info: info,
-        },
-        user_profile_language: user.lang,
-      }],
-    };
+          language_independent: {
+            friend: friendsScore,
+            temporal: temporalScore,
+            network: networkScore,
+            user: userScore,
+          },
+          bot_probability: {
+            all: total,
+            info: info,
+          },
+          user_profile_language: user.lang,
+        }],
+      };
 
-    const details = await document.getExtraDetails(extraDetails);
-    if (verbose) object.profiles[0].bot_probability.info = library.getLoggingtext(explanations);
-    if (wantDocument) object.profiles[0].bot_probability.extraDetails = details;
+      // add data from twitter to complement return (if getDate is true) and save to database
+      const data = {};
 
-    // add data from twitter to complement return (if getDate is true) and save to database
-    const data = {};
+      data.created_at = user.created_at;
+      data.user_id = user.id_str;
+      data.user_name = user.name;
+      data.following = user.friends_count;
+      data.followers = user.followers_count;
+      data.number_tweets = user.statuses_count;
 
-    data.created_at = user.created_at;
-    data.user_id = user.id_str;
-    data.user_name = user.name;
-    data.following = user.friends_count;
-    data.followers = user.followers_count;
-    data.number_tweets = user.statuses_count;
+      data.hashtags = hashtagsUsed;
+      data.mentions = mentionsUsed;
 
-    data.hashtags = hashtagsUsed;
-    data.mentions = mentionsUsed;
+      if (getData) {
+        object.twitter_data = data;
+        object.rate_limit = timeline.rateLimit;
+      }
 
-    if (getData) {
-      object.twitter_data = data;
-      object.rate_limit = timeline.rateLimit;
-    }
+      // save Analysis Data on database
+      const { id: newAnalysisID } = await Analysis.create({
+        total,
+        user: userScore,
+        friend: friendsScore,
+        sentiment: sentimentScore,
+        temporal: temporalScore,
+        network: networkScore,
+        twitter_user_id: user.id_str,
+        twitter_handle: param.screen_name,
+        twitter_created_at: data.created_at,
+        twitter_following_count: data.following,
+        twitter_followers_count: data.followers,
+        twitter_tweets_count: data.number_tweets,
+        origin: origin
+      }).then((res) => res.dataValues);
 
-    // save Analysis Data on database
-    const { id: newAnalysisID } = await Analysis.create({
-      fullResponse: object,
-      total,
-      user: userScore,
-      friend: friendsScore,
-      sentiment: sentimentScore,
-      temporal: temporalScore,
-      network: networkScore,
-      explanations,
-      details,
-    }).then((res) => res.dataValues);
+      // Saving cache
+      const details = await document.getExtraDetails(extraDetails);
+      const detailsAsString = JSON.stringify(details);
+      await Cache.create({
+        analysis_id: newAnalysisID,
+        simple_analysis: JSON.stringify(object),
+        full_analysis: detailsAsString,
+        updatedAt: null
+      });
 
-    // save User Data on database
-    const { id: newUserDataID } = await UserData.create({
-      username: data.user_name,
-      twitterID: data.user_id,
-      profileCreatedAt: data.created_at,
-      followingCount: data.following,
-      followersCount: data.followers,
-      statusesCount: data.number_tweets,
-      hashtagsUsed: data.hashtags,
-      mentionsUsed: data.mentions,
-    }).then((res) => res.dataValues);
+      // save User Data on database
+      // const { id: newUserDataID } = await UserData.create({
+      //   username: data.user_name,
+      //   twitterID: data.user_id,
+      //   profileCreatedAt: data.created_at,
+      //   followingCount: data.following,
+      //   followersCount: data.followers,
+      //   statusesCount: data.number_tweets,
+      //   hashtagsUsed: data.hashtags,
+      //   mentionsUsed: data.mentions,
+      // }).then((res) => res.dataValues);
 
-    // update request
-    newRequest.analysisID = newAnalysisID;
-    newRequest.userDataID = newUserDataID;
-    newRequest.save();
+      // update request
+      // newRequest.analysisID = newAnalysisID;
+      // newRequest.userDataID = newUserDataID;
+      // newRequest.save();
 
-    if (newAnalysisID) object.analysis_id = newAnalysisID;
+      if (verbose) object.profiles[0].bot_probability.info = library.getLoggingtext(explanations);
+      if (wantDocument) object.profiles[0].bot_probability.extraDetails = details;
 
-    if (cb) cb(null, object);
-    resolve(object);
-    return object;
-  });
+      if (newAnalysisID) object.analysis_id = newAnalysisID;
+
+      if (cb) cb(null, object);
+      resolve(object);
+      return object;
+    });
   return null;
 });

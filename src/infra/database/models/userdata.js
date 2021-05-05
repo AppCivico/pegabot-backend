@@ -21,26 +21,10 @@ export default class UserData extends Model {
         allowNull: false,
         type: DataTypes.DATE,
       },
-      followingCount: {
-        allowNull: false,
-        type: DataTypes.INTEGER,
-      },
-      followersCount: {
-        allowNull: false,
-        type: DataTypes.INTEGER,
-      },
-      statusesCount: {
-        allowNull: false,
-        type: DataTypes.INTEGER,
-      },
-      hashtagsUsed: {
+      twitter_handle: {
         allowNull: true,
-        type: DataTypes.ARRAY(DataTypes.STRING),
-      },
-      mentionsUsed: {
-        allowNull: true,
-        type: DataTypes.ARRAY(DataTypes.STRING),
-      },
+        type: DataTypes.STRING
+      }
     }, {
       sequelize,
       modelName: 'UserData',
