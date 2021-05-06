@@ -21,7 +21,7 @@ const config = {
   consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
 };
 
-const cacheDuration = process.env.CACHE_DURATION || 2592000;
+const cacheDuration = process.env.DEFAULT_CACHE_INTERVAL || 2592000;
 
 const requestTwitterList = async (client, searchFor, profile, limit, callback) => {
   let cursor = -1;
