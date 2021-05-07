@@ -329,9 +329,8 @@ app.get('/analyze', async (req, res) => {
 });
 
 app.get('/botometer-bulk', async (req, res) => {
-  const apiKey = req.headers["x-api-key"];
-  if (!apiKey || apiKey != process.env.BULK_API_KEY) return res.status(403).send('forbidden');
-
+  const securityToken = req.headers["security_token"];
+  if (!securityToken || securityToken != process.env.BULK_SECURITY_TOKEN) return res.status(403).send('forbidden');
 
   const { profiles, is_admin, twitter_api_consumer_key, twitter_api_consumer_secret, cache_interval } = req.body;
   if (profiles.length > 50) return res.status(400).json({ message: 'max profiles size is 50' });

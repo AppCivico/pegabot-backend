@@ -37,7 +37,7 @@ DATABASE_USER="Your database user"
 DATABASE_PASSWORD="Your database password"
 DATABASE_NAME="Your database password"
 
-BULK_API_KEY='Key that will be used to authorize calls to the bulk endpoint'
+BULK_SECURITY_TOKEN='Key that will be used to authorize calls to the bulk endpoint'
 
 PUPPETER_SERVICE_ROOT_URL="Url to the service that will take screenshots from the Twitter profile"
 PUPPETER_SECRET_TOKEN="Token for the screenshot service"
@@ -215,7 +215,7 @@ curl --request GET \
 ```
 
 **Required headers**
-- `apiKey` (string): Must be set on the `.env` file, with the `BULK_API_KEY` name;
+- `apiKey` (string): Must be set on the `.env` file, with the `BULK_SECURITY_TOKEN` name;
 
 **Required parameters**
 - `profiles` (STRING ARRAY): Array containing the profiles that will be analyzed.
